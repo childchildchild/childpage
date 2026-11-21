@@ -3,10 +3,10 @@
 :root{--lavender:#cbcced;--ink:#050505;--paper:#fffdfb;--tile:#f0f0f0;--orange:#ff5708;--blue:#2f5fd0}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
-html{scroll-behavior:smooth;background:var(--lavender)}
-body{margin:0;padding-top:env(safe-area-inset-top,0px);font-family:Roboto,Arial,sans-serif;color:var(--ink);background:var(--lavender)}
+html{scroll-behavior:smooth;background:linear-gradient(to bottom,var(--lavender) 0,var(--lavender) 45svh,var(--paper) 75svh,var(--paper) 100%);background-color:var(--paper)}
+body{margin:0;padding-top:env(safe-area-inset-top,0px);font-family:Roboto,Arial,sans-serif;color:var(--ink);background:transparent}
 button{font:inherit;color:inherit}
-.page{width:100%;max-width:430px;margin:0 auto;overflow:hidden;background:var(--lavender);min-height:100vh;container-type:inline-size}
+.page{width:100%;max-width:430px;margin:0 auto;overflow:hidden;background:var(--paper);min-height:100vh;container-type:inline-size}
 .first-screen{height:calc(100svh - env(safe-area-inset-top,0px));display:flex;flex-direction:column}
 .hero{flex:1;min-height:0;position:relative;overflow:hidden;background:var(--lavender);container-type:size;container-name:hero}
 .hero h1{position:absolute;top:5%;width:100%;z-index:2;margin:0;text-align:center;color:#315dca;font:400 min(13.5cqw,9.1cqh)/.98 Arco,sans-serif;letter-spacing:-.2cqw}
