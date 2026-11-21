@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="color-scheme" content="light">
+  <title>Первые шаги — Детская страница</title>
+  <link rel="stylesheet" href="first-steps.css?v=20261122-1">
+</head>
+<body>
+  <main class="activity-page">
+    <header class="activity-header">
+      <a class="back-link" href="index.html#ages-title" aria-label="Вернуться к возрастам">
+        <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 5 5 20l15 15M6 20h30"/></svg>
+      </a>
+      <h1>Первые шаги</h1>
+    </header>
+
+    <div class="progress" role="img" aria-label="Прогресс: 9 процентов">
+      <div class="progress-track"><span class="progress-fill"></span></div>
+      <svg class="progress-star" viewBox="0 0 100 100" aria-hidden="true"><path d="M50 3c11-8 23 3 21 15-2 9 3 15 13 17 14 3 18 19 6 27-8 5-10 11-4 20 8 13-4 25-17 17-9-6-15-4-20 3-9 12-24 8-27-6-2-10-8-15-17-13C-8 85-18 72-10 61c6-9 4-15-3-20-11-9-7-24 7-27 10-2 15-8 13-18C5-17 19-24 29-15c8 7 15 7 21 18Z" transform="translate(19 13) scale(.68)"/></svg>
+      <span class="progress-number">9%</span>
+    </div>
+
+    <section class="lesson-path" aria-label="Занятия">
+      <h2 class="lesson-label lesson-one">1 ЗАНЯТИЕ</h2>
+      <div class="path-circle lesson-kind active" aria-label="Игры">
+        <img src="assets/games.png" alt="">
+      </div>
+
+      <div class="lesson-picker" aria-label="Текущий раздел: медицина">
+        <span class="picker-arrow left" aria-hidden="true"></span>
+        <div class="path-circle current"><img src="assets/medicine.png" alt=""></div>
+        <span class="picker-arrow right" aria-hidden="true"></span>
+      </div>
+
+      <div class="path-circle upcoming cartoons" aria-label="Мультики, ещё не открыто">
+        <img src="assets/cartoons.png" alt="">
+      </div>
+      <h2 class="lesson-label lesson-two">2 ЗАНЯТИЕ</h2>
+      <div class="path-circle upcoming books" aria-label="Книги, ещё не открыто">
+        <svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 27C37 17 24 19 12 24v50c12-5 25-7 38 3 13-10 26-8 38-3V24C76 19 63 17 50 27Zm0 0v50"/></svg>
+      </div>
+      <div class="path-circle upcoming structure" aria-label="Следующее занятие, ещё не открыто">
+        <svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 12 60 22 50 32 40 22 50 12ZM50 32v24M20 56h60M20 56v18M50 56v18M80 56v18"/><circle cx="20" cy="78" r="8"/><circle cx="50" cy="78" r="8"/><circle cx="80" cy="78" r="8"/></svg>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

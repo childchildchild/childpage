@@ -53,7 +53,8 @@ button{font:inherit;color:inherit}
 .age-orange .age-label{background:#ff752b}.age-blue .age-label{background:#2f68f3}.age-red .age-label{background:#ff3034}
 .age-copy h3{margin:1.7cqw 0 1.9cqw;font-size:4.65cqw;line-height:1.1}
 .age-copy p{margin:0;font-size:3.35cqw;line-height:1.12;color:#292929}
-.age-copy button{position:absolute;left:5.8cqw;bottom:4.2cqw;width:32.3cqw;height:8.7cqw;border:0;border-radius:5cqw;background:white;font-size:4.2cqw;font-weight:700;cursor:pointer}
+.age-copy button,.age-copy .age-link{position:absolute;left:5.8cqw;bottom:4.2cqw;width:32.3cqw;height:8.7cqw;border:0;border-radius:5cqw;background:white;font-size:4.2cqw;font-weight:700;cursor:pointer}
+.age-copy .age-link{display:grid;place-items:center;color:inherit;text-decoration:none}
 .latest{padding-bottom:55px}
 .latest-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px 14px}
 .latest-card{min-width:0}
