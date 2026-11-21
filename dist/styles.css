@@ -61,9 +61,11 @@ button{font:inherit;color:inherit}
 .latest-card h3{margin:10px 0 5px;font-size:20px;line-height:1.08}
 .latest-card p{margin:0;color:#4d4d4d;font-size:15px;line-height:1.18}
 .search-screen{position:fixed;inset:0;width:100%;max-width:430px;height:100%;height:100dvh;max-height:none;margin:0 auto;padding:max(68px,env(safe-area-inset-top,0px)) 18px max(32px,env(safe-area-inset-bottom,0px));border:0;background:var(--paper);color:var(--ink);overflow-y:auto;overscroll-behavior:contain}
-.search-screen[open]{animation:search-slide-in .28s cubic-bezier(.22,.61,.36,1)}
+.search-screen[open]:not(.from-menu){animation:search-slide-in .28s cubic-bezier(.22,.61,.36,1)}
+.search-screen.from-menu::backdrop{animation:search-backdrop-in .34s ease both}
 .search-screen::backdrop{background:var(--paper)}
 @keyframes search-slide-in{from{transform:translateX(100%)}to{transform:translateX(0)}}
+@keyframes search-backdrop-in{from{opacity:0}to{opacity:1}}
 html.search-open,body.search-open{background:var(--paper)}
 body.search-open{overflow:hidden}
 .search-header{position:relative;display:flex;align-items:center;justify-content:center;height:48px;margin-bottom:15px}
@@ -126,4 +128,4 @@ body.menu-open{overflow:hidden}
 }
 @media(max-width:370px){.content-grid{--tile-gap:11px}.content-tile>span:last-child{font-size:12px}}
 @media(min-width:431px){.page{box-shadow:0 0 34px rgba(0,0,0,.12)}}
-@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}.floating-toolbar{transition:none}.search-screen[open]{animation:none}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}.floating-toolbar{transition:none}.search-screen[open]:not(.from-menu),.search-screen.from-menu::backdrop{animation:none}}
