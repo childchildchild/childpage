@@ -63,11 +63,10 @@ button{font:inherit;color:inherit}
 .search-screen{position:fixed;inset:0;width:100%;max-width:430px;height:100%;height:100dvh;max-height:none;margin:0 auto;padding:max(68px,env(safe-area-inset-top,0px)) 18px max(32px,env(safe-area-inset-bottom,0px));border:0;background:var(--paper);color:var(--ink);overflow-y:auto;overscroll-behavior:contain}
 .search-screen[open]:not(.from-menu){animation:search-slide-in .28s cubic-bezier(.22,.61,.36,1)}
 .search-screen.from-menu::backdrop{animation:search-backdrop-in .34s ease both}
-.search-screen.from-menu.returning-to-menu::backdrop{animation:search-backdrop-out .34s ease both}
+.search-screen.from-menu.returning-to-menu::backdrop{animation:search-backdrop-in .34s ease reverse both}
 .search-screen::backdrop{background:var(--paper)}
 @keyframes search-slide-in{from{transform:translateX(100%)}to{transform:translateX(0)}}
 @keyframes search-backdrop-in{from{opacity:0}to{opacity:1}}
-@keyframes search-backdrop-out{from{opacity:1}to{opacity:0}}
 html.search-open,body.search-open{background:var(--paper)}
 body.search-open{overflow:hidden}
 .search-header{position:relative;display:flex;align-items:center;justify-content:center;height:48px;margin-bottom:15px}

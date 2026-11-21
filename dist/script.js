@@ -22,15 +22,14 @@ let highlightedResult;
 let searchAnimations = [];
 let searchClosing = false;
 
-function animateMenuToSearch(source, reverse = false) {
+function animateMenuToSearch(source) {
   const header = searchScreen.querySelector('.search-header');
   const field = searchScreen.querySelector('.search-form');
   const targetField = field.getBoundingClientRect();
   const targetHeader = header.getBoundingClientRect();
   const offset = source.panel.top - searchScreen.getBoundingClientRect().top;
-  const direction = reverse ? 'reverse' : 'normal';
-  const motion = { duration: 340, easing: 'cubic-bezier(.22,.61,.36,1)', direction, fill: reverse ? 'both' : 'none' };
-  const contentMotion = { duration: 220, delay: reverse ? 0 : 120, direction, fill: 'both' };
+  const motion = { duration: 340, easing: 'cubic-bezier(.22,.61,.36,1)', fill: 'both' };
+  const contentMotion = { duration: 220, delay: 120, fill: 'both' };
   searchAnimations = [
     searchScreen.animate([
       { transform: `translateY(${offset}px)`, borderRadius: '44px 44px 0 0' },
@@ -96,19 +95,14 @@ function backFromSearch() {
       searchFromMenu = false;
       searchScreen.close();
     };
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !searchAnimations.length) {
       finish();
       return;
     }
     searchClosing = true;
-    searchAnimations.forEach(animation => animation.cancel());
-    searchInput.blur();
     searchScreen.classList.add('returning-to-menu');
-    animateMenuToSearch({
-      panel: menuSheet.getBoundingClientRect(),
-      field: document.querySelector('#menu-search').getBoundingClientRect(),
-      header: menuSheet.querySelector('.menu-header').getBoundingClientRect(),
-    }, true).finished.then(finish, () => {});
+    searchAnimations.forEach(animation => animation.reverse());
+    Promise.all(searchAnimations.map(animation => animation.finished)).then(finish, () => {});
   } else {
     closeSearch();
   }
