@@ -43,6 +43,8 @@ function openSearch(trigger, fromMenu = false) {
   searchTrigger = trigger;
   searchFromMenu = fromMenu;
   document.body.classList.add('search-open');
+  document.documentElement.classList.add('search-open');
+  document.querySelector('meta[name="theme-color"]').content = '#fffdfb';
   searchScreen.showModal();
   renderSearch();
   searchInput.focus();
@@ -104,6 +106,8 @@ searchScreen.addEventListener('cancel', event => {
 });
 searchScreen.addEventListener('close', () => {
   document.body.classList.remove('search-open');
+  document.documentElement.classList.remove('search-open');
+  document.querySelector('meta[name="theme-color"]').content = '#cbcced';
   searchTrigger?.focus({ preventScroll: true });
 });
 searchInput.addEventListener('input', renderSearch);
