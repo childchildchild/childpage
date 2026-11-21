@@ -1,7 +1,8 @@
 @font-face{font-family:Arco;src:url('assets/arco.ttf') format('truetype');font-display:swap}
 @font-face{font-family:Roboto;src:url('assets/Roboto.ttf') format('truetype');font-display:swap}
 :root{--lavender:#cbcced;--ink:#050505;--paper:#fffdfb;--tile:#f0f0f0;--orange:#ff5708;--blue:#2f5fd0}
-*{box-sizing:border-box}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none}
 html{scroll-behavior:smooth;background:var(--lavender)}
 body{margin:0;padding-top:env(safe-area-inset-top,0px);font-family:Roboto,Arial,sans-serif;color:var(--ink);background:var(--lavender)}
 button{font:inherit;color:inherit}
