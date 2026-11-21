@@ -2,14 +2,15 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
+  <script>document.documentElement.classList.add('scroll-reveal');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#cbcced">
   <meta name="color-scheme" content="light">
   <style>html,body{background-color:#cbcced}</style>
   <title>Детская страница</title>
-  <link rel="stylesheet" href="styles.css?v=20261121-4">
+  <link rel="stylesheet" href="styles.css?v=20261122-1">
   <script src="https://unpkg.com/@phosphor-icons/web" defer></script>
-  <script src="script.js" defer></script>
+  <script src="script.js?v=20261122-1" defer></script>
 </head>
 <body>
   <main class="page">
@@ -52,6 +53,7 @@
       <button class="icon-button" type="button" aria-label="Открыть поиск"><i class="ph-bold ph-magnifying-glass"></i></button>
     </div>
 
+    <div class="below-fold">
     <section class="ages section" aria-labelledby="ages-title">
       <h2 id="ages-title">По возрастам</h2>
       <article class="age-card age-orange">
@@ -81,6 +83,7 @@
         <article class="latest-card"><div class="latest-image">Ожидается изображение</div><h3>Как покрасить огонь</h3><p>Химия не только сложная, но и красивая!</p></article>
       </div>
     </section>
+    </div>
   </main>
   <dialog class="menu-sheet" id="menu-sheet" aria-labelledby="menu-title">
     <header class="menu-header">

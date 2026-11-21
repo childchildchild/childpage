@@ -40,6 +40,8 @@ button{font:inherit;color:inherit}
 .floating-toolbar .preview-bubbles span{width:49px;height:49px;border-width:4px}
 .floating-toolbar .icon-button i{font-size:34px}
 .section{padding:45px 16px 0;background:var(--paper)}
+.below-fold{background:var(--paper)}
+.scroll-reveal .below-fold>.section{opacity:var(--details-opacity,0)}
 .section>h2{margin:0 0 30px;text-align:center;font-size:42px;line-height:1;font-weight:700}
 .ages{padding-top:20px}
 .ages>h2{font-size:7.4cqw;margin-bottom:24px}

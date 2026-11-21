@@ -2,6 +2,8 @@ const toolbar = document.querySelector('#floating-toolbar');
 const sourceToolbar = document.querySelector('#content-toolbar');
 
 const updateFloatingToolbar = () => {
+  const revealProgress = Math.min(1, Math.max(0, window.scrollY - 8) / 56);
+  document.documentElement.style.setProperty('--details-opacity', String(revealProgress));
   const shouldShow = sourceToolbar.getBoundingClientRect().bottom < 10;
   toolbar.classList.toggle('visible', shouldShow);
   toolbar.setAttribute('aria-hidden', String(!shouldShow));
