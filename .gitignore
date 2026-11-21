@@ -1,0 +1,12 @@
+# Local visual checks and temporary browser profiles
+.qa/
+
+# Manually generated publication archives
+*.zip
+
+# Local tooling and credentials
+node_modules/
+.netlify/
+.env
+.env.*
+!.env.example
