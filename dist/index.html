@@ -8,7 +8,7 @@
   <meta name="color-scheme" content="light">
   <style>html,body{background-color:#cbcced}</style>
   <title>Детская страница</title>
-  <link rel="stylesheet" href="styles.css?v=20261122-5">
+  <link rel="stylesheet" href="styles.css?v=20261122-6">
   <script src="https://unpkg.com/@phosphor-icons/web" defer></script>
   <script src="script.js?v=20261122-4" defer></script>
 </head>
@@ -47,12 +47,6 @@
 
     </div>
 
-    <div class="floating-toolbar" id="floating-toolbar" aria-hidden="true">
-      <button class="icon-button" type="button" aria-label="Открыть меню"><i class="ph-bold ph-list"></i></button>
-      <div class="preview-bubbles small" aria-hidden="true"><span></span><span></span><span></span></div>
-      <button class="icon-button" type="button" aria-label="Открыть поиск"><i class="ph-bold ph-magnifying-glass"></i></button>
-    </div>
-
     <div class="below-fold">
     <section class="ages section" aria-labelledby="ages-title">
       <h2 id="ages-title">По возрастам</h2>
@@ -85,6 +79,11 @@
     </section>
     </div>
   </main>
+  <div class="floating-toolbar" id="floating-toolbar" aria-hidden="true">
+    <button class="icon-button" type="button" aria-label="Открыть меню"><i class="ph-bold ph-list"></i></button>
+    <div class="preview-bubbles small" aria-hidden="true"><span></span><span></span><span></span></div>
+    <button class="icon-button" type="button" aria-label="Открыть поиск"><i class="ph-bold ph-magnifying-glass"></i></button>
+  </div>
   <dialog class="menu-sheet" id="menu-sheet" aria-labelledby="menu-title">
     <header class="menu-header">
       <button class="icon-button" id="menu-back" type="button" aria-label="Закрыть меню"><i class="ph-bold ph-arrow-left"></i></button>
