@@ -4,7 +4,6 @@
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;background:var(--lavender)}
 body{margin:0;padding-top:env(safe-area-inset-top,0px);font-family:Roboto,Arial,sans-serif;color:var(--ink);background:var(--lavender)}
-body::before{content:"";position:fixed;z-index:30;inset:0 0 auto;height:max(1px,env(safe-area-inset-top,0px));background:var(--lavender);pointer-events:none}
 button{font:inherit;color:inherit}
 .page{width:100%;max-width:430px;margin:0 auto;overflow:hidden;background:var(--lavender);min-height:100vh;container-type:inline-size}
 .first-screen{height:calc(100svh - env(safe-area-inset-top,0px));display:flex;flex-direction:column}
