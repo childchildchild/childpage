@@ -93,7 +93,6 @@ function openSearch(trigger, fromMenu = false) {
   searchScreen.classList.toggle('from-menu', fromMenu);
   document.body.classList.add('search-open');
   document.documentElement.classList.add('search-open');
-  document.querySelector('meta[name="theme-color"]').content = '#fffdfb';
   searchScreen.showModal();
   renderSearch();
   if (source && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -174,7 +173,6 @@ searchScreen.addEventListener('close', () => {
   searchScreen.classList.remove('from-menu', 'returning-to-menu');
   document.body.classList.remove('search-open');
   document.documentElement.classList.remove('search-open');
-  document.querySelector('meta[name="theme-color"]').content = '#cbcced';
   searchTrigger?.focus({ preventScroll: true });
 });
 searchInput.addEventListener('input', renderSearch);
