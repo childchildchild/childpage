@@ -124,10 +124,14 @@ menuSheet.addEventListener('click', event => {
 menuSheet.addEventListener('close', () => {
   document.body.classList.remove('menu-open');
   menuSheet.classList.remove('is-open');
-  menuTrigger?.focus({ preventScroll: true });
+  if (!searchScreen.open) menuTrigger?.focus({ preventScroll: true });
 });
 document.querySelector('#menu-search').addEventListener('click', () => {
-  closeMenu(() => document.querySelector('button[aria-label="Открыть поиск"]').click());
+  if (menuClosing) return;
+  menuSheet.close();
+  menuSheet.classList.remove('is-open');
+  document.body.classList.remove('menu-open');
+  document.querySelector('button[aria-label="Открыть поиск"]').click();
 });
 document.querySelectorAll('[data-menu-target]').forEach(button => {
   button.addEventListener('click', () => {
