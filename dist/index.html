@@ -8,9 +8,9 @@
   <meta name="color-scheme" content="light">
   <style>html,body{background-color:#cbcced}</style>
   <title>Детская страница</title>
-  <link rel="stylesheet" href="styles.css?v=20261122-9">
+  <link rel="stylesheet" href="styles.css?v=20261122-10">
   <script src="https://unpkg.com/@phosphor-icons/web" defer></script>
-  <script src="script.js?v=20261122-7" defer></script>
+  <script src="script.js?v=20261122-8" defer></script>
 </head>
 <body>
   <main class="page">
@@ -90,7 +90,11 @@
       <h2 id="menu-title">Меню</h2>
     </header>
     <div class="menu-body">
-      <button class="menu-search" id="menu-search" type="button"><i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>Поиск</button>
+      <div class="menu-search-slot" id="menu-search" tabindex="-1">
+        <form class="search-form" role="search">
+          <label class="search-field"><i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i><input id="search-input" type="search" placeholder="Поиск" aria-label="Поиск по сайту" autocomplete="off" readonly></label>
+        </form>
+      </div>
       <nav class="menu-shortcuts" aria-label="Дополнительные разделы">
         <button type="button" disabled><i class="ph-fill ph-gear" aria-hidden="true"></i>Настройки</button>
         <button type="button" data-menu-target=".latest"><i class="ph-fill ph-clock" aria-hidden="true"></i>Последнее</button>
@@ -121,9 +125,7 @@
       <button class="icon-button search-back" id="search-back" type="button" aria-label="Вернуться на главную"><i class="ph-bold ph-arrow-left"></i></button>
       <h2 id="search-title">Поиск</h2>
     </header>
-    <form class="search-form" role="search">
-      <label class="search-field"><i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i><input id="search-input" type="search" placeholder="Поиск" aria-label="Поиск по сайту" autocomplete="off"></label>
-    </form>
+    <div class="search-slot" id="search-slot"></div>
     <div class="search-empty" id="search-empty">
       <img class="search-flower" src="assets/flower_find.png" alt="" aria-hidden="true">
       <h2>Найди то, что тебе<br>понравится</h2>

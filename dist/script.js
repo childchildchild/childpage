@@ -14,6 +14,9 @@ updateFloatingToolbar();
 
 const searchScreen = document.querySelector('#search-screen');
 const searchInput = document.querySelector('#search-input');
+const sharedSearchForm = document.querySelector('.search-form');
+const menuSearchSlot = document.querySelector('#menu-search');
+const searchSlot = document.querySelector('#search-slot');
 const searchResults = document.querySelector('#search-results');
 const searchEmpty = document.querySelector('#search-empty');
 let searchTrigger;
@@ -57,6 +60,14 @@ const searchableItems = [...document.querySelectorAll('.content-tile, .age-card,
   text: normalizeSearch(element.textContent),
 }));
 
+function restoreSharedSearch() {
+  searchAnimations.forEach(animation => animation.cancel());
+  searchAnimations = [];
+  searchInput.blur();
+  searchInput.readOnly = true;
+  menuSearchSlot.append(sharedSearchForm);
+}
+
 function closeSearch() {
   if (searchFromMenu && menuSheet.open) {
     menuSheet.close();
@@ -65,6 +76,7 @@ function closeSearch() {
     searchTrigger = menuTrigger;
   }
   searchFromMenu = false;
+  restoreSharedSearch();
   searchScreen.close();
 }
 
@@ -76,6 +88,8 @@ function openSearch(trigger, fromMenu = false) {
   } : null;
   searchTrigger = trigger;
   searchFromMenu = fromMenu;
+  searchSlot.append(sharedSearchForm);
+  searchInput.readOnly = false;
   searchScreen.classList.toggle('from-menu', fromMenu);
   document.body.classList.add('search-open');
   document.documentElement.classList.add('search-open');
@@ -93,6 +107,7 @@ function backFromSearch() {
   if (searchFromMenu) {
     const finish = () => {
       searchFromMenu = false;
+      restoreSharedSearch();
       searchScreen.close();
     };
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !searchAnimations.length) {
@@ -154,8 +169,7 @@ searchScreen.addEventListener('cancel', event => {
   backFromSearch();
 });
 searchScreen.addEventListener('close', () => {
-  searchAnimations.forEach(animation => animation.cancel());
-  searchAnimations = [];
+  restoreSharedSearch();
   searchClosing = false;
   searchScreen.classList.remove('from-menu', 'returning-to-menu');
   document.body.classList.remove('search-open');
@@ -164,8 +178,12 @@ searchScreen.addEventListener('close', () => {
   searchTrigger?.focus({ preventScroll: true });
 });
 searchInput.addEventListener('input', renderSearch);
-document.querySelector('.search-form').addEventListener('submit', event => {
+sharedSearchForm.addEventListener('submit', event => {
   event.preventDefault();
+  if (!searchScreen.open) {
+    openSearch(menuSearchSlot, true);
+    return;
+  }
   renderSearch();
   searchInput.blur();
 });
@@ -207,9 +225,9 @@ menuSheet.addEventListener('close', () => {
   menuSheet.classList.remove('is-open');
   if (!searchScreen.open) menuTrigger?.focus({ preventScroll: true });
 });
-document.querySelector('#menu-search').addEventListener('click', () => {
-  if (menuClosing) return;
-  openSearch(document.querySelector('#menu-search'), true);
+menuSearchSlot.addEventListener('click', () => {
+  if (menuClosing || searchScreen.open) return;
+  openSearch(menuSearchSlot, true);
 });
 document.querySelectorAll('[data-menu-target]').forEach(button => {
   button.addEventListener('click', () => {
