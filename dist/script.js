@@ -20,14 +20,17 @@ let searchTrigger;
 let searchFromMenu = false;
 let highlightedResult;
 let searchAnimations = [];
+let searchClosing = false;
 
-function animateMenuToSearch(source) {
+function animateMenuToSearch(source, reverse = false) {
   const header = searchScreen.querySelector('.search-header');
   const field = searchScreen.querySelector('.search-form');
   const targetField = field.getBoundingClientRect();
   const targetHeader = header.getBoundingClientRect();
   const offset = source.panel.top - searchScreen.getBoundingClientRect().top;
-  const motion = { duration: 340, easing: 'cubic-bezier(.22,.61,.36,1)' };
+  const direction = reverse ? 'reverse' : 'normal';
+  const motion = { duration: 340, easing: 'cubic-bezier(.22,.61,.36,1)', direction, fill: reverse ? 'both' : 'none' };
+  const contentMotion = { duration: 220, delay: reverse ? 0 : 120, direction, fill: 'both' };
   searchAnimations = [
     searchScreen.animate([
       { transform: `translateY(${offset}px)`, borderRadius: '44px 44px 0 0' },
@@ -41,9 +44,10 @@ function animateMenuToSearch(source) {
       { transform: `translateY(${source.header.top + source.header.height / 2 - targetHeader.top - targetHeader.height / 2 - offset}px)` },
       { transform: 'translateY(0)' },
     ], motion),
-    searchEmpty.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, delay: 120, fill: 'backwards' }),
-    searchResults.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, delay: 120, fill: 'backwards' }),
+    searchEmpty.animate([{ opacity: 0 }, { opacity: 1 }], contentMotion),
+    searchResults.animate([{ opacity: 0 }, { opacity: 1 }], contentMotion),
   ];
+  return searchAnimations[0];
 }
 
 const normalizeSearch = value => value.toLocaleLowerCase('ru').replaceAll('ё', 'е').trim();
@@ -86,9 +90,25 @@ function openSearch(trigger, fromMenu = false) {
 }
 
 function backFromSearch() {
+  if (searchClosing) return;
   if (searchFromMenu) {
-    searchFromMenu = false;
-    searchScreen.close();
+    const finish = () => {
+      searchFromMenu = false;
+      searchScreen.close();
+    };
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      finish();
+      return;
+    }
+    searchClosing = true;
+    searchAnimations.forEach(animation => animation.cancel());
+    searchInput.blur();
+    searchScreen.classList.add('returning-to-menu');
+    animateMenuToSearch({
+      panel: menuSheet.getBoundingClientRect(),
+      field: document.querySelector('#menu-search').getBoundingClientRect(),
+      header: menuSheet.querySelector('.menu-header').getBoundingClientRect(),
+    }, true).finished.then(finish, () => {});
   } else {
     closeSearch();
   }
@@ -142,7 +162,8 @@ searchScreen.addEventListener('cancel', event => {
 searchScreen.addEventListener('close', () => {
   searchAnimations.forEach(animation => animation.cancel());
   searchAnimations = [];
-  searchScreen.classList.remove('from-menu');
+  searchClosing = false;
+  searchScreen.classList.remove('from-menu', 'returning-to-menu');
   document.body.classList.remove('search-open');
   document.documentElement.classList.remove('search-open');
   document.querySelector('meta[name="theme-color"]').content = '#cbcced';
