@@ -17,6 +17,7 @@ const searchInput = document.querySelector('#search-input');
 const searchResults = document.querySelector('#search-results');
 const searchEmpty = document.querySelector('#search-empty');
 let searchTrigger;
+let searchFromMenu = false;
 let highlightedResult;
 
 const normalizeSearch = value => value.toLocaleLowerCase('ru').replaceAll('ё', 'е').trim();
@@ -28,7 +29,32 @@ const searchableItems = [...document.querySelectorAll('.content-tile, .age-card,
 }));
 
 function closeSearch() {
+  if (searchFromMenu && menuSheet.open) {
+    menuSheet.close();
+    menuSheet.classList.remove('is-open');
+    document.body.classList.remove('menu-open');
+    searchTrigger = menuTrigger;
+  }
+  searchFromMenu = false;
   searchScreen.close();
+}
+
+function openSearch(trigger, fromMenu = false) {
+  searchTrigger = trigger;
+  searchFromMenu = fromMenu;
+  document.body.classList.add('search-open');
+  searchScreen.showModal();
+  renderSearch();
+  searchInput.focus();
+}
+
+function backFromSearch() {
+  if (searchFromMenu) {
+    searchFromMenu = false;
+    searchScreen.close();
+  } else {
+    closeSearch();
+  }
 }
 
 function renderSearch() {
@@ -69,15 +95,13 @@ function renderSearch() {
 }
 
 document.querySelectorAll('button[aria-label="Открыть поиск"]').forEach(button => {
-  button.addEventListener('click', () => {
-    searchTrigger = button;
-    document.body.classList.add('search-open');
-    searchScreen.showModal();
-    renderSearch();
-    searchInput.focus();
-  });
+  button.addEventListener('click', () => openSearch(button));
 });
-document.querySelector('#search-back').addEventListener('click', closeSearch);
+document.querySelector('#search-back').addEventListener('click', backFromSearch);
+searchScreen.addEventListener('cancel', event => {
+  event.preventDefault();
+  backFromSearch();
+});
 searchScreen.addEventListener('close', () => {
   document.body.classList.remove('search-open');
   searchTrigger?.focus({ preventScroll: true });
@@ -128,10 +152,7 @@ menuSheet.addEventListener('close', () => {
 });
 document.querySelector('#menu-search').addEventListener('click', () => {
   if (menuClosing) return;
-  menuSheet.close();
-  menuSheet.classList.remove('is-open');
-  document.body.classList.remove('menu-open');
-  document.querySelector('button[aria-label="Открыть поиск"]').click();
+  openSearch(document.querySelector('#menu-search'), true);
 });
 document.querySelectorAll('[data-menu-target]').forEach(button => {
   button.addEventListener('click', () => {
