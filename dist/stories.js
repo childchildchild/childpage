@@ -4,6 +4,7 @@ const stories = publishedStories.map(item => ({
   title: item.title,
   text: item.description,
   image: item.image,
+  video: item.mediaUrl,
   link: item.link,
 }));
 
@@ -12,6 +13,8 @@ const storyKicker = storyScreen.querySelector('.story-kicker');
 const storyTitle = storyScreen.querySelector('#story-title');
 const storyText = storyScreen.querySelector('.story-text');
 const storyArt = storyScreen.querySelector('.story-art');
+const storyVideo = storyScreen.querySelector('.story-video');
+const storySound = storyScreen.querySelector('.story-sound');
 const storyLink = storyScreen.querySelector('.story-link');
 document.querySelectorAll('.preview-bubbles').forEach(group => {
   stories.slice(0, group.classList.contains('small') ? 3 : 5).forEach((story, index) => {
@@ -39,6 +42,7 @@ let storyTimeout = 0;
 let storyLastTime = 0;
 let storyTrigger;
 let storyTouchStart;
+let storyResumeVideo = false;
 let storyClosing = false;
 let storyMotion;
 let storyAnimations = 0;
@@ -101,6 +105,7 @@ async function closeStory() {
   if (!storyScreen.open || storyClosing) return;
   storyClosing = true;
   cancelAnimationFrame(storyFrame);
+  storyVideo.pause();
   clearTimeout(storyTimeout);
   storyMotion?.cancel();
   storyScreen.classList.remove('story-entering');
@@ -110,17 +115,23 @@ async function closeStory() {
 }
 
 function paintStoryProgress() {
+  const duration = storyVideoCurrent() ? (Number.isFinite(storyVideo.duration) ? storyVideo.duration * 1000 : storyDuration) : storyDuration;
   storyBars.forEach((bar, index) => {
     bar.classList.toggle('finished', index < storyIndex);
-    bar.firstElementChild.style.width = index === storyIndex ? `${Math.min(100, storyElapsed / storyDuration * 100)}%` : '';
+    bar.firstElementChild.style.width = index === storyIndex ? `${Math.min(100, storyElapsed / duration * 100)}%` : '';
   });
+}
+
+function storyVideoCurrent() {
+  return Boolean(stories[storyIndex]?.video && storyScreen.classList.contains('has-video'));
 }
 
 function tickStory(now) {
   if (!storyScreen.open) return;
-  if (storyLastTime && !document.hidden) storyElapsed += now - storyLastTime;
+  if (storyVideoCurrent()) storyElapsed = storyVideo.currentTime * 1000;
+  else if (storyLastTime && !document.hidden) storyElapsed += now - storyLastTime;
   storyLastTime = now;
-  if (storyElapsed >= storyDuration) {
+  if (!storyVideoCurrent() && storyElapsed >= storyDuration) {
     goToStory(storyIndex + 1);
     return;
   }
@@ -136,18 +147,32 @@ function goToStory(index) {
   storyIndex = Math.max(0, index);
   storyElapsed = 0;
   storyLastTime = 0;
+  storyResumeVideo = false;
+  storyVideo.pause();
+  storyVideo.removeAttribute('src');
+  storyVideo.load();
   const story = stories[storyIndex];
   storyKicker.textContent = story.kicker;
   storyTitle.textContent = story.title;
   storyText.textContent = story.text;
   storyArt.style.backgroundImage = story.imageLoaded ? `url("${story.image}")` : '';
+  storyScreen.classList.toggle('has-video', Boolean(story.video));
+  storySound.hidden = !story.video;
+  storyVideo.controls = false;
+  storyVideo.muted = true;
+  storySound.setAttribute('aria-label', 'Включить звук');
+  storySound.firstElementChild.className = 'ph-bold ph-speaker-slash';
+  if (story.video) {
+    storyVideo.poster = story.image || '';
+    storyVideo.src = story.video;
+    storyVideo.play().catch(() => { storyVideo.controls = true; });
+  }
   storyLink.hidden = !story.link;
   if (story.link) storyLink.href = story.link;
   paintStoryProgress();
   cancelAnimationFrame(storyFrame);
   clearTimeout(storyTimeout);
   storyFrame = requestAnimationFrame(tickStory);
-  storyTimeout = setTimeout(() => goToStory(storyIndex + 1), storyDuration);
 }
 
 async function openStory(index, trigger) {
@@ -184,13 +209,26 @@ stories.forEach((story, index) => {
 });
 
 storyScreen.querySelector('.story-close').addEventListener('click', closeStory);
+storySound.addEventListener('click', () => {
+  storyVideo.muted = !storyVideo.muted;
+  storySound.setAttribute('aria-label', storyVideo.muted ? 'Включить звук' : 'Выключить звук');
+  storySound.firstElementChild.className = `ph-bold ph-speaker-${storyVideo.muted ? 'slash' : 'high'}`;
+});
+storyVideo.addEventListener('ended', () => goToStory(storyIndex + 1));
+storyVideo.addEventListener('error', () => {
+  if (!storyScreen.open || !storyVideoCurrent()) return;
+  storyScreen.classList.remove('has-video');
+  storySound.hidden = true;
+  storyElapsed = 0;
+  storyLastTime = 0;
+});
 storyScreen.addEventListener('cancel', event => { event.preventDefault(); closeStory(); });
 storyScreen.addEventListener('keydown', event => {
   if (event.key === 'ArrowRight') { event.preventDefault(); goToStory(storyIndex + 1); }
   if (event.key === 'ArrowLeft') { event.preventDefault(); goToStory(storyIndex - 1); }
 });
 storyScreen.addEventListener('click', event => {
-  if (event.target.closest('button, a')) return;
+  if (event.target.closest('button, a') || (event.target === storyVideo && storyVideo.controls)) return;
   const rect = storyScreen.getBoundingClientRect();
   if (event.clientX < rect.left + rect.width / 3) goToStory(storyIndex - 1);
   else goToStory(storyIndex + 1);
@@ -210,14 +248,19 @@ storyScreen.addEventListener('touchend', event => {
 document.addEventListener('visibilitychange', () => {
   storyLastTime = 0;
   clearTimeout(storyTimeout);
-  if (!document.hidden && storyScreen.open) {
-    storyTimeout = setTimeout(() => goToStory(storyIndex + 1), Math.max(0, storyDuration - storyElapsed));
+  if (document.hidden && storyVideoCurrent()) {
+    storyResumeVideo = !storyVideo.paused;
+    storyVideo.pause();
+  } else if (!document.hidden && storyVideoCurrent() && storyResumeVideo) {
+    storyResumeVideo = false;
+    storyVideo.play().catch(() => { storyVideo.controls = true; });
   }
 });
 storyScreen.addEventListener('close', () => {
   storyScreen.classList.remove('story-entering', 'story-leaving', 'story-animating');
   storyClosing = false;
   cancelAnimationFrame(storyFrame);
+  storyVideo.pause();
   clearTimeout(storyTimeout);
   storyLastTime = 0;
   document.body.classList.remove('story-open');

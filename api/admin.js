@@ -30,6 +30,13 @@ export function validImageBytes(mime, bytes) {
   return false;
 }
 
+export function validStoryVideoBytes(mime, bytes) {
+  if (mime !== 'video/mp4' || bytes.length < 12 || bytes.length > maxImageBytes) return false;
+  if (bytes.toString('ascii', 4, 8) !== 'ftyp') return false;
+  const brand = bytes.toString('ascii', 8, 12);
+  return ['isom', 'iso2', 'mp41', 'mp42', 'avc1', 'M4V ', 'MSNV'].includes(brand);
+}
+
 function publicIPv4(address) {
   const parts = address.split('.').map(Number);
   if (parts.length !== 4 || parts.some(part => !Number.isInteger(part) || part < 0 || part > 255)) return false;
@@ -166,7 +173,8 @@ async function validate(input) {
     if (!normalized.title || !normalized.description) throw new Error(`Заполните название и описание: ${item.id}`);
     if (item.status === 'published' && !Number.isFinite(Date.parse(item.publishedAt))) throw new Error(`Укажите дату публикации: ${item.id}`);
     if (item.status === 'published' && item.type === 'article' && !(item.bodyBlocks !== undefined ? hasRichText(normalized.bodyBlocks) : normalized.body)) throw new Error(`Добавьте текст статьи: ${item.id}`);
-    if (item.status === 'published' && item.type === 'story' && !normalized.image) throw new Error(`Добавьте фото сторис: ${item.id}`);
+    if (item.status === 'published' && item.type === 'story' && !normalized.image) throw new Error(`Добавьте обложку сторис: ${item.id}`);
+    if (item.type === 'story' && normalized.mediaUrl && !/^https:\/\//.test(normalized.mediaUrl) && !/^assets\/[a-zA-Z0-9/_\-.]+\.mp4$/.test(normalized.mediaUrl)) throw new Error(`Укажите ссылку на MP4 для сторис: ${item.id}`);
     if (item.status === 'published' && ['video', 'audio'].includes(item.type) && !/^https:\/\//.test(normalized.mediaUrl) && !/^assets\/[a-zA-Z0-9/_\-.]+$/.test(normalized.mediaUrl)) throw new Error(`Добавьте ссылку на медиафайл: ${item.id}`);
     if (item.status === 'published' && item.type === 'game' && !/^https:\/\//.test(normalized.gameUrl) && !/^assets\/[a-zA-Z0-9/_\-.]+$/.test(normalized.gameUrl)) throw new Error(`Добавьте ссылку на игру: ${item.id}`);
     return normalized;
@@ -231,14 +239,14 @@ export default async function handler(req, res) {
     }
     if (action === 'upload' && req.method === 'POST') {
       const type = String(req.body?.mime || '');
-      const formats = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/avif': 'avif', 'image/gif': 'gif' };
+      const formats = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/avif': 'avif', 'image/gif': 'gif', 'video/mp4': 'mp4' };
       if (!formats[type]) return response(res, 400, { error: 'Загрузите JPG, PNG, WebP или AVIF.' });
       const data = String(req.body?.base64 || '');
       if (data.length > 3_700_000 || !/^[a-zA-Z0-9+/=]+$/.test(data)) return response(res, 400, { error: 'Изображение должно быть меньше 2,5 МБ.' });
       const bytes = Buffer.from(data, 'base64');
-      if (bytes.toString('base64') !== data || !validImageBytes(type, bytes)) return response(res, 400, { error: 'Проверьте формат изображения и размер файла (до 2,5 МБ).' });
+      if (bytes.toString('base64') !== data || !(type === 'video/mp4' ? validStoryVideoBytes(type, bytes) : validImageBytes(type, bytes))) return response(res, 400, { error: 'Проверьте формат файла и размер (до 2,5 МБ).' });
       const path = `dist/assets/uploads/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${formats[type]}`;
-      await github(path, { method: 'PUT', body: JSON.stringify({ message: `Content: upload image by ${session.user}`, content: data, branch: 'main' }) });
+      await github(path, { method: 'PUT', body: JSON.stringify({ message: `Content: upload media by ${session.user}`, content: data, branch: 'main' }) });
       return response(res, 200, { path: path.replace(/^dist\//, '') });
     }
     if (action === 'image-source' && req.method === 'POST') {

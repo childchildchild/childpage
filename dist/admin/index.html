@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex,nofollow">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; img-src 'self' data: blob: https:; media-src 'self' https:; style-src 'self'; script-src 'self'; base-uri 'none'; form-action 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; style-src 'self'; script-src 'self'; base-uri 'none'; form-action 'self'">
   <title>Управление сайтом — Детская страница</title>
-  <link rel="stylesheet" href="admin.css?v=20261122-2">
+  <link rel="stylesheet" href="admin.css?v=20261122-3">
   <link rel="stylesheet" href="crop.css?v=20261122-1">
-  <script src="admin.js?v=20261122-2" type="module"></script>
+  <script src="admin.js?v=20261122-3" type="module"></script>
 </head>
 <body>
   <div id="notice" role="status" aria-live="polite"></div>
@@ -90,6 +90,7 @@
               <textarea name="body" hidden></textarea>
               <small>Выделите фрагмент и выберите формат. Фото, GIF и карусель можно вставить из файла или по HTTPS-ссылке.</small>
             </div>
+            <div class="story-video-field" data-for="story"><span class="field-label">Видео в сторис (необязательно)</span><div class="image-actions"><label class="upload-label">Загрузить MP4<input id="story-video-upload" type="file" accept="video/mp4,.mp4"></label><span id="story-video-status">Фото сторис</span></div><label>Или прямая ссылка на MP4<input name="storyVideoUrl" type="text" placeholder="https://.../video.mp4"></label><small>Для кружка нужна обложка выше. Файл до 2,5 МБ можно загрузить здесь; для большого видео вставьте прямую HTTPS-ссылку. Видео начнётся без звука.</small><video id="story-video-preview" controls playsinline muted preload="metadata" hidden></video></div>
             <label data-for="story">Куда ведёт сторис<select name="linkedId" id="linked-item"><option value="">Без кнопки перехода</option></select></label>
             <label data-for="video audio">Прямая ссылка на файл<input name="mediaUrl" type="url" placeholder="https://.../file.mp4 или .../file.mp3"><small>Видео и аудио проигрываются прямо на сайте. Для больших файлов используйте ссылку на размещённый файл.</small></label>
             <label data-for="game">Ссылка на игру<input name="gameUrl" type="url" placeholder="https://.../game"><small>Игра откроется отдельной страницей.</small></label>

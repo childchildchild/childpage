@@ -4,13 +4,15 @@
 .story-screen.story-entering,.story-screen.story-leaving{background:transparent}
 .story-screen.story-entering::backdrop{animation:story-backdrop-in 420ms both}
 .story-screen.story-leaving::backdrop{animation:story-backdrop-out 420ms both}
-.story-screen.story-animating>.story-art,.story-screen.story-animating>.story-shade,.story-screen.story-animating>.story-header,.story-screen.story-animating>.story-content{visibility:hidden}
+.story-screen.story-animating>.story-art,.story-screen.story-animating>.story-video,.story-screen.story-animating>.story-shade,.story-screen.story-animating>.story-header,.story-screen.story-animating>.story-content{visibility:hidden}
 .story-transition-image{position:fixed;z-index:5;background:#d4d4d4 center/cover no-repeat;pointer-events:none;overflow:hidden}
 @keyframes story-backdrop-in{from{background:transparent}to{background:#080808}}
 @keyframes story-backdrop-out{from{background:#080808}to{background:transparent}}
 @media(prefers-reduced-motion:reduce){.story-screen.story-entering::backdrop,.story-screen.story-leaving::backdrop{animation:none}}
 .story-art,.story-shade{position:absolute;inset:0;pointer-events:none}
 .story-art{background:#080808 center/cover no-repeat}
+.story-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none}
+.story-screen.has-video .story-video{display:block}
 .story-shade{background:linear-gradient(to bottom,rgba(0,0,0,.5) 0%,transparent 25%,transparent 43%,rgba(0,0,0,.48) 67%,rgba(0,0,0,.82) 100%)}
 .story-header,.story-content{position:relative;z-index:1;width:100%;max-width:430px;margin-inline:auto}
 .story-header{display:flex;align-items:center;gap:14px;min-height:42px}
@@ -20,6 +22,9 @@
 .story-progress>span.finished b{width:100%}
 .story-close{display:grid;place-items:center;flex:none;width:42px;height:42px;padding:0;border:0;border-radius:50%;background:rgba(0,0,0,.32);color:white;cursor:pointer}
 .story-close i{font-size:23px}
+.story-sound{display:grid;place-items:center;flex:none;width:42px;height:42px;padding:0;border:0;border-radius:50%;background:rgba(0,0,0,.32);color:white;cursor:pointer}
+.story-sound[hidden]{display:none}
+.story-sound i{font-size:22px}
 .story-content{min-height:0;display:flex;flex-direction:column;justify-content:flex-end;padding:0 4px max(34px,calc(env(safe-area-inset-bottom,0px) + 12px))}
 .story-copy{padding:0 0 4px}
 .story-kicker{color:#dedbff;font-size:15px;font-weight:700;letter-spacing:.01em}

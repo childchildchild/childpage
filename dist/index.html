@@ -9,7 +9,7 @@
   <style>html,body{background:#cbcced linear-gradient(to bottom,#cbcced 0,#cbcced 45svh,#fffdfb 75svh,#fffdfb 100%)}</style>
   <title>Детская страница</title>
   <link rel="stylesheet" href="styles.css?v=20261122-21">
-  <link rel="stylesheet" href="stories.css?v=20261122-6">
+  <link rel="stylesheet" href="stories.css?v=20261122-7">
   <link rel="stylesheet" href="preferences.css?v=20261122-1">
   <link rel="stylesheet" href="menu-pages.css?v=20261122-1">
   <link rel="stylesheet" href="assets/phosphor/bold/style.css">
@@ -18,7 +18,7 @@
   <script src="content-data.js" defer></script>
   <script src="latest.js?v=20261122-3" defer></script>
   <script src="script.js?v=20261122-12" defer></script>
-  <script src="stories.js?v=20261122-6" defer></script>
+  <script src="stories.js?v=20261122-7" defer></script>
   <script src="menu-pages.js?v=20261122-1" defer></script>
 </head>
 <body>
@@ -205,9 +205,11 @@
   </dialog>
   <dialog class="story-screen" id="story-screen" aria-labelledby="story-title">
     <div class="story-art" aria-hidden="true"></div>
+    <video class="story-video" playsinline muted preload="metadata" aria-label="Видео сторис"></video>
     <div class="story-shade" aria-hidden="true"></div>
     <div class="story-header">
       <div class="story-progress" aria-hidden="true"></div>
+      <button class="story-sound" type="button" aria-label="Включить звук" hidden><i class="ph-bold ph-speaker-slash" aria-hidden="true"></i></button>
       <button class="story-close" type="button" aria-label="Закрыть сторис"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
     </div>
     <div class="story-content">

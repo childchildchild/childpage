@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import handler, { validImageBytes } from './admin.js';
+import handler, { validImageBytes, validStoryVideoBytes } from './admin.js';
 
 test('accepts image signatures only for their declared formats', () => {
   const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0x00]);
@@ -14,6 +14,13 @@ test('accepts image signatures only for their declared formats', () => {
   assert.equal(validImageBytes('image/png', jpeg), false);
   assert.equal(validImageBytes('image/jpeg', Buffer.from('<html>')), false);
   assert.equal(validImageBytes('image/jpeg', Buffer.alloc(2_500_001)), false);
+});
+
+test('accepts small MP4 uploads with an MP4 file signature', () => {
+  assert.equal(validStoryVideoBytes('video/mp4', Buffer.from('0000ftypisom0000', 'ascii')), true);
+  assert.equal(validStoryVideoBytes('video/mp4', Buffer.from('<html>not a video</html>')), false);
+  assert.equal(validStoryVideoBytes('video/webm', Buffer.from('0000ftypisom0000', 'ascii')), false);
+  assert.equal(validStoryVideoBytes('video/mp4', Buffer.alloc(2_500_001)), false);
 });
 
 test('rejects cross-site and malformed Origin headers before login', async () => {

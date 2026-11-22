@@ -18,6 +18,9 @@ const localImageUrls = new Map();
 let pendingCoverUrl = '';
 let coverUploadId = 0;
 let coverUploadPromise = null;
+let storyVideoUploadPromise = null;
+let storyVideoUploadId = 0;
+const localVideoUrls = new Map();
 const richUploads = new Set();
 
 function notice(message, error = false) {
@@ -338,6 +341,19 @@ function updateTypeFields() {
   $('#editor-title').textContent = `${currentId ? 'Редактирование' : 'Новый материал'}: ${labels[type].toLocaleLowerCase('ru')}`;
   updatePreview();
 }
+function updateStoryVideoPreview() {
+  const field = contentForm.elements.storyVideoUrl;
+  const source = field.value.trim();
+  const preview = $('#story-video-preview');
+  const url = localVideoUrls.get(source) || (source.startsWith('assets/') ? `../${source}` : source.startsWith('https://') ? source : '');
+  if (preview.getAttribute('src') !== url) {
+    preview.pause();
+    if (url) preview.src = url;
+    else preview.removeAttribute('src');
+  }
+  preview.hidden = !url;
+  $('#story-video-status').textContent = url ? 'Видео выбрано' : 'Фото сторис';
+}
 function previewDocument(stylesheet) {
   const frame = $('#site-preview');
   const doc = frame.contentDocument;
@@ -482,6 +498,7 @@ function renderPreviewPage(doc, item) {
   body.append(home); article.append(body); page.append(header, article); doc.body.append(page);
 }
 function updatePreview() {
+  updateStoryVideoPreview();
   const item = readForm('draft');
   if (pendingCoverUrl) item.image = pendingCoverUrl;
   $('#crop-cover').disabled = !item.image;
@@ -498,6 +515,8 @@ function updatePreview() {
 }
 function openEditor(id = '', type = 'article') {
   coverUploadId++;
+  storyVideoUploadId++;
+  storyVideoUploadPromise = null;
   coverUploadPromise = null;
   if (pendingCoverUrl && ![...localImageUrls.values()].includes(pendingCoverUrl)) URL.revokeObjectURL(pendingCoverUrl);
   pendingCoverUrl = '';
@@ -508,6 +527,7 @@ function openEditor(id = '', type = 'article') {
   for (const key of ['type', 'category', 'title', 'description', 'image', 'imageAlt', 'label', 'body', 'mediaUrl', 'gameUrl', 'linkedId']) {
     if (item[key] !== undefined && contentForm.elements[key]) contentForm.elements[key].value = item[key];
   }
+  contentForm.elements.storyVideoUrl.value = item.type === 'story' ? item.mediaUrl || '' : '';
   setRichEditor(item);
   contentForm.querySelectorAll('input[name="ages"]').forEach(input => { input.checked = item.ages?.includes(input.value) || false; });
   const linked = $('#linked-item');
@@ -544,7 +564,7 @@ function readForm(status) {
     ages: [...contentForm.querySelectorAll('input[name="ages"]:checked')].map(input => input.value),
     image: get('image'), imageAlt: get('imageAlt'), label: get('label'), body: get('body'),
     bodyBlocks: contentForm.elements.type.value === 'article' ? readRichBlocks() : old.bodyBlocks,
-    linkedId: get('linkedId'), mediaUrl: get('mediaUrl'), gameUrl: get('gameUrl'),
+    linkedId: get('linkedId'), mediaUrl: get('type') === 'story' ? get('storyVideoUrl') : get('mediaUrl'), gameUrl: get('gameUrl'),
     publishedAt: status === 'published' ? old.publishedAt || now : old.publishedAt || '',
     updatedAt: now,
   };
@@ -557,11 +577,16 @@ function validateItem(item) {
     return runs.some(run => run.text.trim());
   })) return 'Добавьте текст статьи.';
   if (item.type === 'story' && !item.image) return 'Добавьте фото сторис.';
+  if (item.type === 'story' && item.mediaUrl && !(/^https:\/\//.test(item.mediaUrl) || /^assets\/[a-zA-Z0-9/_\-.]+\.mp4$/.test(item.mediaUrl))) return 'Укажите прямую HTTPS-ссылку на MP4.';
   if (['video', 'audio'].includes(item.type) && !item.mediaUrl) return 'Добавьте прямую ссылку на медиафайл.';
   if (item.type === 'game' && !item.gameUrl) return 'Добавьте ссылку на игру.';
   return '';
 }
 async function save(status) {
+  if (storyVideoUploadPromise) {
+    notice('Дожидаюсь загрузки видео…');
+    try { await storyVideoUploadPromise; } catch { return; }
+  }
   if (coverUploadPromise) {
     notice('Дожидаюсь загрузки фото…');
     try { await coverUploadPromise; } catch { return; }
@@ -640,6 +665,39 @@ async function uploadImageFile(file, previewUrl = '') {
   } catch (error) {
     URL.revokeObjectURL(localUrl);
     throw error;
+  }
+}
+async function uploadStoryVideo(file) {
+  if (!file) return;
+  if (file.type !== 'video/mp4' || file.size > 2_500_000 || !file.size) { notice('Выберите MP4 до 2,5 МБ.', true); return; }
+  const uploadId = ++storyVideoUploadId;
+  const localUrl = URL.createObjectURL(file);
+  const field = contentForm.elements.storyVideoUrl;
+  field.value = localUrl;
+  localVideoUrls.set(localUrl, localUrl);
+  updateStoryVideoPreview();
+  notice('Загружаю видео…');
+  const transfer = (async () => {
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result).split(',')[1]);
+      reader.onerror = () => reject(new Error('Не удалось прочитать видео.'));
+      reader.readAsDataURL(file);
+    });
+    return request('upload', { mime: file.type, base64 });
+  })();
+  storyVideoUploadPromise = transfer;
+  try {
+    const result = await transfer;
+    if (uploadId !== storyVideoUploadId) return;
+    localVideoUrls.set(result.path, localUrl);
+    field.value = result.path;
+    updateStoryVideoPreview();
+    notice('Видео загружено. Сохраните сторис, чтобы оно появилось на сайте.');
+  } catch (error) {
+    if (uploadId === storyVideoUploadId) { field.value = ''; updateStoryVideoPreview(); notice(error.message, true); }
+  } finally {
+    if (storyVideoUploadPromise === transfer) storyVideoUploadPromise = null;
   }
 }
 async function uploadImage(file) {
@@ -797,6 +855,8 @@ $('#publish').addEventListener('click', () => save('published'));
 $('#unpublish').addEventListener('click', () => save('draft'));
 $('#delete-item').addEventListener('click', removeItem);
 $('#image-upload').addEventListener('change', event => chooseCover(event.target.files[0]));
+$('#story-video-upload').addEventListener('change', event => { uploadStoryVideo(event.target.files[0]); event.target.value = ''; });
+contentForm.elements.storyVideoUrl.addEventListener('input', () => { storyVideoUploadId++; });
 $('#image-upload').addEventListener('change', event => { event.target.value = ''; });
 $('#crop-cover').addEventListener('click', cropCurrentCover);
 $('#image-preview').addEventListener('dragover', event => {

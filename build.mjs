@@ -37,6 +37,7 @@ const publicItems = source.items.filter(item => item.status === 'published' || i
   category: item.category || 'more',
   ages: item.ages || [],
   image: safePath(item.image),
+  mediaUrl: item.type === 'story' ? safePath(item.mediaUrl) : '',
   label: item.label || '',
   linkedId: item.linkedId || '',
   publishedAt: item.publishedAt || '',
