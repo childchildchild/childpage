@@ -1,5 +1,4 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
-import { hasRichText, normalizeRichBlocks } from '../content/rich-content.mjs';
 
 const repo = 'childchildchild/childpage';
 const contentPath = 'content/content.json';
@@ -64,7 +63,8 @@ async function github(path, options = {}) {
 function text(value, max = 20000) {
   return typeof value === 'string' ? value.trim().slice(0, max) : '';
 }
-function validate(input) {
+async function validate(input) {
+  const { hasRichText, normalizeRichBlocks } = await import('../content/rich-content.mjs');
   if (!input || input.version !== 1 || !Array.isArray(input.items) || input.items.length > 500) throw new Error('Неверный формат материалов.');
   const seen = new Set();
   const items = input.items.map(item => {
@@ -142,14 +142,14 @@ export default async function handler(req, res) {
       const content = JSON.parse(Buffer.from(file.content.replace(/\s/g, ''), 'base64').toString('utf8'));
       const items = content.items.filter(item => item.status !== 'trashed' || Date.parse(item.deletedAt) > Date.now() - trashLifetime);
       if (items.length !== content.items.length) {
-        const cleaned = validate({ version: content.version, items });
+        const cleaned = await validate({ version: content.version, items });
         const updated = await github(contentPath, { method: 'PUT', body: JSON.stringify({ message: `Content: expire trash by ${session.user}`, content: Buffer.from(JSON.stringify(cleaned, null, 2) + '\n').toString('base64'), sha: file.sha, branch: 'main' }) });
         return response(res, 200, { content: cleaned, sha: updated.content.sha });
       }
       return response(res, 200, { content, sha: file.sha });
     }
     if (action === 'save' && req.method === 'POST') {
-      const content = validate(req.body?.content);
+      const content = await validate(req.body?.content);
       const sha = String(req.body?.sha || '');
       if (!/^[a-f0-9]{40}$/.test(sha)) return response(res, 400, { error: 'Обновите список материалов.' });
       const file = await github(contentPath, { method: 'PUT', body: JSON.stringify({ message: `Content: update by ${session.user}`, content: Buffer.from(JSON.stringify(content, null, 2) + '\n').toString('base64'), sha, branch: 'main' }) });
