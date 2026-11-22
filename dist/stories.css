@@ -12,7 +12,7 @@
 .story-progress>span.finished b{width:100%}
 .story-close{display:grid;place-items:center;flex:none;width:42px;height:42px;padding:0;border:0;border-radius:50%;background:rgba(0,0,0,.32);color:white;cursor:pointer}
 .story-close i{font-size:23px}
-.story-content{min-height:0;display:flex;flex-direction:column;justify-content:flex-end;padding:0 4px max(88px,calc(env(safe-area-inset-bottom,0px) + 60px))}
+.story-content{min-height:0;display:flex;flex-direction:column;justify-content:flex-end;padding:0 4px max(34px,calc(env(safe-area-inset-bottom,0px) + 12px))}
 .story-copy{padding:0 0 4px}
 .story-kicker{color:#ffd4b5;font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
 .story-copy h2{margin:8px 0 12px;font-size:clamp(32px,9cqw,46px);line-height:1.05}
