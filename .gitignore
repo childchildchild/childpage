@@ -17,3 +17,6 @@ dist/read/
 dist/handwashing.html
 dist/articles-data.js
 dist/content-data.js
+
+.vercel
+.env*
