@@ -8,10 +8,10 @@
   <style>html,body{background:#cbcced linear-gradient(to bottom,#cbcced 0,#cbcced 45svh,#fffdfb 75svh,#fffdfb 100%)}</style>
   <title>Детская страница</title>
   <link rel="stylesheet" href="styles.css?v=20261122-19">
-  <link rel="stylesheet" href="stories.css?v=20261122-1">
+  <link rel="stylesheet" href="stories.css?v=20261122-2">
   <script src="https://unpkg.com/@phosphor-icons/web" defer></script>
   <script src="script.js?v=20261122-9" defer></script>
-  <script src="stories.js?v=20261122-1" defer></script>
+  <script src="stories.js?v=20261122-2" defer></script>
 </head>
 <body>
   <main class="page">
@@ -141,14 +141,15 @@
     <div class="search-results" id="search-results" aria-live="polite"></div>
   </dialog>
   <dialog class="story-screen" id="story-screen" aria-labelledby="story-title">
+    <div class="story-art" aria-hidden="true"></div>
+    <div class="story-shade" aria-hidden="true"></div>
     <div class="story-header">
       <div class="story-progress" aria-hidden="true"><span><b></b></span><span><b></b></span><span><b></b></span></div>
       <button class="story-close" type="button" aria-label="Закрыть сторис"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
     </div>
     <div class="story-content">
-      <div class="story-art" aria-hidden="true"></div>
       <div class="story-copy"><span class="story-kicker"></span><h2 id="story-title"></h2><p class="story-text"></p></div>
-      <a class="story-link" href="#" target="_blank" rel="noopener noreferrer" hidden>Подробнее <i class="ph-bold ph-arrow-up-right" aria-hidden="true"></i></a>
+      <a class="story-link" href="#" hidden>Читать статью <i class="ph-bold ph-arrow-right" aria-hidden="true"></i></a>
     </div>
     <div class="story-controls">
       <button class="story-previous" type="button" aria-label="Предыдущая сторис"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i></button>

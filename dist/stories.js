@@ -3,7 +3,7 @@ const stories = [
     kicker: 'Полезный совет',
     title: 'Моем руки',
     text: 'Мой руки с мылом перед едой и после туалета. Маленьким детям может помочь взрослый.',
-    link: 'https://www.who.int/ru/tools/your-life-your-health/other-health-topics/health-and-the-environment/washing-hands',
+    link: 'handwashing.html',
     image: 'assets/story_hands.png',
   },
   {
