@@ -79,8 +79,9 @@ async function animateStory(opening) {
     left: `${rect.left}px`, top: `${rect.top}px`,
     width: `${rect.width}px`, height: `${rect.height}px`, borderRadius: '50%',
   };
+  const target = storyScreen.getBoundingClientRect();
   const large = {
-    left: '0px', top: '0px', width: `${innerWidth}px`, height: `${innerHeight}px`, borderRadius: '0px',
+    left: `${target.left}px`, top: `${target.top}px`, width: `${target.width}px`, height: `${target.height}px`, borderRadius: getComputedStyle(storyScreen).borderRadius,
   };
   let animation;
   try {

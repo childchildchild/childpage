@@ -5,6 +5,7 @@
 .story-screen.story-entering::backdrop{animation:story-backdrop-in 420ms both}
 .story-screen.story-leaving::backdrop{animation:story-backdrop-out 420ms both}
 .story-screen.story-animating>.story-art,.story-screen.story-animating>.story-video,.story-screen.story-animating>.story-shade,.story-screen.story-animating>.story-header,.story-screen.story-animating>.story-content{visibility:hidden}
+.story-screen.story-animating{overflow:visible}
 .story-transition-image{position:fixed;z-index:5;background:#d4d4d4 center/cover no-repeat;pointer-events:none;overflow:hidden}
 @keyframes story-backdrop-in{from{background:transparent}to{background:#080808}}
 @keyframes story-backdrop-out{from{background:#080808}to{background:transparent}}
@@ -36,3 +37,4 @@
 html.story-open,body.story-open{background:#080808}
 body.story-open{overflow:hidden}
 @media(max-height:650px){.story-screen[open]{gap:10px}.story-copy p{font-size:17px}.story-link{margin-top:12px;min-height:48px}}
+@media(min-width:700px){.story-screen{width:min(430px,56.25dvh);height:min(100dvh,764px);margin:auto;border-radius:24px;padding:18px}}
