@@ -1,24 +1,11 @@
-const stories = [
-  {
-    kicker: 'Полезный совет',
-    title: 'Моем руки',
-    text: 'Мой руки с мылом перед едой и после туалета. Маленьким детям может помочь взрослый.',
-    link: 'handwashing.html',
-    image: 'assets/story_hands.png',
-  },
-  {
-    kicker: 'Вместе почитаем',
-    title: 'Сказка на ночь',
-    text: 'Выберите короткую сказку и попробуйте читать её по ролям. Какой герой понравится тебе больше всего?',
-    image: 'assets/story_tale.png',
-  },
-  {
-    kicker: 'Интересный вопрос',
-    title: 'Звёздное небо',
-    text: 'А ты когда-нибудь считал звёзды? Посмотри вечером в окно и попробуй найти самую яркую.',
-    image: 'assets/story_stars.png',
-  },
-];
+const publishedStories = (window.siteContent || []).filter(item => item.type === 'story' && item.status === 'published').sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
+const stories = publishedStories.map(item => ({
+  kicker: item.label,
+  title: item.title,
+  text: item.description,
+  image: item.image,
+  link: item.link,
+}));
 
 const storyScreen = document.querySelector('#story-screen');
 const storyKicker = storyScreen.querySelector('.story-kicker');
@@ -26,6 +13,22 @@ const storyTitle = storyScreen.querySelector('#story-title');
 const storyText = storyScreen.querySelector('.story-text');
 const storyArt = storyScreen.querySelector('.story-art');
 const storyLink = storyScreen.querySelector('.story-link');
+document.querySelectorAll('.preview-bubbles').forEach(group => {
+  stories.slice(0, group.classList.contains('small') ? 3 : 5).forEach((story, index) => {
+    const button = document.createElement('button');
+    button.className = 'story-preview';
+    button.type = 'button';
+    button.dataset.story = String(index);
+    button.setAttribute('aria-label', `Открыть сторис: ${story.title}`);
+    group.append(button);
+  });
+});
+const progress = storyScreen.querySelector('.story-progress');
+progress.replaceChildren(...stories.map(() => {
+  const segment = document.createElement('span');
+  segment.append(document.createElement('b'));
+  return segment;
+}));
 const storyBars = [...storyScreen.querySelectorAll('.story-progress>span')];
 const storyDuration = 10000;
 
@@ -90,6 +93,9 @@ function openStory(index, trigger) {
 document.querySelectorAll('.story-preview').forEach(button => {
   button.addEventListener('click', () => openStory(Number(button.dataset.story), button));
 });
+const requestedStory = new URLSearchParams(location.search).get('story');
+const requestedStoryIndex = publishedStories.findIndex(item => item.id === requestedStory);
+if (requestedStoryIndex >= 0) requestAnimationFrame(() => openStory(requestedStoryIndex));
 
 stories.forEach((story, index) => {
   const image = new Image();

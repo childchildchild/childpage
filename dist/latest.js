@@ -1,31 +1,36 @@
 const latestGrid = document.querySelector('.latest-grid');
-const publishedArticles = (window.siteArticles || []).slice(0, 8);
-const publishedTitles = new Set((window.siteArticles || []).map(article => article.title.toLocaleLowerCase('ru')));
+const contentItems = window.siteContent || [];
+const visibleCards = [
+  ...contentItems.filter(item => item.status === 'published' && item.type !== 'story').sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).slice(0, 8),
+  ...contentItems.filter(item => item.status === 'planned' && item.type !== 'story'),
+];
 
-for (const placeholder of latestGrid.querySelectorAll('.latest-placeholder')) {
-  if (publishedTitles.has(placeholder.querySelector('h3').textContent.toLocaleLowerCase('ru'))) {
-    placeholder.remove();
-  }
-}
-
-for (const article of publishedArticles) {
+for (const item of visibleCards) {
   const card = document.createElement('article');
   card.className = 'latest-card';
-  card.dataset.articleUrl = article.url;
+  if (item.status === 'planned') card.classList.add('latest-placeholder');
+  if (item.url) card.dataset.articleUrl = item.url;
 
-  const link = document.createElement('a');
-  link.href = article.url;
-  const image = document.createElement('img');
-  image.className = 'latest-image';
-  image.src = article.image;
-  image.alt = '';
-  image.loading = 'lazy';
+  const container = item.url ? document.createElement('a') : document.createElement('div');
+  if (item.url) container.href = item.url;
+  if (item.image) {
+    const image = document.createElement('img');
+    image.className = 'latest-image';
+    image.src = item.image;
+    image.alt = '';
+    image.loading = 'lazy';
+    container.append(image);
+  } else {
+    const placeholder = document.createElement('div');
+    placeholder.className = 'latest-image';
+    placeholder.textContent = 'Ожидается изображение';
+    container.append(placeholder);
+  }
   const title = document.createElement('h3');
-  title.textContent = article.title;
+  title.textContent = item.title;
   const description = document.createElement('p');
-  description.textContent = article.description;
-
-  link.append(image, title, description);
-  card.append(link);
-  latestGrid.insertBefore(card, latestGrid.querySelector('.latest-placeholder'));
+  description.textContent = item.description;
+  container.append(title, description);
+  card.append(container);
+  latestGrid.append(card);
 }

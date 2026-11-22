@@ -65,6 +65,12 @@ const searchableItems = [...document.querySelectorAll('.content-tile, .age-card,
   description: article.description,
   text: normalizeSearch(`${article.title} ${article.description}`),
   url: article.url,
+})), (window.siteContent || []).filter(item => item.type === 'story' && item.status === 'published').map(item => ({
+  element: null,
+  title: item.title,
+  description: item.description,
+  text: normalizeSearch(`${item.title} ${item.description}`),
+  url: `index.html?story=${encodeURIComponent(item.id)}`,
 })));
 
 function restoreSharedSearch() {
@@ -240,12 +246,22 @@ menuSearchSlot.addEventListener('click', () => {
 });
 document.querySelectorAll('[data-menu-target]').forEach(button => {
   button.addEventListener('click', () => {
+    if (button.closest('.menu-categories')) {
+      const index = Number(button.dataset.menuTarget.match(/nth-child\((\d+)\)/)?.[1]) - 1;
+      const categories = ['cartoons', 'games', 'for_all', 'tales', 'medicine', 'all'];
+      window.location.href = `catalog.html?category=${categories[index] || 'all'}`;
+      return;
+    }
     const target = document.querySelector(button.dataset.menuTarget);
     closeMenu(() => {
       window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - 110, behavior: 'instant' });
       updateFloatingToolbar();
     });
   });
+});
+document.querySelectorAll('.content-tile').forEach((button, index) => {
+  const categories = ['cartoons', 'games', 'for_all', 'tales', 'medicine', 'all'];
+  button.addEventListener('click', () => { window.location.href = `catalog.html?category=${categories[index]}`; });
 });
 const menuHeader = document.querySelector('.menu-header');
 menuHeader.addEventListener('touchstart', event => {

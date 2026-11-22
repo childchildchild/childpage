@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; img-src 'self' data: https:; style-src 'self'; script-src 'self'; base-uri 'none'; form-action 'self'">
+  <title>Управление сайтом — Детская страница</title>
+  <link rel="stylesheet" href="admin.css">
+  <script src="admin.js" type="module"></script>
+</head>
+<body>
+  <div id="notice" role="status" aria-live="polite"></div>
+  <main id="login-view" class="login-view" hidden>
+    <div class="login-card">
+      <span class="brand-mark">ДС</span>
+      <p class="eyebrow">Детская страница</p>
+      <h1>Вход в панель</h1>
+      <p class="muted">Добавляйте материалы, готовьте черновики и публикуйте их на сайте.</p>
+      <form id="login-form">
+        <label>Логин<input name="user" autocomplete="username" required></label>
+        <label>Пароль<input name="password" type="password" autocomplete="current-password" required></label>
+        <button class="primary" type="submit">Войти</button>
+      </form>
+      <a class="quiet-link" href="../index.html">Вернуться на сайт</a>
+    </div>
+  </main>
+
+  <div id="app-view" class="app-shell" hidden>
+    <aside class="sidebar">
+      <a class="brand" href="../index.html"><span class="brand-mark">ДС</span><span>Детская<br>страница</span></a>
+      <nav class="side-nav" aria-label="Разделы панели">
+        <button type="button" data-filter="all" class="active">Все материалы <span id="count-all"></span></button>
+        <button type="button" data-filter="article">Статьи <span id="count-article"></span></button>
+        <button type="button" data-filter="story">Сторис <span id="count-story"></span></button>
+        <button type="button" data-filter="video">Видео <span id="count-video"></span></button>
+        <button type="button" data-filter="audio">Аудио <span id="count-audio"></span></button>
+        <button type="button" data-filter="game">Игры <span id="count-game"></span></button>
+      </nav>
+      <div class="sidebar-bottom"><span id="signed-user"></span><button id="logout" type="button">Выйти</button></div>
+    </aside>
+
+    <div class="workspace">
+      <header class="topbar">
+        <div><p class="eyebrow">Управление контентом</p><h1 id="view-title">Все материалы</h1></div>
+        <div class="top-actions"><a href="../index.html" target="_blank" rel="noopener">Открыть сайт</a><button id="new-item" class="primary" type="button">Добавить материал</button></div>
+      </header>
+
+      <section id="list-view" class="list-view" aria-label="Материалы">
+        <div class="stats"><div><strong id="stat-published">0</strong><span>Опубликовано</span></div><div><strong id="stat-draft">0</strong><span>Черновики</span></div><div><strong id="stat-planned">0</strong><span>Заготовки</span></div></div>
+        <div class="list-controls"><label class="search-label"><span class="sr-only">Поиск по материалам</span><input id="filter-text" type="search" placeholder="Найти по названию"></label><select id="filter-status" aria-label="Состояние"><option value="all">Любое состояние</option><option value="published">Опубликовано</option><option value="draft">Черновики</option><option value="planned">Заготовки</option></select></div>
+        <div id="items-list" class="items-list"></div>
+        <p id="empty-list" class="empty-list" hidden>Здесь пока нет материалов.</p>
+      </section>
+
+      <section id="editor-view" class="editor-view" hidden aria-label="Редактор материала">
+        <div class="editor-head"><button id="back-list" class="text-button" type="button">← К списку</button><div><span id="editor-status" class="status"></span><a id="public-link" href="#" target="_blank" rel="noopener" hidden>Открыть на сайте</a></div></div>
+        <div class="editor-grid">
+          <form id="content-form" class="form-card">
+            <div class="form-heading"><div><p class="eyebrow">Материал</p><h2 id="editor-title">Новый материал</h2></div><button id="delete-item" class="danger-text" type="button" hidden>Удалить</button></div>
+            <div class="two-cols"><label>Тип материала<select name="type" id="item-type"><option value="article">Статья</option><option value="story">Сторис</option><option value="video">Видео</option><option value="audio">Аудио</option><option value="game">Игра</option></select></label><label>Раздел<select name="category"><option value="for_all">Интересно всем</option><option value="cartoons">Мультики</option><option value="games">Игры</option><option value="tales">Сказки на ночь</option><option value="medicine">Медицина</option><option value="more">Больше</option></select></label></div>
+            <label>Название<input name="title" maxlength="160" required placeholder="Например, почему светят звёзды?"></label>
+            <label>Короткое описание<textarea name="description" maxlength="400" rows="3" required placeholder="Этот текст появится на карточке"></textarea><small>На сайте видно не больше двух строк.</small></label>
+            <fieldset class="age-choices"><legend>Для кого</legend><label><input type="checkbox" name="ages" value="0-3"> 0–3 года</label><label><input type="checkbox" name="ages" value="4-11"> 4–11 лет</label><label><input type="checkbox" name="ages" value="12+"> 12+ лет</label></fieldset>
+            <div class="image-row"><div id="image-preview" class="image-preview">Нет изображения</div><div class="image-controls"><label>Обложка или фото<input name="image" placeholder="assets/... или https://..."></label><label class="upload-label">Загрузить фото<input id="image-upload" type="file" accept="image/jpeg,image/png,image/webp,image/avif"></label><small>JPG, PNG, WebP, AVIF до 2,5 МБ.</small></div></div>
+            <label data-for="article video audio game">Описание картинки<input name="imageAlt" maxlength="200" placeholder="Что изображено на фото"></label>
+            <label data-for="article story">Надзаголовок<input name="label" maxlength="80" placeholder="Например, Полезный совет"></label>
+            <label data-for="article">Текст статьи<textarea name="body" rows="13" placeholder="Основной текст статьи. Пустая строка — новый абзац.&#10;## Подзаголовок&#10;1. Пункт списка&#10;**Важные слова**"></textarea><small>Поддерживаются абзацы, подзаголовки «##», списки «1.» или «-» и жирный текст «**слова**».</small></label>
+            <label data-for="story">Куда ведёт сторис<select name="linkedId" id="linked-item"><option value="">Без кнопки перехода</option></select></label>
+            <label data-for="video audio">Прямая ссылка на файл<input name="mediaUrl" type="url" placeholder="https://.../file.mp4 или .../file.mp3"><small>Видео и аудио проигрываются прямо на сайте. Для больших файлов используйте ссылку на размещённый файл.</small></label>
+            <label data-for="game">Ссылка на игру<input name="gameUrl" type="url" placeholder="https://.../game"><small>Игра откроется отдельной страницей.</small></label>
+            <div class="editor-actions"><button id="save-draft" type="button" class="secondary">Сохранить черновик</button><button id="publish" type="button" class="primary">Опубликовать</button></div>
+            <button id="unpublish" type="button" class="danger-text" hidden>Снять с публикации</button>
+          </form>
+          <aside class="preview-column"><div class="preview-card"><p class="eyebrow">Предпросмотр карточки</p><div id="card-preview" class="card-preview"></div><p class="preview-hint">Изменения появятся на сайте после публикации Vercel.</p></div><div class="help-card"><h3>Как это работает</h3><p>Черновик виден только в панели. «Опубликовать» отправляет материал на сайт. Заготовки сохраняют старые пустые карточки, пока вы не заполните их.</p></div></aside>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <dialog id="type-dialog"><form method="dialog"><h2>Что добавить?</h2><p>Выберите формат материала.</p><div class="type-options"><button value="article">Статья</button><button value="story">Сторис</button><button value="video">Видео</button><button value="audio">Аудио</button><button value="game">Игра</button></div><button value="cancel" class="text-button">Отмена</button></form></dialog>
+</body>
+</html>

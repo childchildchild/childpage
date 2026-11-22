@@ -11,9 +11,10 @@
   <link rel="stylesheet" href="stories.css?v=20261122-5">
   <script src="https://unpkg.com/@phosphor-icons/web" defer></script>
   <script src="articles-data.js" defer></script>
-  <script src="latest.js?v=20261122-2" defer></script>
-  <script src="script.js?v=20261122-10" defer></script>
-  <script src="stories.js?v=20261122-3" defer></script>
+  <script src="content-data.js" defer></script>
+  <script src="latest.js?v=20261122-3" defer></script>
+  <script src="script.js?v=20261122-11" defer></script>
+  <script src="stories.js?v=20261122-4" defer></script>
 </head>
 <body>
   <main class="page">
@@ -30,9 +31,6 @@
 
     <section class="content-panel" aria-labelledby="content-title">
       <div class="preview-bubbles" role="group" aria-label="Сторис">
-        <button class="story-preview" type="button" data-story="0" aria-label="Открыть сторис: моем руки"></button>
-        <button class="story-preview" type="button" data-story="1" aria-label="Открыть сторис: сказка на ночь"></button>
-        <button class="story-preview" type="button" data-story="2" aria-label="Открыть сторис: звёзды"></button>
       </div>
       <div class="content-toolbar" id="content-toolbar">
         <button class="icon-button" type="button" aria-label="Открыть меню"><i class="ph-bold ph-list"></i></button>
@@ -71,25 +69,13 @@
 
     <section class="latest section" aria-labelledby="latest-title">
       <h2 id="latest-title">Последнее</h2>
-      <div class="latest-grid">
-        <article class="latest-card latest-placeholder"><div class="latest-image">Ожидается изображение</div><h3>Куда пропали динозавры?</h3><p>Куда ушли такие большие животные</p></article>
-        <article class="latest-card latest-placeholder"><div class="latest-image">Ожидается изображение</div><h3>Сколько звёзд на небе?</h3><p>Учёные каждый день открывают новые</p></article>
-        <article class="latest-card latest-placeholder"><div class="latest-image">Ожидается изображение</div><h3>Мир глазами животных</h3><p>Как животные видят и в каких цветах</p></article>
-        <article class="latest-card latest-placeholder"><div class="latest-image">Ожидается изображение</div><h3>Что такое геолокация?</h3><p>Способы определения местоположения</p></article>
-        <article class="latest-card latest-placeholder"><div class="latest-image">Ожидается изображение</div><h3>Почему арбуз - это ягода?</h3><p>Большой полосатый шар рядом с клубникой</p></article>
-        <article class="latest-card latest-placeholder"><div class="latest-image">Ожидается изображение</div><h3>Сказка «Колобок»</h3><p>Я от бабушки ушёл! Я от дедушки ушёл!</p></article>
-        <article class="latest-card latest-placeholder"><div class="latest-image">Ожидается изображение</div><h3>Анатомия человека</h3><p>Как развивалась анатомия человека</p></article>
-        <article class="latest-card latest-placeholder"><div class="latest-image">Ожидается изображение</div><h3>Как покрасить огонь</h3><p>Химия не только сложная, но и красивая!</p></article>
-      </div>
+      <div class="latest-grid"></div>
     </section>
     </div>
   </main>
   <div class="floating-toolbar" id="floating-toolbar" aria-hidden="true">
     <button class="icon-button" type="button" aria-label="Открыть меню"><i class="ph-bold ph-list"></i></button>
     <div class="preview-bubbles small" role="group" aria-label="Сторис">
-      <button class="story-preview" type="button" data-story="0" aria-label="Открыть сторис: моем руки"></button>
-      <button class="story-preview" type="button" data-story="1" aria-label="Открыть сторис: сказка на ночь"></button>
-      <button class="story-preview" type="button" data-story="2" aria-label="Открыть сторис: звёзды"></button>
     </div>
     <button class="icon-button" type="button" aria-label="Открыть поиск"><i class="ph-bold ph-magnifying-glass"></i></button>
   </div>
@@ -146,7 +132,7 @@
     <div class="story-art" aria-hidden="true"></div>
     <div class="story-shade" aria-hidden="true"></div>
     <div class="story-header">
-      <div class="story-progress" aria-hidden="true"><span><b></b></span><span><b></b></span><span><b></b></span></div>
+      <div class="story-progress" aria-hidden="true"></div>
       <button class="story-close" type="button" aria-label="Закрыть сторис"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
     </div>
     <div class="story-content">
