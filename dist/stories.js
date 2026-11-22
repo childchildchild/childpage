@@ -26,10 +26,7 @@ const storyTitle = storyScreen.querySelector('#story-title');
 const storyText = storyScreen.querySelector('.story-text');
 const storyArt = storyScreen.querySelector('.story-art');
 const storyLink = storyScreen.querySelector('.story-link');
-const storyCounter = storyScreen.querySelector('.story-counter');
 const storyBars = [...storyScreen.querySelectorAll('.story-progress>span')];
-const storyPrevious = storyScreen.querySelector('.story-previous');
-const storyNext = storyScreen.querySelector('.story-next');
 const storyDuration = 10000;
 
 let storyIndex = 0;
@@ -72,9 +69,6 @@ function goToStory(index) {
   storyTitle.textContent = story.title;
   storyText.textContent = story.text;
   storyArt.style.backgroundImage = story.imageLoaded ? `url("${story.image}")` : '';
-  storyCounter.textContent = `${storyIndex + 1} / ${stories.length}`;
-  storyPrevious.disabled = storyIndex === 0;
-  storyNext.setAttribute('aria-label', storyIndex === stories.length - 1 ? 'Закрыть сторис' : 'Следующая сторис');
   storyLink.hidden = !story.link;
   if (story.link) storyLink.href = story.link;
   paintStoryProgress();
@@ -87,6 +81,7 @@ function goToStory(index) {
 function openStory(index, trigger) {
   storyTrigger = trigger;
   document.body.classList.add('story-open');
+  document.documentElement.classList.add('story-open');
   storyScreen.showModal();
   goToStory(index);
   storyScreen.querySelector('.story-close').focus({ preventScroll: true });
@@ -109,8 +104,6 @@ stories.forEach((story, index) => {
 });
 
 storyScreen.querySelector('.story-close').addEventListener('click', () => storyScreen.close());
-storyPrevious.addEventListener('click', () => goToStory(storyIndex - 1));
-storyNext.addEventListener('click', () => goToStory(storyIndex + 1));
 storyScreen.addEventListener('keydown', event => {
   if (event.key === 'ArrowRight') { event.preventDefault(); goToStory(storyIndex + 1); }
   if (event.key === 'ArrowLeft') { event.preventDefault(); goToStory(storyIndex - 1); }
@@ -145,5 +138,6 @@ storyScreen.addEventListener('close', () => {
   clearTimeout(storyTimeout);
   storyLastTime = 0;
   document.body.classList.remove('story-open');
+  document.documentElement.classList.remove('story-open');
   storyTrigger?.focus({ preventScroll: true });
 });
