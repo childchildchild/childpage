@@ -1,4 +1,4 @@
-import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, readdir, unlink } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { normalizeRichBlocks, renderRichBody } from './content/rich-content.mjs';
@@ -86,10 +86,11 @@ function renderPage(item) {
   const media = safePath(item.mediaUrl);
   const link = safePath(item.gameUrl);
   const prefix = item.id === 'handwashing' ? '' : '../';
+  const imageUrl = image.startsWith('assets/') ? prefix + image : image;
   const body = Array.isArray(item.bodyBlocks) ? renderRichBody(item.bodyBlocks, prefix) : renderBody(item.body);
-  const photo = image ? `<img class="article-photo" src="${escape(prefix + image)}" alt="${escape(item.imageAlt || '')}">` : '';
+  const photo = image ? `<img class="article-photo" src="${escape(imageUrl)}" alt="${escape(item.imageAlt || '')}">` : '';
   let player = '';
-  if (item.type === 'video' && media) player = `<video class="content-player" controls playsinline preload="metadata" ${image ? `poster="${escape(prefix + image)}"` : ''} src="${escape(media.startsWith('assets/') ? prefix + media : media)}"></video>`;
+  if (item.type === 'video' && media) player = `<video class="content-player" controls playsinline preload="metadata" ${image ? `poster="${escape(imageUrl)}"` : ''} src="${escape(media.startsWith('assets/') ? prefix + media : media)}"></video>`;
   if (item.type === 'audio' && media) player = `<audio class="content-audio" controls preload="metadata" src="${escape(media.startsWith('assets/') ? prefix + media : media)}"></audio>`;
   if (item.type === 'game' && link) player = `<a class="article-home" href="${escape(link.startsWith('assets/') ? prefix + link : link)}" ${link.startsWith('https://') ? 'target="_blank" rel="noopener noreferrer"' : ''}>Открыть игру</a>`;
   return `<!doctype html>
@@ -101,6 +102,10 @@ function renderPage(item) {
 }
 
 await mkdir(join(dist, 'read'), { recursive: true });
+for (const filename of await readdir(join(dist, 'read'))) {
+  if (filename.endsWith('.html')) await unlink(join(dist, 'read', filename));
+}
+await unlink(join(dist, 'handwashing.html')).catch(error => { if (error.code !== 'ENOENT') throw error; });
 for (const item of published.filter(item => item.type !== 'story')) {
   await writeFile(join(dist, urlFor(item)), renderPage(item));
 }

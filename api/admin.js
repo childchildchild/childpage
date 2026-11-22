@@ -16,6 +16,20 @@ const trashLifetime = 7 * 24 * 60 * 60 * 1000;
 const imageTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif']);
 const maxImageBytes = 2_500_000;
 
+export function validImageBytes(mime, bytes) {
+  if (bytes.length === 0 || bytes.length > maxImageBytes) return false;
+  if (mime === 'image/jpeg') return bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+  if (mime === 'image/png') return bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
+  if (mime === 'image/gif') return ['GIF87a', 'GIF89a'].includes(bytes.toString('ascii', 0, 6));
+  if (mime === 'image/webp') return bytes.toString('ascii', 0, 4) === 'RIFF' && bytes.toString('ascii', 8, 12) === 'WEBP';
+  if (mime === 'image/avif') {
+    if (bytes.toString('ascii', 4, 8) !== 'ftyp') return false;
+    const brands = bytes.toString('ascii', 8, Math.min(bytes.length, 40)).match(/.{4}/g) || [];
+    return brands.includes('avif') || brands.includes('avis');
+  }
+  return false;
+}
+
 function publicIPv4(address) {
   const parts = address.split('.').map(Number);
   if (parts.length !== 4 || parts.some(part => !Number.isInteger(part) || part < 0 || part > 255)) return false;
@@ -168,7 +182,14 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     const origin = req.headers.origin;
     const host = req.headers.host;
-    if (origin && new URL(origin).host !== host) return response(res, 403, { error: 'Запрос с другого сайта отклонён.' });
+    if (origin) {
+      let sameOrigin = false;
+      try {
+        const url = new URL(origin);
+        sameOrigin = url.host === host && (url.protocol === 'https:' || (url.protocol === 'http:' && /^(localhost|127\.0\.0\.1)(:|$)/.test(host)));
+      } catch {}
+      if (!sameOrigin) return response(res, 403, { error: 'Запрос с другого сайта отклонён.' });
+    }
   }
 
   if (action === 'login' && req.method === 'POST') {
@@ -214,6 +235,8 @@ export default async function handler(req, res) {
       if (!formats[type]) return response(res, 400, { error: 'Загрузите JPG, PNG, WebP или AVIF.' });
       const data = String(req.body?.base64 || '');
       if (data.length > 3_700_000 || !/^[a-zA-Z0-9+/=]+$/.test(data)) return response(res, 400, { error: 'Изображение должно быть меньше 2,5 МБ.' });
+      const bytes = Buffer.from(data, 'base64');
+      if (bytes.toString('base64') !== data || !validImageBytes(type, bytes)) return response(res, 400, { error: 'Проверьте формат изображения и размер файла (до 2,5 МБ).' });
       const path = `dist/assets/uploads/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${formats[type]}`;
       await github(path, { method: 'PUT', body: JSON.stringify({ message: `Content: upload image by ${session.user}`, content: data, branch: 'main' }) });
       return response(res, 200, { path: path.replace(/^dist\//, '') });
