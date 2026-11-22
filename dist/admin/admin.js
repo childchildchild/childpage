@@ -1,3 +1,5 @@
+import { cropImage } from './crop.js';
+
 const apiUrl = '/api/admin';
 const $ = selector => document.querySelector(selector);
 const labels = { article: 'Статья', story: 'Сторис', video: 'Видео', audio: 'Аудио', game: 'Игра' };
@@ -16,6 +18,7 @@ const localImageUrls = new Map();
 let pendingCoverUrl = '';
 let coverUploadId = 0;
 let coverUploadPromise = null;
+const richUploads = new Set();
 
 function notice(message, error = false) {
   const node = $('#notice');
@@ -122,12 +125,20 @@ function createRichMediaBlock(block) {
   const images = block.type === 'carousel' ? block.images : [block];
   const strip = document.createElement('div'); strip.className = 'rich-media-strip';
   for (const image of images) {
+    const item = document.createElement('div');
+    item.className = 'rich-media-item';
     const img = document.createElement('img');
     img.src = editorImageSource(image.src);
     img.alt = image.alt || '';
     img.dataset.src = image.src;
     img.dataset.alt = image.alt || '';
-    strip.append(img);
+    const crop = document.createElement('button');
+    crop.type = 'button';
+    crop.dataset.cropRichImage = '';
+    crop.textContent = 'Кадрировать';
+    crop.setAttribute('aria-label', `Кадрировать фото: ${image.alt || 'без описания'}`);
+    item.append(img, crop);
+    strip.append(item);
   }
   figure.append(strip);
   const caption = document.createElement('figcaption');
@@ -473,6 +484,7 @@ function renderPreviewPage(doc, item) {
 function updatePreview() {
   const item = readForm('draft');
   if (pendingCoverUrl) item.image = pendingCoverUrl;
+  $('#crop-cover').disabled = !item.image;
   $('.editor-grid').classList.toggle('preview-expanded', previewMode === 'page');
   for (const button of document.querySelectorAll('[data-preview-view]')) button.classList.toggle('active', button.dataset.previewView === previewMode);
   const doc = previewDocument(previewMode === 'card' ? 'catalog.css' : 'content-page.css');
@@ -553,6 +565,10 @@ async function save(status) {
   if (coverUploadPromise) {
     notice('Дожидаюсь загрузки фото…');
     try { await coverUploadPromise; } catch { return; }
+  }
+  if (richUploads.size) {
+    notice('Дожидаюсь загрузки фото в статье…');
+    try { await Promise.all([...richUploads]); } catch { return; }
   }
   const item = readForm(status);
   const error = validateItem(item);
@@ -653,6 +669,44 @@ async function uploadImage(file) {
     if (coverUploadPromise === transfer) coverUploadPromise = null;
   }
 }
+async function chooseCover(file) {
+  if (!file) return;
+  try {
+    const result = await cropImage(file, { ratio: contentForm.elements.type.value === 'story' ? 'story' : 'card', caption: 'Настройте кадр обложки пальцем или мышью.' });
+    if (result instanceof File) await uploadImage(result);
+  } catch (error) { notice(error.message, true); }
+}
+async function cropCurrentCover() {
+  const path = contentForm.elements.image.value.trim();
+  if (!path) return;
+  try {
+    const result = await cropImage(imageSource(path), { ratio: contentForm.elements.type.value === 'story' ? 'story' : 'card', caption: 'Измените кадр уже загруженной обложки.' });
+    if (result instanceof File) await uploadImage(result);
+  } catch (error) { notice(error.message, true); }
+}
+async function cropRichPhoto(button) {
+  const figure = button.closest('[data-rich-type]');
+  const image = button.closest('.rich-media-item').querySelector('img');
+  const oldSource = image.dataset.src;
+  try {
+    const result = await cropImage(imageSource(oldSource), { ratio: figure.dataset.richType === 'carousel' ? 'card' : 'original', caption: 'Кадрируйте это фото, не удаляя его из статьи.' });
+    if (!(result instanceof File)) return;
+    const localUrl = URL.createObjectURL(result);
+    image.src = localUrl;
+    const transfer = uploadImageFile(result, localUrl);
+    richUploads.add(transfer);
+    notice('Загружаю кадрированное фото…');
+    try {
+      image.dataset.src = await transfer;
+      image.src = imageSource(image.dataset.src);
+      updatePreview();
+      notice('Фото в статье обновлено. Сохраните материал.');
+    } catch (error) {
+      image.src = imageSource(oldSource);
+      notice(error.message, true);
+    } finally { richUploads.delete(transfer); }
+  } catch (error) { notice(error.message, true); }
+}
 function httpsUrl(value) {
   let url;
   try { url = new URL(value); } catch { throw new Error('Введите корректную HTTPS-ссылку.'); }
@@ -671,7 +725,10 @@ async function insertRichImage() {
   const button = $('#rich-media-confirm');
   button.disabled = true;
   try {
-    const src = file ? await uploadImageFile(file) : httpsUrl(url);
+    const selected = file || httpsUrl(url);
+    const cropped = await cropImage(selected, { ratio: 'original', caption: 'Выберите кадр фотографии для статьи.' });
+    if (cropped === null) return;
+    const src = cropped instanceof File ? await uploadImageFile(cropped) : cropped;
     insertRichBlock({ type: 'image', src, alt: $('#rich-media-alt').value.trim() });
     closeMediaDialog('media-dialog');
     notice('Изображение добавлено в статью.');
@@ -685,10 +742,17 @@ async function insertRichCarousel() {
   const button = $('#rich-carousel-confirm');
   button.disabled = true;
   try {
-    const images = urls.map((url, index) => ({ src: httpsUrl(url), alt: `Фото ${index + 1}` }));
-    for (const [index, file] of files.entries()) {
-      notice(`Загружаю фото ${index + 1} из ${files.length}…`);
-      images.push({ src: await uploadImageFile(file), alt: file.name.replace(/\.[^.]+$/, '') || `Фото ${images.length + 1}` });
+    const sources = [...urls.map(httpsUrl), ...files];
+    const cropped = [];
+    for (const [index, source] of sources.entries()) {
+      const result = await cropImage(source, { ratio: 'card', caption: `Кадрируйте фото ${index + 1} из ${sources.length}.` });
+      if (result === null) return;
+      cropped.push({ value: result, alt: source instanceof File ? source.name.replace(/\.[^.]+$/, '') : `Фото ${index + 1}` });
+    }
+    const images = [];
+    for (const [index, item] of cropped.entries()) {
+      if (item.value instanceof File) notice(`Загружаю фото ${index + 1} из ${cropped.length}…`);
+      images.push({ src: item.value instanceof File ? await uploadImageFile(item.value) : item.value, alt: item.alt || `Фото ${index + 1}` });
     }
     insertRichBlock({ type: 'carousel', images });
     closeMediaDialog('carousel-dialog');
@@ -732,8 +796,9 @@ $('#save-draft').addEventListener('click', () => save($('#save-draft').textConte
 $('#publish').addEventListener('click', () => save('published'));
 $('#unpublish').addEventListener('click', () => save('draft'));
 $('#delete-item').addEventListener('click', removeItem);
-$('#image-upload').addEventListener('change', event => uploadImage(event.target.files[0]));
+$('#image-upload').addEventListener('change', event => chooseCover(event.target.files[0]));
 $('#image-upload').addEventListener('change', event => { event.target.value = ''; });
+$('#crop-cover').addEventListener('click', cropCurrentCover);
 $('#image-preview').addEventListener('dragover', event => {
   event.preventDefault();
   event.currentTarget.classList.add('is-dragging');
@@ -744,7 +809,7 @@ $('#image-preview').addEventListener('dragleave', event => {
 $('#image-preview').addEventListener('drop', event => {
   event.preventDefault();
   event.currentTarget.classList.remove('is-dragging');
-  uploadImage(event.dataTransfer.files[0]);
+  chooseCover(event.dataTransfer.files[0]);
 });
 document.querySelectorAll('[data-preview-view]').forEach(button => button.addEventListener('click', () => {
   previewMode = button.dataset.previewView;
@@ -754,6 +819,8 @@ articleEditor.addEventListener('mouseup', rememberEditorSelection);
 articleEditor.addEventListener('keyup', rememberEditorSelection);
 articleEditor.addEventListener('input', rememberEditorSelection);
 articleEditor.addEventListener('click', event => {
+  const crop = event.target.closest('[data-crop-rich-image]');
+  if (crop) { cropRichPhoto(crop); return; }
   const remove = event.target.closest('[data-remove-rich-block]');
   if (remove) { remove.closest('[data-rich-type]').remove(); updatePreview(); }
 });

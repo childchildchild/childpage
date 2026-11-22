@@ -95,7 +95,7 @@ function renderPage(item) {
   return `<!doctype html>
 <html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="color-scheme" content="light">
 <meta name="article:published" content="${escape(item.publishedAt)}"><meta name="article:title" content="${title}"><meta name="article:description" content="${escape(item.description || '')}"><meta name="article:image" content="${escape(image)}">
-<title>${title} — Детская страница</title><link rel="stylesheet" href="${prefix}content-page.css"></head>
+<title>${title} — Детская страница</title><link rel="stylesheet" href="${prefix}content-page.css?v=20261122-2"></head>
 <body><main class="article-page"><header class="article-header"><a class="article-back" href="${prefix}index.html" aria-label="На главную"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 5 5 20l15 15M6 20h30"/></svg></a><span>${escape(item.label || kind)}</span></header>
 <article>${photo}<div class="article-body"><h1>${title}</h1><p class="article-intro">${escape(item.description || '')}</p>${player}<div class="article-text">${body}</div><a class="article-home" href="${prefix}index.html">На главную</a></div></article></main><script src="${prefix}article-carousel.js" defer></script></body></html>`;
 }

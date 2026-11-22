@@ -104,3 +104,5 @@ dialog{width:min(440px,calc(100% - 32px));padding:26px;border:0;border-radius:22
   #app-view:has(#editor-view:not([hidden])) .topbar{display:none}
   #app-view:has(#editor-view:not([hidden])) .workspace{padding-top:18px}
 }
+.image-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.image-actions .secondary{min-height:35px;padding:8px 12px;border-radius:9px;font-size:14px}

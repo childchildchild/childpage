@@ -1,4 +1,7 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import { lookup } from 'node:dns/promises';
+import { request as httpsRequest } from 'node:https';
+import { isIP } from 'node:net';
 
 const repo = 'childchildchild/childpage';
 const contentPath = 'content/content.json';
@@ -10,6 +13,56 @@ const statuses = new Set([...activeStatuses, 'trashed']);
 const categories = new Set(['cartoons', 'games', 'for_all', 'tales', 'medicine', 'more']);
 const ages = new Set(['0-3', '4-11', '12+']);
 const trashLifetime = 7 * 24 * 60 * 60 * 1000;
+const imageTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif']);
+const maxImageBytes = 2_500_000;
+
+function publicIPv4(address) {
+  const parts = address.split('.').map(Number);
+  if (parts.length !== 4 || parts.some(part => !Number.isInteger(part) || part < 0 || part > 255)) return false;
+  const [a, b] = parts;
+  return !(a === 0 || a === 10 || a === 127 || a >= 224 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127) || (a === 198 && (b === 18 || b === 19)));
+}
+async function fetchImage(rawUrl, redirects = 0) {
+  if (redirects > 3) throw new Error('Слишком много перенаправлений у ссылки на фото.');
+  let url;
+  try { url = new URL(rawUrl); } catch { throw new Error('Укажите корректную HTTPS-ссылку на фото.'); }
+  if (rawUrl.length > 1000 || url.protocol !== 'https:' || (url.port && url.port !== '443') || url.username || url.password || isIP(url.hostname) || url.hostname.startsWith('[') || url.hostname === 'localhost' || url.hostname.endsWith('.local')) throw new Error('Разрешены только публичные HTTPS-ссылки на фото.');
+  const addresses = await lookup(url.hostname, { family: 4, all: true });
+  const address = addresses.find(entry => publicIPv4(entry.address));
+  if (!address) throw new Error('Не удалось открыть публичный адрес фото.');
+  return new Promise((resolve, reject) => {
+    const request = httpsRequest(url, {
+      timeout: 8000,
+      lookup: (hostname, options, callback) => {
+        if (typeof options === 'function') { callback = options; options = {}; }
+        if (options.all) callback(null, [{ address: address.address, family: 4 }]);
+        else callback(null, address.address, 4);
+      },
+      headers: { Accept: 'image/avif,image/webp,image/png,image/jpeg,image/gif', 'User-Agent': 'ChildPageAdmin/1.0' },
+    }, response => {
+      if ([301, 302, 303, 307, 308].includes(response.statusCode) && response.headers.location) {
+        response.resume();
+        fetchImage(new URL(response.headers.location, url).href, redirects + 1).then(resolve, reject);
+        return;
+      }
+      const mime = String(response.headers['content-type'] || '').split(';')[0].toLowerCase();
+      if (response.statusCode !== 200 || !imageTypes.has(mime)) { response.resume(); reject(new Error('Ссылка не ведёт на поддерживаемое изображение.')); return; }
+      if (Number(response.headers['content-length']) > maxImageBytes) { response.destroy(); reject(new Error('Фото по ссылке больше 2,5 МБ.')); return; }
+      const chunks = [];
+      let size = 0;
+      response.on('data', chunk => {
+        size += chunk.length;
+        if (size > maxImageBytes) { response.destroy(); reject(new Error('Фото по ссылке больше 2,5 МБ.')); }
+        else chunks.push(chunk);
+      });
+      response.on('end', () => resolve({ mime, base64: Buffer.concat(chunks).toString('base64') }));
+      response.on('error', reject);
+    });
+    request.on('timeout', () => request.destroy(new Error('Фото по ссылке загружается слишком долго.')));
+    request.on('error', reject);
+    request.end();
+  });
+}
 
 function configurationReady() {
   return Boolean(process.env.ADMIN_SESSION_SECRET && process.env.GITHUB_CONTENT_TOKEN && process.env.ADMIN_USER_ONE && process.env.ADMIN_PASSWORD_ONE && process.env.ADMIN_USER_TWO && process.env.ADMIN_PASSWORD_TWO);
@@ -164,6 +217,9 @@ export default async function handler(req, res) {
       const path = `dist/assets/uploads/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${formats[type]}`;
       await github(path, { method: 'PUT', body: JSON.stringify({ message: `Content: upload image by ${session.user}`, content: data, branch: 'main' }) });
       return response(res, 200, { path: path.replace(/^dist\//, '') });
+    }
+    if (action === 'image-source' && req.method === 'POST') {
+      return response(res, 200, await fetchImage(String(req.body?.url || '')));
     }
     return response(res, 404, { error: 'Действие не найдено.' });
   } catch (error) {
