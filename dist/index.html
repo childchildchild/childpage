@@ -7,9 +7,11 @@
   <meta name="color-scheme" content="light">
   <style>html,body{background:#cbcced linear-gradient(to bottom,#cbcced 0,#cbcced 45svh,#fffdfb 75svh,#fffdfb 100%)}</style>
   <title>Детская страница</title>
-  <link rel="stylesheet" href="styles.css?v=20261122-18">
+  <link rel="stylesheet" href="styles.css?v=20261122-19">
+  <link rel="stylesheet" href="stories.css?v=20261122-1">
   <script src="https://unpkg.com/@phosphor-icons/web" defer></script>
   <script src="script.js?v=20261122-9" defer></script>
+  <script src="stories.js?v=20261122-1" defer></script>
 </head>
 <body>
   <main class="page">
@@ -25,8 +27,10 @@
     </section>
 
     <section class="content-panel" aria-labelledby="content-title">
-      <div class="preview-bubbles" aria-hidden="true">
-        <span></span><span></span><span></span>
+      <div class="preview-bubbles" role="group" aria-label="Сторис">
+        <button class="story-preview" type="button" data-story="0" aria-label="Открыть сторис: моем руки"></button>
+        <button class="story-preview" type="button" data-story="1" aria-label="Открыть сторис: сказка на ночь"></button>
+        <button class="story-preview" type="button" data-story="2" aria-label="Открыть сторис: звёзды"></button>
       </div>
       <div class="content-toolbar" id="content-toolbar">
         <button class="icon-button" type="button" aria-label="Открыть меню"><i class="ph-bold ph-list"></i></button>
@@ -80,7 +84,11 @@
   </main>
   <div class="floating-toolbar" id="floating-toolbar" aria-hidden="true">
     <button class="icon-button" type="button" aria-label="Открыть меню"><i class="ph-bold ph-list"></i></button>
-    <div class="preview-bubbles small" aria-hidden="true"><span></span><span></span><span></span></div>
+    <div class="preview-bubbles small" role="group" aria-label="Сторис">
+      <button class="story-preview" type="button" data-story="0" aria-label="Открыть сторис: моем руки"></button>
+      <button class="story-preview" type="button" data-story="1" aria-label="Открыть сторис: сказка на ночь"></button>
+      <button class="story-preview" type="button" data-story="2" aria-label="Открыть сторис: звёзды"></button>
+    </div>
     <button class="icon-button" type="button" aria-label="Открыть поиск"><i class="ph-bold ph-magnifying-glass"></i></button>
   </div>
   <dialog class="menu-sheet" id="menu-sheet" aria-labelledby="menu-title">
@@ -131,6 +139,22 @@
       <p>История поиска пока что пустая</p>
     </div>
     <div class="search-results" id="search-results" aria-live="polite"></div>
+  </dialog>
+  <dialog class="story-screen" id="story-screen" aria-labelledby="story-title">
+    <div class="story-header">
+      <div class="story-progress" aria-hidden="true"><span><b></b></span><span><b></b></span><span><b></b></span></div>
+      <button class="story-close" type="button" aria-label="Закрыть сторис"><i class="ph-bold ph-x" aria-hidden="true"></i></button>
+    </div>
+    <div class="story-content">
+      <div class="story-art" aria-hidden="true"></div>
+      <div class="story-copy"><span class="story-kicker"></span><h2 id="story-title"></h2><p class="story-text"></p></div>
+      <a class="story-link" href="#" target="_blank" rel="noopener noreferrer" hidden>Подробнее <i class="ph-bold ph-arrow-up-right" aria-hidden="true"></i></a>
+    </div>
+    <div class="story-controls">
+      <button class="story-previous" type="button" aria-label="Предыдущая сторис"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i></button>
+      <span class="story-counter" aria-live="polite"></span>
+      <button class="story-next" type="button" aria-label="Следующая сторис"><i class="ph-bold ph-arrow-right" aria-hidden="true"></i></button>
+    </div>
   </dialog>
 </body>
 </html>

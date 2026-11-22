@@ -21,8 +21,8 @@ button{font:inherit;color:inherit}
 .sticker-bottom{left:29%;top:min(calc(26cqh + min(85cqw,62.9cqh) - 10cqw),calc(100% - 100px))}
 .content-panel{position:relative;z-index:2;flex:none;margin-top:-21px;padding:32px 25px 16px;border-radius:34px 34px 0 0;background:var(--paper)}
 .preview-bubbles{position:absolute;top:-18px;left:50%;display:flex;transform:translateX(-50%)}
-.preview-bubbles span{display:block;width:44px;height:44px;margin-left:-7px;border:4px solid var(--paper);border-radius:50%;background:#d4d4d4}
-.preview-bubbles span:first-child{margin-left:0}
+.preview-bubbles .story-preview{display:block;width:44px;height:44px;margin-left:-7px;padding:0;border:4px solid var(--paper);border-radius:50%;background:#d4d4d4 center/cover no-repeat;cursor:pointer}
+.preview-bubbles .story-preview:first-child{margin-left:0}
 .content-toolbar{display:grid;grid-template-columns:48px 1fr 48px;align-items:center;margin-bottom:16px}
 .content-toolbar h2{margin:0;text-align:center;font-family:Roboto,Arial,sans-serif;font-size:37px;line-height:1;font-weight:700}
 .icon-button{width:48px;height:48px;padding:0;border:0;background:transparent;display:grid;place-items:center;cursor:pointer}
@@ -39,7 +39,7 @@ button{font:inherit;color:inherit}
 .floating-toolbar{position:fixed;z-index:20;top:max(12px,env(safe-area-inset-top));left:50%;width:min(calc(100% - 30px),400px);height:72px;padding:7px 12px;display:flex;align-items:center;justify-content:space-between;border-radius:36px;background:white;box-shadow:0 8px 28px rgba(0,0,0,.16);opacity:0;visibility:hidden;pointer-events:none;transform:translate(-50%,-110px);transition:opacity .25s ease,transform .25s ease,visibility 0s linear .25s}
 .floating-toolbar.visible{opacity:1;visibility:visible;pointer-events:auto;transform:translate(-50%,0);transition-delay:0s}
 .floating-toolbar .preview-bubbles{position:static;transform:none}
-.floating-toolbar .preview-bubbles span{width:49px;height:49px;border-width:4px}
+.floating-toolbar .preview-bubbles .story-preview{width:49px;height:49px;border-width:4px}
 .floating-toolbar .icon-button i{font-size:34px}
 .section{padding:45px 16px 0;background:var(--paper)}
 .below-fold{background:var(--paper)}
