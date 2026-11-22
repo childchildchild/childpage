@@ -496,6 +496,8 @@ function openEditor(id = '', type = 'article') {
   const badge = $('.editor-head .status'); badge.id = 'editor-status';
   $('#delete-item').hidden = !id;
   $('#unpublish').hidden = item.status !== 'published';
+  $('#save-draft').hidden = item.status === 'published';
+  $('#publish').textContent = item.status === 'published' ? 'Сохранить на сайте' : 'Опубликовать';
   $('#save-draft').textContent = item.status === 'planned' ? 'Сохранить заготовку' : 'Сохранить черновик';
   const link = $('#public-link'); link.hidden = item.status !== 'published'; link.href = contentUrl(item);
   $('#list-view').hidden = true;

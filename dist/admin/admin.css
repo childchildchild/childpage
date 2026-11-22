@@ -60,3 +60,47 @@ dialog{width:min(440px,calc(100% - 32px));padding:26px;border:0;border-radius:22
 .media-dialog-form small{color:#77788b;font-size:12px;line-height:1.4}
 .dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
 @media(max-width:680px){.rich-toolbar{gap:4px;padding:6px}.rich-toolbar button{padding:5px 8px;font-size:12px}.article-editor{min-height:260px}.rich-toolbar .color-picker-label{font-size:11px}}
+@media(max-width:680px){
+  .app-shell,.workspace,.list-view,.editor-view,.editor-grid,.form-card{min-width:0}
+  .sidebar{padding:12px 14px 9px}
+  .brand{margin-bottom:14px;padding-right:70px}
+  .sidebar-bottom{top:12px;right:12px;gap:5px}
+  .sidebar-bottom button{min-width:48px;min-height:44px;padding:8px;color:#5c55ac;font-weight:700}
+  .side-nav{margin:0 -14px;padding:0 14px 3px;scrollbar-width:none;scroll-snap-type:x proximity}
+  .side-nav::-webkit-scrollbar{display:none}
+  .side-nav button{flex:none;min-height:42px;scroll-snap-align:start}
+  .workspace{padding:20px 14px 72px}
+  .topbar{gap:14px;margin-bottom:20px}
+  .topbar h1{font-size:27px;overflow-wrap:anywhere}
+  .top-actions{gap:10px}
+  .top-actions a{font-size:14px;white-space:nowrap}
+  .top-actions .primary{min-height:44px;padding:8px 13px;font-size:14px}
+  .stats>div{padding:12px 10px}
+  .stats span{font-size:12px;line-height:1.2}
+  .list-controls{display:grid;grid-template-columns:1fr;gap:9px}
+  .list-controls select{width:100%}
+  .item-row{display:grid;grid-template-columns:54px minmax(0,1fr);gap:3px 12px;min-width:0;padding:12px}
+  .item-thumb{grid-row:1/span 2;width:54px;height:54px}
+  .item-main{grid-column:2;min-width:0}
+  .item-main strong{white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;line-height:1.2}
+  .item-row>.status{grid-column:2;justify-self:start;margin-top:4px}
+  .item-arrow{display:none}
+  .editor-head{align-items:flex-start;flex-wrap:wrap;gap:8px 14px;margin-bottom:15px}
+  .editor-head>div{flex-wrap:wrap;gap:8px}
+  .editor-head a{font-size:13px}
+  .editor-grid,.editor-grid.preview-expanded{display:flex;flex-direction:column;gap:14px}
+  .editor-grid .form-card,.editor-grid .preview-column,.editor-grid.preview-expanded .form-card,.editor-grid.preview-expanded .preview-column{width:100%;min-width:0;grid-column:auto;grid-row:auto}
+  .editor-grid .form-card{order:1}
+  .editor-grid .preview-column{order:2;display:grid;grid-template-columns:1fr}
+  .editor-view{padding-bottom:94px}
+  .form-card{gap:17px}
+  .form-heading h2{font-size:21px}
+  .form-heading .danger-text{min-height:40px}
+  .editor-actions{position:fixed;z-index:8;right:0;bottom:0;left:0;display:flex;gap:10px;margin:0;padding:10px 14px max(10px,env(safe-area-inset-bottom));border-top:1px solid #e5e4f0;background:#fff;box-shadow:0 -8px 22px #22213b14}
+  .editor-actions button{flex:1;min-width:0;min-height:46px;padding:9px 8px;font-size:14px;line-height:1.15}
+  #site-preview{min-height:360px;height:430px}
+  .editor-grid.preview-expanded #site-preview{min-height:430px;height:60vh}
+  #app-view:has(#editor-view:not([hidden])) .side-nav,
+  #app-view:has(#editor-view:not([hidden])) .topbar{display:none}
+  #app-view:has(#editor-view:not([hidden])) .workspace{padding-top:18px}
+}
