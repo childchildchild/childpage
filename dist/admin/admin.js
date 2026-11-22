@@ -244,6 +244,7 @@ function renderPreviewPage(doc, item) {
 }
 function updatePreview() {
   const item = readForm('draft');
+  $('.editor-grid').classList.toggle('preview-expanded', previewMode === 'page');
   for (const button of document.querySelectorAll('[data-preview-view]')) button.classList.toggle('active', button.dataset.previewView === previewMode);
   const doc = previewDocument(previewMode === 'card' ? 'catalog.css' : 'content-page.css');
   if (previewMode === 'card') renderPreviewCard(doc, item);
