@@ -706,7 +706,7 @@
     {
       "id": "item-051abc3c-9614-48a9-863e-d2a94df178b3",
       "type": "story",
-      "status": "published",
+      "status": "trashed",
       "title": "67867867",
       "description": "8678678678",
       "category": "for_all",
@@ -719,7 +719,9 @@
       "gameUrl": "",
       "linkedId": "item-a6fde8f7-009a-4522-8d5b-8bbaa0144f92",
       "publishedAt": "2026-11-22T04:07:49.043Z",
-      "updatedAt": "2026-11-22T04:07:49.043Z"
+      "updatedAt": "2026-11-22T04:15:18.599Z",
+      "deletedAt": "2026-11-22T04:15:18.599Z",
+      "previousStatus": "published"
     }
   ]
 }
