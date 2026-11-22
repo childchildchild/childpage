@@ -29,6 +29,7 @@ dialog{width:min(440px,calc(100% - 32px));padding:26px;border:0;border-radius:22
 .preview-switch button.active{background:#6b63c5;color:white}
 #site-preview{display:block;width:100%;height:min(68vh,680px);min-height:430px;border:1px solid #e1e1ea;border-radius:14px;background:#fffdfb}
 .editor-grid.preview-expanded{grid-template-columns:minmax(0,1fr)}
-.editor-grid.preview-expanded .preview-column{position:static;grid-row:1;grid-template-columns:minmax(0,1fr)}
+.editor-grid.preview-expanded .preview-column{position:static;grid-column:1;grid-row:1;grid-template-columns:minmax(0,1fr)}
+.editor-grid.preview-expanded .form-card{grid-column:1;grid-row:2}
 .editor-grid.preview-expanded .preview-card{width:min(100%,520px);margin-inline:auto}
 .editor-grid.preview-expanded #site-preview{height:min(78vh,900px);min-height:560px}
