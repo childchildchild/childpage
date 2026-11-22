@@ -39,6 +39,75 @@ let storyTimeout = 0;
 let storyLastTime = 0;
 let storyTrigger;
 let storyTouchStart;
+let storyClosing = false;
+let storyMotion;
+let storyAnimations = 0;
+const storyMotionDuration = 420;
+const reduceStoryMotion = matchMedia('(prefers-reduced-motion: reduce)');
+
+function storySourceRect() {
+  if (!storyTrigger?.isConnected) return null;
+  const rect = storyTrigger.getBoundingClientRect();
+  if (rect.bottom <= 0 || rect.top >= innerHeight || rect.right <= 0 || rect.left >= innerWidth) return null;
+  return rect;
+}
+
+async function animateStory(opening) {
+  if (reduceStoryMotion.matches) return;
+  const rect = storySourceRect();
+  if (!rect) {
+    const fade = storyScreen.animate([{ opacity: opening ? 0 : 1 }, { opacity: opening ? 1 : 0 }], {
+      duration: 180, easing: 'ease-in-out', fill: 'both',
+    });
+    storyMotion = fade;
+    await fade.finished.catch(() => {});
+    fade.cancel();
+    return;
+  }
+
+  const image = document.createElement('div');
+  image.className = 'story-transition-image';
+  image.style.backgroundImage = getComputedStyle(storyTrigger).backgroundImage;
+  storyScreen.append(image);
+  storyAnimations += 1;
+  storyScreen.classList.add('story-animating');
+  const small = {
+    left: `${rect.left}px`, top: `${rect.top}px`,
+    width: `${rect.width}px`, height: `${rect.height}px`, borderRadius: '50%',
+  };
+  const large = {
+    left: '0px', top: '0px', width: `${innerWidth}px`, height: `${innerHeight}px`, borderRadius: '0px',
+  };
+  let animation;
+  try {
+    animation = image.animate(opening ? [small, large] : [large, small], {
+      duration: storyMotionDuration,
+      easing: opening ? 'cubic-bezier(.2,.75,.2,1)' : 'cubic-bezier(.6,0,.8,.25)',
+      fill: 'both',
+    });
+    storyMotion = animation;
+    await animation.finished;
+  } catch (_) {
+    // A resize or a quick second tap can interrupt the transition.
+  } finally {
+    if (storyMotion === animation) storyMotion = null;
+    image.remove();
+    storyAnimations -= 1;
+    if (!storyAnimations) storyScreen.classList.remove('story-animating');
+  }
+}
+
+async function closeStory() {
+  if (!storyScreen.open || storyClosing) return;
+  storyClosing = true;
+  cancelAnimationFrame(storyFrame);
+  clearTimeout(storyTimeout);
+  storyMotion?.cancel();
+  storyScreen.classList.remove('story-entering');
+  storyScreen.classList.add('story-leaving');
+  await animateStory(false);
+  storyScreen.close();
+}
 
 function paintStoryProgress() {
   storyBars.forEach((bar, index) => {
@@ -61,7 +130,7 @@ function tickStory(now) {
 
 function goToStory(index) {
   if (index >= stories.length) {
-    storyScreen.close();
+    closeStory();
     return;
   }
   storyIndex = Math.max(0, index);
@@ -81,13 +150,18 @@ function goToStory(index) {
   storyTimeout = setTimeout(() => goToStory(storyIndex + 1), storyDuration);
 }
 
-function openStory(index, trigger) {
+async function openStory(index, trigger) {
+  if (storyScreen.open) return;
   storyTrigger = trigger;
+  storyClosing = false;
+  storyScreen.classList.add('story-entering');
   document.body.classList.add('story-open');
   document.documentElement.classList.add('story-open');
   storyScreen.showModal();
   goToStory(index);
   storyScreen.querySelector('.story-close').focus({ preventScroll: true });
+  await animateStory(true);
+  storyScreen.classList.remove('story-entering');
 }
 
 document.querySelectorAll('.story-preview').forEach(button => {
@@ -109,7 +183,8 @@ stories.forEach((story, index) => {
   image.src = story.image;
 });
 
-storyScreen.querySelector('.story-close').addEventListener('click', () => storyScreen.close());
+storyScreen.querySelector('.story-close').addEventListener('click', closeStory);
+storyScreen.addEventListener('cancel', event => { event.preventDefault(); closeStory(); });
 storyScreen.addEventListener('keydown', event => {
   if (event.key === 'ArrowRight') { event.preventDefault(); goToStory(storyIndex + 1); }
   if (event.key === 'ArrowLeft') { event.preventDefault(); goToStory(storyIndex - 1); }
@@ -140,6 +215,8 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 storyScreen.addEventListener('close', () => {
+  storyScreen.classList.remove('story-entering', 'story-leaving', 'story-animating');
+  storyClosing = false;
   cancelAnimationFrame(storyFrame);
   clearTimeout(storyTimeout);
   storyLastTime = 0;
