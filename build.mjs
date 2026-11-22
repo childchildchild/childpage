@@ -85,8 +85,8 @@ function renderPage(item) {
   const image = safePath(item.image);
   const media = safePath(item.mediaUrl);
   const link = safePath(item.gameUrl);
-  const body = Array.isArray(item.bodyBlocks) ? renderRichBody(item.bodyBlocks, prefix) : renderBody(item.body);
   const prefix = item.id === 'handwashing' ? '' : '../';
+  const body = Array.isArray(item.bodyBlocks) ? renderRichBody(item.bodyBlocks, prefix) : renderBody(item.body);
   const photo = image ? `<img class="article-photo" src="${escape(prefix + image)}" alt="${escape(item.imageAlt || '')}">` : '';
   let player = '';
   if (item.type === 'video' && media) player = `<video class="content-player" controls playsinline preload="metadata" ${image ? `poster="${escape(prefix + image)}"` : ''} src="${escape(media.startsWith('assets/') ? prefix + media : media)}"></video>`;
