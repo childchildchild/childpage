@@ -115,7 +115,7 @@ export function renderRichBody(blocks, prefix = '') {
     }
     const images = block.images.map((image, index) => {
       const src = image.src.startsWith('assets/') ? `${prefix}${image.src}` : image.src;
-      return `<figure class="article-carousel-slide"><img src="${escapeHtml(src)}" alt="${escapeHtml(image.alt)}"><figcaption>${index + 1} / ${block.images.length}</figcaption></figure>`;
+      return `<figure class="article-carousel-slide"><div class="article-carousel-frame"><img src="${escapeHtml(src)}" alt="${escapeHtml(image.alt)}"></div><figcaption>${index + 1} / ${block.images.length}</figcaption></figure>`;
     }).join('');
     return `<section class="article-carousel" data-carousel><button type="button" class="article-carousel-arrow previous" data-carousel-previous aria-label="Предыдущее фото">‹</button><div class="article-carousel-track" tabindex="0">${images}</div><button type="button" class="article-carousel-arrow next" data-carousel-next aria-label="Следующее фото">›</button></section>`;
   }).join('');

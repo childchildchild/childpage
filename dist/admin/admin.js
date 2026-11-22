@@ -391,7 +391,8 @@ function renderPreviewRichBody(doc, container, blocks) {
       const track = doc.createElement('div'); track.className = 'article-carousel-track'; track.tabIndex = 0;
       for (const [index, image] of block.images.entries()) {
         const slide = doc.createElement('figure'); slide.className = 'article-carousel-slide';
-        const img = doc.createElement('img'); img.src = imageSource(image.src); img.alt = image.alt; slide.append(img);
+        const frame = doc.createElement('div'); frame.className = 'article-carousel-frame';
+        const img = doc.createElement('img'); img.src = imageSource(image.src); img.alt = image.alt; frame.append(img); slide.append(frame);
         const caption = doc.createElement('figcaption'); caption.textContent = `${index + 1} / ${block.images.length}`; slide.append(caption); track.append(slide);
       }
       const firstImage = track.querySelector('img');

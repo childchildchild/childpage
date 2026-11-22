@@ -28,9 +28,11 @@ test('renders rich blocks with escaped text and page-relative assets', () => {
   const html = renderRichBody([
     { type: 'paragraph', runs: [{ text: '<script>alert(1)</script>', marks: ['underline'] }] },
     { type: 'image', src: 'assets/photo.jpg', alt: '"Кот"' },
+    { type: 'carousel', images: [{ src: 'assets/first.jpg', alt: 'Первое' }, { src: 'assets/second.jpg', alt: 'Второе' }] },
   ], '../');
   assert.match(html, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
   assert.doesNotMatch(html, /<script>/);
   assert.match(html, /src="\.\.\/assets\/photo\.jpg"/);
+  assert.match(html, /class="article-carousel-frame"/);
   assert.match(html, /<u>/);
 });
