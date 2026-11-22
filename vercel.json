@@ -2,5 +2,10 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "buildCommand": "node build.mjs",
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
+  "functions": {
+    "api/admin.js": {
+      "includeFiles": "content/rich-content.mjs"
+    }
+  }
 }
