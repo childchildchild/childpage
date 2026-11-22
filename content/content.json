@@ -254,7 +254,7 @@
       "gameUrl": "",
       "linkedId": "",
       "publishedAt": "2026-11-22T03:39:52.436Z",
-      "updatedAt": "2026-11-22T04:06:33.894Z",
+      "updatedAt": "2026-11-22T04:23:07.580Z",
       "bodyBlocks": [
         {
           "type": "paragraph",
@@ -278,34 +278,13 @@
           ]
         },
         {
-          "type": "carousel",
-          "images": [
-            {
-              "src": "assets/uploads/1795320235230-jc36hb5d.png",
-              "alt": "lisa in mirror"
-            },
-            {
-              "src": "assets/uploads/1795320237410-prqq5nwr.jpg",
-              "alt": "lisaaa"
-            },
-            {
-              "src": "assets/uploads/1795320239074-gvseac4q.png",
-              "alt": "logo"
-            },
-            {
-              "src": "assets/uploads/1795320240500-d2ngzrba.jpg",
-              "alt": "manson"
-            }
-          ]
-        },
-        {
           "type": "heading",
           "runs": [
             {
               "text": "Откуда появились овчарки?",
               "marks": [
-                "underline",
-                "italic"
+                "italic",
+                "underline"
               ]
             }
           ]
@@ -335,6 +314,27 @@
             {
               "text": " в конце XIX века. Заводчики хотели получить собаку, которая будет не только сильной и выносливой, но и очень умной, чтобы с ней можно было работать.",
               "marks": []
+            }
+          ]
+        },
+        {
+          "type": "carousel",
+          "images": [
+            {
+              "src": "assets/uploads/1795321303539-5dtz9s9q.jpg",
+              "alt": "b354983af4bbea88cf122601af6dd325"
+            },
+            {
+              "src": "assets/uploads/1795321305147-ncr7rq2y.jpg",
+              "alt": "9afe5eed680fdbea"
+            },
+            {
+              "src": "assets/uploads/1795321306424-u2u33qj8.jpg",
+              "alt": "480ac4f0f78ffc3920d6c994a40e9305"
+            },
+            {
+              "src": "assets/uploads/1795321307657-38whndo1.webp",
+              "alt": "0ff9dabae699780abaa4c690cabb1f7c"
             }
           ]
         },
@@ -417,7 +417,7 @@
                 "marks": [
                   "bold"
                 ],
-                "href": "https://childpage-gamma.vercel.app/catalog.html?category=games"
+                "href": "https://childpage-gamma.vercel.app/read/item-a6fde8f7-009a-4522-8d5b-8bbaa0144f92.html"
               },
               {
                 "text": ".",
@@ -465,18 +465,25 @@
               ]
             },
             {
-              "text": ". Это крупные и сильные собаки. Живут они обычно около ",
+              "text": ". ",
               "marks": []
+            },
+            {
+              "text": "Это крупные и сильные собаки. Живут они обычно около ",
+              "marks": [],
+              "color": "#d73c3c"
             },
             {
               "text": "10–13 лет",
               "marks": [
                 "bold"
-              ]
+              ],
+              "color": "#d73c3c"
             },
             {
               "text": ".",
-              "marks": []
+              "marks": [],
+              "color": "#d73c3c"
             }
           ]
         },
@@ -488,11 +495,6 @@
               "marks": []
             }
           ]
-        },
-        {
-          "type": "image",
-          "src": "assets/uploads/1795320315386-11yz7e4h.jpg",
-          "alt": ""
         },
         {
           "type": "heading",
@@ -615,6 +617,11 @@
           ]
         },
         {
+          "type": "image",
+          "src": "assets/uploads/1795321356032-tuxq3ntz.jpg",
+          "alt": ""
+        },
+        {
           "type": "heading",
           "runs": [
             {
@@ -639,25 +646,29 @@
             [
               {
                 "text": "Не подходи к чужой собаке без разрешения хозяина.",
-                "marks": []
+                "marks": [],
+                "color": "#d73c3c"
               }
             ],
             [
               {
                 "text": "Не пугай собаку и не дёргай её за хвост или уши.",
-                "marks": []
+                "marks": [],
+                "color": "#d73c3c"
               }
             ],
             [
               {
                 "text": "Не трогай собаку, когда она ест или спит.",
-                "marks": []
+                "marks": [],
+                "color": "#d73c3c"
               }
             ],
             [
               {
                 "text": "Если собака рычит, лучше отойти спокойно, без криков и бега.",
-                "marks": []
+                "marks": [],
+                "color": "#d73c3c"
               }
             ]
           ]
@@ -678,25 +689,29 @@
             [
               {
                 "text": "Овчарки: это группа пород, а не одна порода.",
-                "marks": []
+                "marks": [],
+                "color": "#7a4da3"
               }
             ],
             [
               {
                 "text": "Раньше они пасли овец, а сегодня помогают полиции, спасателям и людям.",
-                "marks": []
+                "marks": [],
+                "color": "#7a4da3"
               }
             ],
             [
               {
                 "text": "У овчарок очень хороший нюх и слух.",
-                "marks": []
+                "marks": [],
+                "color": "#7a4da3"
               }
             ],
             [
               {
                 "text": "С любой собакой нужно вести себя осторожно и уважительно.",
-                "marks": []
+                "marks": [],
+                "color": "#7a4da3"
               }
             ]
           ]
