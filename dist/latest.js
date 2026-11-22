@@ -1,6 +1,14 @@
 const latestGrid = document.querySelector('.latest-grid');
+const publishedArticles = (window.siteArticles || []).slice(0, 8);
+const publishedTitles = new Set((window.siteArticles || []).map(article => article.title.toLocaleLowerCase('ru')));
 
-for (const article of (window.siteArticles || []).slice(0, 8)) {
+for (const placeholder of latestGrid.querySelectorAll('.latest-placeholder')) {
+  if (publishedTitles.has(placeholder.querySelector('h3').textContent.toLocaleLowerCase('ru'))) {
+    placeholder.remove();
+  }
+}
+
+for (const article of publishedArticles) {
   const card = document.createElement('article');
   card.className = 'latest-card';
   card.dataset.articleUrl = article.url;
@@ -19,5 +27,5 @@ for (const article of (window.siteArticles || []).slice(0, 8)) {
 
   link.append(image, title, description);
   card.append(link);
-  latestGrid.append(card);
+  latestGrid.insertBefore(card, latestGrid.querySelector('.latest-placeholder'));
 }
