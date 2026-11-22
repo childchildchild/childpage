@@ -14,10 +14,10 @@
 .story-close i{font-size:23px}
 .story-content{min-height:0;display:flex;flex-direction:column;justify-content:flex-end;padding:0 4px max(34px,calc(env(safe-area-inset-bottom,0px) + 12px))}
 .story-copy{padding:0 0 4px}
-.story-kicker{color:#ffd4b5;font-size:15px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.story-kicker{color:#dedbff;font-size:15px;font-weight:700;letter-spacing:.01em}
 .story-copy h2{margin:8px 0 12px;font-size:clamp(32px,9cqw,46px);line-height:1.05}
 .story-copy p{margin:0;font-size:clamp(18px,5cqw,22px);line-height:1.3}
-.story-link{display:flex;align-items:center;justify-content:center;gap:8px;min-height:52px;margin:24px 0 0;border-radius:28px;background:#ff752b;color:white;font-size:18px;font-weight:700;text-decoration:none}
+.story-link{display:flex;align-items:center;justify-content:center;gap:8px;min-height:52px;margin:24px 0 0;border-radius:28px;background:#cbcced;color:#050505;font-size:18px;font-weight:700;text-decoration:none}
 .story-link[hidden]{display:none}
 .story-link i{font-size:20px}
 html.story-open,body.story-open{background:#080808}

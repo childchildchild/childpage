@@ -58,7 +58,14 @@ const searchableItems = [...document.querySelectorAll('.content-tile, .age-card,
   title: element.querySelector('h3')?.textContent || element.querySelector('span:last-child').textContent,
   description: element.querySelector('p')?.textContent || 'Раздел контента',
   text: normalizeSearch(element.textContent),
-}));
+  url: element.dataset.articleUrl,
+})).concat((window.siteArticles || []).slice(8).map(article => ({
+  element: null,
+  title: article.title,
+  description: article.description,
+  text: normalizeSearch(`${article.title} ${article.description}`),
+  url: article.url,
+})));
 
 function restoreSharedSearch() {
   searchAnimations.forEach(animation => animation.cancel());
@@ -148,6 +155,10 @@ function renderSearch() {
     button.append(title, description);
     button.addEventListener('click', () => {
       closeSearch();
+      if (item.url) {
+        window.location.href = item.url;
+        return;
+      }
       highlightedResult?.classList.remove('search-match');
       highlightedResult = item.element;
       item.element.classList.add('search-match');
