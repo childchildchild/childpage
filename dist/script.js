@@ -1,4 +1,5 @@
 const toolbar = document.querySelector('#floating-toolbar');
+const prefersLessMotion = () => window.childpagePreferences?.prefersReducedMotion() || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const sourceToolbar = document.querySelector('#content-toolbar');
 
 const updateFloatingToolbar = () => {
@@ -108,7 +109,7 @@ function openSearch(trigger, fromMenu = false) {
   document.documentElement.classList.add('search-open');
   searchScreen.showModal();
   renderSearch();
-  if (source && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  if (source && !prefersLessMotion()) {
     animateMenuToSearch(source);
   }
   searchInput.focus({ preventScroll: true });
@@ -122,7 +123,7 @@ function backFromSearch() {
       restoreSharedSearch();
       searchScreen.close();
     };
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !searchAnimations.length) {
+    if (prefersLessMotion() || !searchAnimations.length) {
       finish();
       return;
     }
@@ -216,7 +217,7 @@ function closeMenu(afterClose) {
     menuSheet.close();
     menuClosing = false;
     afterClose?.();
-  }, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 240);
+  }, prefersLessMotion() ? 0 : 240);
 }
 
 function openMenu(trigger) {

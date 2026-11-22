@@ -43,7 +43,7 @@ let storyClosing = false;
 let storyMotion;
 let storyAnimations = 0;
 const storyMotionDuration = 420;
-const reduceStoryMotion = matchMedia('(prefers-reduced-motion: reduce)');
+const reduceStoryMotion = () => window.childpagePreferences?.prefersReducedMotion() || matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function storySourceRect() {
   if (!storyTrigger?.isConnected) return null;
@@ -53,7 +53,7 @@ function storySourceRect() {
 }
 
 async function animateStory(opening) {
-  if (reduceStoryMotion.matches) return;
+  if (reduceStoryMotion()) return;
   const rect = storySourceRect();
   if (!rect) {
     const fade = storyScreen.animate([{ opacity: opening ? 0 : 1 }, { opacity: opening ? 1 : 0 }], {

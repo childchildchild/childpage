@@ -1,0 +1,13 @@
+html[data-reading-size="large"] .latest-card p{font-size:17px}
+html[data-reading-size="large"] .catalog-card p{font-size:16px}
+html[data-reading-size="large"] .catalog-empty{font-size:18px}
+html[data-reading-size="large"] .article-intro{font-size:23px}
+html[data-reading-size="large"] .article-text{font-size:22px}
+html[data-reading-size="large"] .article-text h2{font-size:30px}
+html[data-reading-size="large"] .story-copy p{font-size:clamp(20px,5.7cqw,25px)}
+html[data-reading-size="large"] .search-result span{font-size:17px}
+html[data-reading-size="large"] .activity-dialog p{font-size:22px}
+html[data-reading-size="large"] .info-copy{font-size:19px}
+html[data-reduce-motion="true"],html[data-reduce-motion="true"] *{scroll-behavior:auto!important}
+html[data-reduce-motion="true"] *,html[data-reduce-motion="true"] *::before,html[data-reduce-motion="true"] *::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+@media(max-width:360px){html[data-reading-size="large"] .article-intro{font-size:21px}html[data-reading-size="large"] .article-text{font-size:20px}}

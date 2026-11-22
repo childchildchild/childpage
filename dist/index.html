@@ -5,17 +5,21 @@
   <script>document.documentElement.classList.add('scroll-reveal');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="color-scheme" content="light">
+  <script src="preferences.js?v=20261122-1"></script>
   <style>html,body{background:#cbcced linear-gradient(to bottom,#cbcced 0,#cbcced 45svh,#fffdfb 75svh,#fffdfb 100%)}</style>
   <title>Детская страница</title>
   <link rel="stylesheet" href="styles.css?v=20261122-21">
   <link rel="stylesheet" href="stories.css?v=20261122-6">
+  <link rel="stylesheet" href="preferences.css?v=20261122-1">
+  <link rel="stylesheet" href="menu-pages.css?v=20261122-1">
   <link rel="stylesheet" href="assets/phosphor/bold/style.css">
   <link rel="stylesheet" href="assets/phosphor/fill/style.css">
   <script src="articles-data.js" defer></script>
   <script src="content-data.js" defer></script>
   <script src="latest.js?v=20261122-3" defer></script>
-  <script src="script.js?v=20261122-11" defer></script>
-  <script src="stories.js?v=20261122-5" defer></script>
+  <script src="script.js?v=20261122-12" defer></script>
+  <script src="stories.js?v=20261122-6" defer></script>
+  <script src="menu-pages.js?v=20261122-1" defer></script>
 </head>
 <body>
   <main class="page">
@@ -92,11 +96,11 @@
         </form>
       </div>
       <nav class="menu-shortcuts" aria-label="Дополнительные разделы">
-        <button type="button" disabled><i class="ph-fill ph-gear" aria-hidden="true"></i>Настройки</button>
+        <button id="open-settings" type="button"><i class="ph-fill ph-gear" aria-hidden="true"></i>Настройки</button>
         <button type="button" data-menu-target=".latest"><i class="ph-fill ph-clock" aria-hidden="true"></i>Последнее</button>
         <button type="button" disabled><i class="ph-fill ph-chat-circle-dots" aria-hidden="true"></i>Поддержка</button>
         <button type="button" disabled><i class="ph-fill ph-stack" aria-hidden="true"></i>Ярлык</button>
-        <button type="button" disabled><i class="ph-fill ph-info" aria-hidden="true"></i>О сайте</button>
+        <button id="open-about" type="button"><i class="ph-fill ph-info" aria-hidden="true"></i>О сайте</button>
       </nav>
       <div class="menu-scroll">
       <nav class="menu-categories" aria-label="Все разделы">
@@ -128,6 +132,76 @@
       <p>История поиска пока что пустая</p>
     </div>
     <div class="search-results" id="search-results" aria-live="polite"></div>
+  </dialog>
+  <dialog class="info-screen" id="settings-screen" aria-labelledby="settings-title">
+    <header class="info-header">
+      <button class="icon-button info-back" type="button" aria-label="Вернуться в меню"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i></button>
+      <h2 id="settings-title">Настройки</h2>
+    </header>
+    <div class="info-scroll">
+      <div class="info-intro">
+        <span class="info-eyebrow">Удобно для вас</span>
+        <h3>Настройте страницу</h3>
+        <p class="info-copy">Выберите, как вам удобнее читать и смотреть материалы.</p>
+      </div>
+      <section class="info-section" aria-labelledby="reading-settings-title">
+        <h3 id="reading-settings-title">Просмотр</h3>
+        <label class="setting-row" for="setting-large-text">
+          <span><strong>Крупнее текст</strong><small>В статьях, описаниях и сторис</small></span>
+          <input id="setting-large-text" type="checkbox" role="switch"><span class="setting-switch" aria-hidden="true"></span>
+        </label>
+        <label class="setting-row" for="setting-reduce-motion">
+          <span><strong>Меньше анимации</strong><small>Экраны будут открываться без движения</small></span>
+          <input id="setting-reduce-motion" type="checkbox" role="switch"><span class="setting-switch" aria-hidden="true"></span>
+        </label>
+      </section>
+      <section class="info-section" aria-labelledby="progress-settings-title">
+        <h3 id="progress-settings-title">Занятия</h3>
+        <div class="setting-row progress-setting">
+          <span><strong>Прогресс «Первых шагов»</strong><small id="settings-progress-status">Пока нет пройденных занятий</small></span>
+        </div>
+        <button class="reset-progress" id="reset-progress" type="button">Сбросить прогресс</button>
+      </section>
+      <p class="info-footnote">Настройки и прогресс сохраняются только в этом браузере.</p>
+      <p class="settings-feedback" id="settings-feedback" role="status" hidden></p>
+    </div>
+  </dialog>
+  <dialog class="info-screen" id="about-screen" aria-labelledby="about-title">
+    <header class="info-header">
+      <button class="icon-button info-back" type="button" aria-label="Вернуться в меню"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i></button>
+      <h2 id="about-title">О сайте</h2>
+    </header>
+    <div class="info-scroll">
+      <div class="about-hero">
+        <span>Для детей и родителей</span>
+        <h3>ДЕТСКАЯ<br>СТРАНИЦА</h3>
+        <img src="assets/planet.png" alt="" aria-hidden="true">
+      </div>
+      <section class="info-section about-section">
+        <h3>Зачем этот сайт</h3>
+        <p class="info-copy">Здесь собраны истории, статьи и занятия, которые помогают провести время в детском отделении. Материалы можно выбирать по теме и возрасту.</p>
+      </section>
+      <section class="info-section about-section">
+        <h3>Как пользоваться</h3>
+        <ol class="about-steps info-copy">
+          <li><span>1</span>Выберите тему или возраст на главной странице.</li>
+          <li><span>2</span>Откройте материал, который заинтересовал ребёнка.</li>
+          <li><span>3</span>В сторис коснитесь правой части экрана для следующей истории, левой — для предыдущей.</li>
+        </ol>
+      </section>
+      <section class="info-section about-note">
+        <h3>Важно</h3>
+        <p class="info-copy">Сайт создан для досуга и знакомства с новыми темами. По вопросам самочувствия и лечения обращайтесь к сотрудникам отделения.</p>
+      </section>
+    </div>
+  </dialog>
+  <dialog class="confirm-dialog" id="reset-progress-confirm" aria-labelledby="reset-progress-title">
+    <h2 id="reset-progress-title">Сбросить прогресс?</h2>
+    <p>Пройденные занятия «Первых шагов» станут непройденными только в этом браузере.</p>
+    <div class="confirm-actions">
+      <button id="cancel-reset" type="button">Отмена</button>
+      <button id="confirm-reset" type="button">Сбросить</button>
+    </div>
   </dialog>
   <dialog class="story-screen" id="story-screen" aria-labelledby="story-title">
     <div class="story-art" aria-hidden="true"></div>
