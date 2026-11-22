@@ -219,13 +219,15 @@ function closeMenu(afterClose) {
   }, window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 240);
 }
 
+function openMenu(trigger) {
+  menuTrigger = trigger;
+  document.body.classList.add('menu-open');
+  menuSheet.showModal();
+  requestAnimationFrame(() => requestAnimationFrame(() => menuSheet.classList.add('is-open')));
+}
+
 document.querySelectorAll('button[aria-label="Открыть меню"]').forEach(button => {
-  button.addEventListener('click', () => {
-    menuTrigger = button;
-    document.body.classList.add('menu-open');
-    menuSheet.showModal();
-    requestAnimationFrame(() => requestAnimationFrame(() => menuSheet.classList.add('is-open')));
-  });
+  button.addEventListener('click', () => openMenu(button));
 });
 document.querySelector('#menu-back').addEventListener('click', () => closeMenu());
 menuSheet.addEventListener('cancel', event => {
@@ -261,7 +263,13 @@ document.querySelectorAll('[data-menu-target]').forEach(button => {
 });
 document.querySelectorAll('.content-tile').forEach((button, index) => {
   const categories = ['cartoons', 'games', 'for_all', 'tales', 'medicine', 'all'];
-  button.addEventListener('click', () => { window.location.href = `catalog.html?category=${categories[index]}`; });
+  button.addEventListener('click', () => {
+    if (button.hasAttribute('data-open-menu')) {
+      openMenu(button);
+      return;
+    }
+    window.location.href = `catalog.html?category=${categories[index]}`;
+  });
 });
 const menuHeader = document.querySelector('.menu-header');
 menuHeader.addEventListener('touchstart', event => {
