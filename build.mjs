@@ -1,6 +1,7 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { normalizeRichBlocks, renderRichBody } from './content/rich-content.mjs';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const dist = join(root, 'dist');
@@ -15,6 +16,7 @@ for (const item of source.items) {
   ids.add(item.id);
   if (!types.has(item.type) || !statuses.has(item.status) || typeof item.title !== 'string') throw new Error(`Invalid item: ${item.id}`);
   if (item.status === 'published' && !Number.isFinite(Date.parse(item.publishedAt))) throw new Error(`Published item needs a date: ${item.id}`);
+  if (item.bodyBlocks !== undefined) item.bodyBlocks = normalizeRichBlocks(item.bodyBlocks);
 }
 
 const escape = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
@@ -83,6 +85,7 @@ function renderPage(item) {
   const image = safePath(item.image);
   const media = safePath(item.mediaUrl);
   const link = safePath(item.gameUrl);
+  const body = Array.isArray(item.bodyBlocks) ? renderRichBody(item.bodyBlocks, prefix) : renderBody(item.body);
   const prefix = item.id === 'handwashing' ? '' : '../';
   const photo = image ? `<img class="article-photo" src="${escape(prefix + image)}" alt="${escape(item.imageAlt || '')}">` : '';
   let player = '';
@@ -94,7 +97,7 @@ function renderPage(item) {
 <meta name="article:published" content="${escape(item.publishedAt)}"><meta name="article:title" content="${title}"><meta name="article:description" content="${escape(item.description || '')}"><meta name="article:image" content="${escape(image)}">
 <title>${title} — Детская страница</title><link rel="stylesheet" href="${prefix}content-page.css"></head>
 <body><main class="article-page"><header class="article-header"><a class="article-back" href="${prefix}index.html" aria-label="На главную"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 5 5 20l15 15M6 20h30"/></svg></a><span>${escape(item.label || kind)}</span></header>
-<article>${photo}<div class="article-body"><h1>${title}</h1><p class="article-intro">${escape(item.description || '')}</p>${player}<div class="article-text">${renderBody(item.body)}</div><a class="article-home" href="${prefix}index.html">На главную</a></div></article></main></body></html>`;
+<article>${photo}<div class="article-body"><h1>${title}</h1><p class="article-intro">${escape(item.description || '')}</p>${player}<div class="article-text">${body}</div><a class="article-home" href="${prefix}index.html">На главную</a></div></article></main><script src="${prefix}article-carousel.js" defer></script></body></html>`;
 }
 
 await mkdir(join(dist, 'read'), { recursive: true });

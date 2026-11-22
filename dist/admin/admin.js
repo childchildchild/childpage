@@ -3,7 +3,9 @@ const $ = selector => document.querySelector(selector);
 const labels = { article: 'Статья', story: 'Сторис', video: 'Видео', audio: 'Аудио', game: 'Игра' };
 const states = { published: 'Опубликовано', draft: 'Черновик', planned: 'Заготовка', trashed: 'В корзине' };
 const contentForm = $('#content-form');
+const articleEditor = $('#article-editor');
 const trashLifetime = 7 * 24 * 60 * 60 * 1000;
+const richColors = new Set(['#222334', '#d73c3c', '#e77b1e', '#c69a00', '#25834a', '#2962c8', '#7a4da3']);
 let content = { version: 1, items: [] };
 let sha = '';
 let currentId = '';
@@ -56,6 +58,185 @@ function statusBadge(status) {
   badge.className = `status ${status}`;
   badge.textContent = states[status];
   return badge;
+}
+function parseLegacyBody(markdown) {
+  const blocks = [];
+  let list;
+  for (const raw of String(markdown || '').replace(/\r/g, '').split('\n')) {
+    const line = raw.trim();
+    if (!line) { list = undefined; continue; }
+    const runs = line.split(/(\*\*.+?\*\*)/g).filter(Boolean).map(part => part.startsWith('**') && part.endsWith('**')
+      ? { text: part.slice(2, -2), marks: ['bold'] }
+      : { text: part });
+    if (line.startsWith('## ')) {
+      list = undefined;
+      blocks.push({ type: 'heading', runs: parseLegacyBody(line.slice(3))[0]?.runs || [{ text: line.slice(3) }] });
+      continue;
+    }
+    const numbered = line.match(/^\d+\. (.+)$/);
+    const bullet = line.match(/^[-*] (.+)$/);
+    if (numbered || bullet) {
+      const ordered = Boolean(numbered);
+      if (!list || list.ordered !== ordered) {
+        list = { type: 'list', ordered, items: [] };
+        blocks.push(list);
+      }
+      list.items.push(parseLegacyBody((numbered || bullet)[1])[0]?.runs || runs);
+      continue;
+    }
+    list = undefined;
+    blocks.push({ type: 'paragraph', runs });
+  }
+  return blocks;
+}
+function appendRichRuns(doc, parent, runs) {
+  for (const run of runs || []) {
+    let node = doc.createTextNode(run.text);
+    if (run.href) {
+      const link = doc.createElement('a'); link.href = run.href; link.target = '_blank'; link.rel = 'noopener noreferrer'; link.append(node); node = link;
+    }
+    if (run.color && richColors.has(run.color)) {
+      const color = doc.createElement('span'); color.style.color = run.color; color.append(node); node = color;
+    }
+    for (const mark of run.marks || []) {
+      const tag = { bold: 'strong', italic: 'em', underline: 'u', strike: 's' }[mark];
+      if (tag) { const wrapper = doc.createElement(tag); wrapper.append(node); node = wrapper; }
+    }
+    parent.append(node);
+  }
+}
+function editorImageSource(source) {
+  return source?.startsWith('assets/') ? `../${source}` : source || '';
+}
+function createRichMediaBlock(block) {
+  const figure = document.createElement('figure');
+  figure.className = block.type === 'carousel' ? 'rich-media-block rich-carousel-block' : 'rich-media-block';
+  figure.dataset.richType = block.type;
+  figure.contentEditable = 'false';
+  const images = block.type === 'carousel' ? block.images : [block];
+  const strip = document.createElement('div'); strip.className = 'rich-media-strip';
+  for (const image of images) {
+    const img = document.createElement('img');
+    img.src = editorImageSource(image.src);
+    img.alt = image.alt || '';
+    img.dataset.src = image.src;
+    img.dataset.alt = image.alt || '';
+    strip.append(img);
+  }
+  figure.append(strip);
+  const caption = document.createElement('figcaption');
+  caption.textContent = block.type === 'carousel' ? `Карусель · ${images.length} фото` : 'Фото / GIF';
+  const remove = document.createElement('button');
+  remove.type = 'button'; remove.dataset.removeRichBlock = ''; remove.textContent = 'Удалить блок';
+  figure.append(caption, remove);
+  return figure;
+}
+function editorRuns(element) {
+  const runs = [];
+  function add(text, state) {
+    if (!text) return;
+    const last = runs[runs.length - 1];
+    if (last && last.marks.join() === state.marks.join() && last.color === state.color && last.href === state.href) last.text += text;
+    else runs.push({ text, ...state, marks: [...state.marks] });
+  }
+  function visit(node, state) {
+    if (node.nodeType === Node.TEXT_NODE) { add(node.nodeValue, state); return; }
+    if (node.nodeType !== Node.ELEMENT_NODE || node.tagName === 'BR') return;
+    const next = { marks: [...state.marks], color: state.color, href: state.href };
+    const tag = node.tagName.toLowerCase();
+    const mark = { b: 'bold', strong: 'bold', i: 'italic', em: 'italic', u: 'underline', s: 'strike', strike: 'strike', del: 'strike' }[tag];
+    if (mark && !next.marks.includes(mark)) next.marks.push(mark);
+    const color = node.getAttribute('color') || node.style.color;
+    if (color) {
+      const hex = color.startsWith('#') ? color.toLowerCase() : (() => {
+        const rgb = color.match(/\d+/g);
+        return rgb?.length >= 3 ? `#${rgb.slice(0, 3).map(value => Number(value).toString(16).padStart(2, '0')).join('')}` : '';
+      })();
+      if (richColors.has(hex)) next.color = hex;
+    }
+    if (tag === 'a' && node.getAttribute('href')) next.href = node.getAttribute('href');
+    for (const child of node.childNodes) visit(child, next);
+  }
+  visit(element, { marks: [], color: undefined, href: undefined });
+  return runs;
+}
+function readRichBlocks() {
+  const blocks = [];
+  function readNode(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      if (node.nodeValue.trim()) blocks.push({ type: 'paragraph', runs: [{ text: node.nodeValue }] });
+      return;
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) return;
+    const tag = node.tagName.toLowerCase();
+    if (tag === 'figure' && node.dataset.richType) {
+      const images = [...node.querySelectorAll('img')].map(img => ({ src: img.dataset.src || img.getAttribute('src')?.replace(/^\.\.\//, ''), alt: img.dataset.alt || img.alt || '' }));
+      if (node.dataset.richType === 'carousel') blocks.push({ type: 'carousel', images });
+      else if (images[0]) blocks.push({ type: 'image', ...images[0] });
+    } else if (tag === 'ol' || tag === 'ul') {
+      const items = [...node.children].filter(child => child.tagName === 'LI').map(editorRuns);
+      if (items.length) blocks.push({ type: 'list', ordered: tag === 'ol', items });
+    } else if (/^h[1-6]$/.test(tag)) {
+      blocks.push({ type: 'heading', runs: editorRuns(node) });
+    } else if (tag === 'p') {
+      const runs = editorRuns(node);
+      if (runs.some(run => run.text.trim())) blocks.push({ type: 'paragraph', runs });
+    } else if (tag === 'div' && [...node.children].some(child => /^(p|h[1-6]|ul|ol|figure)$/.test(child.tagName.toLowerCase()))) {
+      for (const child of node.childNodes) readNode(child);
+    } else if (tag !== 'br') {
+      const runs = editorRuns(node);
+      if (runs.some(run => run.text.trim())) blocks.push({ type: 'paragraph', runs });
+    }
+  }
+  for (const node of articleEditor.childNodes) readNode(node);
+  return blocks;
+}
+function setRichEditor(item) {
+  articleEditor.replaceChildren();
+  const blocks = Array.isArray(item.bodyBlocks) ? item.bodyBlocks : parseLegacyBody(item.body);
+  for (const block of blocks) {
+    if (block.type === 'image' || block.type === 'carousel') {
+      articleEditor.append(createRichMediaBlock(block));
+      continue;
+    }
+    if (block.type === 'list') {
+      const list = document.createElement(block.ordered ? 'ol' : 'ul');
+      for (const runs of block.items) { const li = document.createElement('li'); appendRichRuns(document, li, runs); list.append(li); }
+      articleEditor.append(list);
+      continue;
+    }
+    const element = document.createElement(block.type === 'heading' ? 'h2' : 'p');
+    appendRichRuns(document, element, block.runs);
+    articleEditor.append(element);
+  }
+}
+let savedEditorRange;
+function rememberEditorSelection() {
+  const selection = window.getSelection();
+  if (selection?.rangeCount && articleEditor.contains(selection.anchorNode)) savedEditorRange = selection.getRangeAt(0).cloneRange();
+}
+function restoreEditorSelection() {
+  articleEditor.focus();
+  if (!savedEditorRange || !articleEditor.contains(savedEditorRange.commonAncestorContainer)) return;
+  const selection = window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(savedEditorRange);
+}
+function insertRichBlock(block) {
+  const figure = createRichMediaBlock(block);
+  restoreEditorSelection();
+  const selection = window.getSelection();
+  const range = selection?.rangeCount ? selection.getRangeAt(0).cloneRange() : document.createRange();
+  const selectedNode = range.startContainer.nodeType === Node.ELEMENT_NODE ? range.startContainer : range.startContainer.parentElement;
+  const currentBlock = selectedNode?.closest('p,h1,h2,h3,h4,h5,h6,ul,ol');
+  if (currentBlock && articleEditor.contains(currentBlock)) { range.setStartAfter(currentBlock); range.collapse(true); }
+  else { range.selectNodeContents(articleEditor); range.collapse(false); }
+  range.insertNode(figure);
+  const paragraph = document.createElement('p'); paragraph.append(document.createElement('br')); figure.after(paragraph);
+  const nextRange = document.createRange(); nextRange.setStart(paragraph, 0); nextRange.collapse(true);
+  selection?.removeAllRanges(); selection?.addRange(nextRange);
+  rememberEditorSelection();
+  updatePreview();
 }
 function renderList() {
   const list = $('#items-list');
@@ -191,6 +372,35 @@ function renderPreviewBody(doc, container, markdown) {
     container.append(paragraph);
   }
 }
+function renderPreviewRichBody(doc, container, blocks) {
+  for (const block of blocks) {
+    if (block.type === 'paragraph' || block.type === 'heading') {
+      const element = doc.createElement(block.type === 'heading' ? 'h2' : 'p');
+      appendRichRuns(doc, element, block.runs);
+      container.append(element);
+    } else if (block.type === 'list') {
+      const list = doc.createElement(block.ordered ? 'ol' : 'ul');
+      for (const runs of block.items) { const item = doc.createElement('li'); appendRichRuns(doc, item, runs); list.append(item); }
+      container.append(list);
+    } else if (block.type === 'image') {
+      const figure = doc.createElement('figure'); figure.className = 'article-media';
+      const img = doc.createElement('img'); img.src = imageSource(block.src); img.alt = block.alt; figure.append(img); container.append(figure);
+    } else {
+      const carousel = doc.createElement('section'); carousel.className = 'article-carousel';
+      const previous = doc.createElement('button'); previous.type = 'button'; previous.className = 'article-carousel-arrow previous'; previous.textContent = '‹'; previous.setAttribute('aria-label', 'Предыдущее фото');
+      const track = doc.createElement('div'); track.className = 'article-carousel-track'; track.tabIndex = 0;
+      for (const [index, image] of block.images.entries()) {
+        const slide = doc.createElement('figure'); slide.className = 'article-carousel-slide';
+        const img = doc.createElement('img'); img.src = imageSource(image.src); img.alt = image.alt; slide.append(img);
+        const caption = doc.createElement('figcaption'); caption.textContent = `${index + 1} / ${block.images.length}`; slide.append(caption); track.append(slide);
+      }
+      const next = doc.createElement('button'); next.type = 'button'; next.className = 'article-carousel-arrow next'; next.textContent = '›'; next.setAttribute('aria-label', 'Следующее фото');
+      previous.addEventListener('click', () => track.scrollBy({ left: -track.clientWidth, behavior: 'smooth' }));
+      next.addEventListener('click', () => track.scrollBy({ left: track.clientWidth, behavior: 'smooth' }));
+      carousel.append(previous, track, next); container.append(carousel);
+    }
+  }
+}
 function renderPreviewCard(doc, item) {
   const page = doc.createElement('main'); page.className = 'catalog-page';
   const header = doc.createElement('header'); header.className = 'catalog-header';
@@ -237,7 +447,10 @@ function renderPreviewPage(doc, item) {
   } else if (item.type === 'game' && item.gameUrl) {
     const game = doc.createElement('a'); game.className = 'article-home'; game.href = item.gameUrl; game.textContent = 'Открыть игру'; game.target = '_blank'; game.rel = 'noopener noreferrer'; body.append(game);
   }
-  const text = doc.createElement('div'); text.className = 'article-text'; renderPreviewBody(doc, text, item.body); body.append(text);
+  const text = doc.createElement('div'); text.className = 'article-text';
+  if (Array.isArray(item.bodyBlocks)) renderPreviewRichBody(doc, text, item.bodyBlocks);
+  else renderPreviewBody(doc, text, item.body);
+  body.append(text);
   const home = doc.createElement('a'); home.className = 'article-home'; home.href = '#preview-card'; home.textContent = 'Вернуться к карточке';
   home.addEventListener('click', event => { event.preventDefault(); previewMode = 'card'; updatePreview(); });
   body.append(home); article.append(body); page.append(header, article); doc.body.append(page);
@@ -263,6 +476,7 @@ function openEditor(id = '', type = 'article') {
   for (const key of ['type', 'category', 'title', 'description', 'image', 'imageAlt', 'label', 'body', 'mediaUrl', 'gameUrl', 'linkedId']) {
     if (item[key] !== undefined && contentForm.elements[key]) contentForm.elements[key].value = item[key];
   }
+  setRichEditor(item);
   contentForm.querySelectorAll('input[name="ages"]').forEach(input => { input.checked = item.ages?.includes(input.value) || false; });
   const linked = $('#linked-item');
   linked.replaceChildren(new Option('Без кнопки перехода', ''));
@@ -295,6 +509,7 @@ function readForm(status) {
     category: get('category') || old.category || 'for_all',
     ages: [...contentForm.querySelectorAll('input[name="ages"]:checked')].map(input => input.value),
     image: get('image'), imageAlt: get('imageAlt'), label: get('label'), body: get('body'),
+    bodyBlocks: contentForm.elements.type.value === 'article' ? readRichBlocks() : old.bodyBlocks,
     linkedId: get('linkedId'), mediaUrl: get('mediaUrl'), gameUrl: get('gameUrl'),
     publishedAt: status === 'published' ? old.publishedAt || now : old.publishedAt || '',
     updatedAt: now,
@@ -303,7 +518,10 @@ function readForm(status) {
 function validateItem(item) {
   if (!item.title || !item.description) return 'Заполните название и короткое описание.';
   if (item.status !== 'published') return '';
-  if (item.type === 'article' && !item.body) return 'Добавьте текст статьи.';
+  if (item.type === 'article' && !item.bodyBlocks?.some(block => {
+    const runs = block.type === 'list' ? block.items.flat() : block.runs || [];
+    return runs.some(run => run.text.trim());
+  })) return 'Добавьте текст статьи.';
   if (item.type === 'story' && !item.image) return 'Добавьте фото сторис.';
   if (['video', 'audio'].includes(item.type) && !item.mediaUrl) return 'Добавьте прямую ссылку на медиафайл.';
   if (item.type === 'game' && !item.gameUrl) return 'Добавьте ссылку на игру.';
@@ -362,24 +580,70 @@ async function deletePermanently(id) {
   try { await persistContent(updated); notice('Материал удалён навсегда.'); }
   catch (error) { notice(error.message, true); }
 }
+async function uploadImageFile(file) {
+  const supportedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif'];
+  if (!supportedTypes.includes(file.type)) throw new Error('Поддерживаются JPG, PNG, WebP, AVIF и GIF.');
+  if (file.size > 2_500_000) throw new Error('Файл должен быть меньше 2,5 МБ.');
+  const base64 = await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(',')[1]);
+    reader.onerror = () => reject(new Error('Не удалось прочитать файл.'));
+    reader.readAsDataURL(file);
+  });
+  const result = await request('upload', { mime: file.type, base64 });
+  return result.path;
+}
 async function uploadImage(file) {
   if (!file) return;
-  const supportedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
-  if (!supportedTypes.includes(file.type)) { notice('Загрузите JPG, PNG, WebP или AVIF.', true); return; }
-  if (file.size > 2_500_000) { notice('Фото должно быть меньше 2,5 МБ.', true); return; }
   notice('Загружаю фото…');
   try {
-    const base64 = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result).split(',')[1]);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-    const result = await request('upload', { mime: file.type, base64 });
-    contentForm.elements.image.value = result.path;
+    contentForm.elements.image.value = await uploadImageFile(file);
     updatePreview();
     notice('Фото загружено. Сохраните материал, чтобы использовать его.');
   } catch (error) { notice(error.message, true); }
+}
+function httpsUrl(value) {
+  let url;
+  try { url = new URL(value); } catch { throw new Error('Введите корректную HTTPS-ссылку.'); }
+  if (url.protocol !== 'https:') throw new Error('Разрешены только HTTPS-ссылки.');
+  return url.href;
+}
+function closeMediaDialog(dialogId) {
+  const dialog = $(`#${dialogId}`);
+  dialog.querySelector('form').reset();
+  dialog.close();
+}
+async function insertRichImage() {
+  const file = $('#rich-media-file').files[0];
+  const url = $('#rich-media-url').value.trim();
+  if (file && url) { notice('Выберите файл или ссылку, но не оба варианта.', true); return; }
+  const button = $('#rich-media-confirm');
+  button.disabled = true;
+  try {
+    const src = file ? await uploadImageFile(file) : httpsUrl(url);
+    insertRichBlock({ type: 'image', src, alt: $('#rich-media-alt').value.trim() });
+    closeMediaDialog('media-dialog');
+    notice('Изображение добавлено в статью.');
+  } catch (error) { notice(error.message, true); }
+  finally { button.disabled = false; }
+}
+async function insertRichCarousel() {
+  const files = [...$('#rich-carousel-files').files];
+  const urls = $('#rich-carousel-urls').value.split(/\r?\n/).map(value => value.trim()).filter(Boolean);
+  if (files.length + urls.length < 2 || files.length + urls.length > 12) { notice('Добавьте в карусель от 2 до 12 изображений.', true); return; }
+  const button = $('#rich-carousel-confirm');
+  button.disabled = true;
+  try {
+    const images = urls.map((url, index) => ({ src: httpsUrl(url), alt: `Фото ${index + 1}` }));
+    for (const [index, file] of files.entries()) {
+      notice(`Загружаю фото ${index + 1} из ${files.length}…`);
+      images.push({ src: await uploadImageFile(file), alt: file.name.replace(/\.[^.]+$/, '') || `Фото ${images.length + 1}` });
+    }
+    insertRichBlock({ type: 'carousel', images });
+    closeMediaDialog('carousel-dialog');
+    notice('Карусель добавлена в статью.');
+  } catch (error) { notice(error.message, true); }
+  finally { button.disabled = false; }
 }
 
 $('#login-form').addEventListener('submit', async event => {
@@ -413,6 +677,7 @@ $('#publish').addEventListener('click', () => save('published'));
 $('#unpublish').addEventListener('click', () => save('draft'));
 $('#delete-item').addEventListener('click', removeItem);
 $('#image-upload').addEventListener('change', event => uploadImage(event.target.files[0]));
+$('#image-upload').addEventListener('change', event => { event.target.value = ''; });
 $('#image-preview').addEventListener('dragover', event => {
   event.preventDefault();
   event.currentTarget.classList.add('is-dragging');
@@ -429,6 +694,47 @@ document.querySelectorAll('[data-preview-view]').forEach(button => button.addEve
   previewMode = button.dataset.previewView;
   updatePreview();
 }));
+articleEditor.addEventListener('mouseup', rememberEditorSelection);
+articleEditor.addEventListener('keyup', rememberEditorSelection);
+articleEditor.addEventListener('input', rememberEditorSelection);
+articleEditor.addEventListener('click', event => {
+  const remove = event.target.closest('[data-remove-rich-block]');
+  if (remove) { remove.closest('[data-rich-type]').remove(); updatePreview(); }
+});
+document.querySelectorAll('[data-rich-command]').forEach(button => {
+  button.addEventListener('mousedown', event => event.preventDefault());
+  button.addEventListener('click', () => {
+    restoreEditorSelection();
+    document.execCommand(button.dataset.richCommand, false, button.dataset.richValue || null);
+    rememberEditorSelection();
+    updatePreview();
+  });
+});
+$('#rich-color').addEventListener('change', event => {
+  restoreEditorSelection();
+  if (richColors.has(event.target.value)) document.execCommand('foreColor', false, event.target.value);
+  rememberEditorSelection();
+  updatePreview();
+});
+$('#rich-insert-link').addEventListener('mousedown', event => event.preventDefault());
+$('#rich-insert-link').addEventListener('click', () => {
+  restoreEditorSelection();
+  if (!window.getSelection()?.toString()) { notice('Сначала выделите текст для ссылки.', true); return; }
+  const value = prompt('Введите HTTPS-ссылку');
+  if (value === null) return;
+  try {
+    document.execCommand('createLink', false, httpsUrl(value));
+    rememberEditorSelection();
+    updatePreview();
+  } catch (error) { notice(error.message, true); }
+});
+$('#rich-insert-image').addEventListener('mousedown', event => event.preventDefault());
+$('#rich-insert-image').addEventListener('click', () => { rememberEditorSelection(); $('#media-dialog').showModal(); });
+$('#rich-insert-carousel').addEventListener('mousedown', event => event.preventDefault());
+$('#rich-insert-carousel').addEventListener('click', () => { rememberEditorSelection(); $('#carousel-dialog').showModal(); });
+$('#rich-media-confirm').addEventListener('click', insertRichImage);
+$('#rich-carousel-confirm').addEventListener('click', insertRichCarousel);
+document.querySelectorAll('[data-close-dialog]').forEach(button => button.addEventListener('click', () => button.closest('dialog').close()));
 
 try {
   const session = await request('session');

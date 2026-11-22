@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import { hasRichText, normalizeRichBlocks } from '../content/rich-content.mjs';
 
 const repo = 'childchildchild/childpage';
 const contentPath = 'content/content.json';
@@ -94,9 +95,10 @@ function validate(input) {
       normalized.deletedAt = deletedAt;
       normalized.previousStatus = item.previousStatus;
     }
+    if (item.bodyBlocks !== undefined) normalized.bodyBlocks = normalizeRichBlocks(item.bodyBlocks);
     if (!normalized.title || !normalized.description) throw new Error(`Заполните название и описание: ${item.id}`);
     if (item.status === 'published' && !Number.isFinite(Date.parse(item.publishedAt))) throw new Error(`Укажите дату публикации: ${item.id}`);
-    if (item.status === 'published' && item.type === 'article' && !normalized.body) throw new Error(`Добавьте текст статьи: ${item.id}`);
+    if (item.status === 'published' && item.type === 'article' && !(item.bodyBlocks !== undefined ? hasRichText(normalized.bodyBlocks) : normalized.body)) throw new Error(`Добавьте текст статьи: ${item.id}`);
     if (item.status === 'published' && item.type === 'story' && !normalized.image) throw new Error(`Добавьте фото сторис: ${item.id}`);
     if (item.status === 'published' && ['video', 'audio'].includes(item.type) && !/^https:\/\//.test(normalized.mediaUrl) && !/^assets\/[a-zA-Z0-9/_\-.]+$/.test(normalized.mediaUrl)) throw new Error(`Добавьте ссылку на медиафайл: ${item.id}`);
     if (item.status === 'published' && item.type === 'game' && !/^https:\/\//.test(normalized.gameUrl) && !/^assets\/[a-zA-Z0-9/_\-.]+$/.test(normalized.gameUrl)) throw new Error(`Добавьте ссылку на игру: ${item.id}`);
@@ -155,7 +157,7 @@ export default async function handler(req, res) {
     }
     if (action === 'upload' && req.method === 'POST') {
       const type = String(req.body?.mime || '');
-      const formats = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/avif': 'avif' };
+      const formats = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/avif': 'avif', 'image/gif': 'gif' };
       if (!formats[type]) return response(res, 400, { error: 'Загрузите JPG, PNG, WebP или AVIF.' });
       const data = String(req.body?.base64 || '');
       if (data.length > 3_700_000 || !/^[a-zA-Z0-9+/=]+$/.test(data)) return response(res, 400, { error: 'Изображение должно быть меньше 2,5 МБ.' });

@@ -63,10 +63,32 @@
             <label>Название<input name="title" maxlength="160" required placeholder="Например, почему светят звёзды?"></label>
             <label>Короткое описание<textarea name="description" maxlength="400" rows="3" required placeholder="Этот текст появится на карточке"></textarea><small>На сайте видно не больше двух строк.</small></label>
             <fieldset class="age-choices"><legend>Для кого</legend><label><input type="checkbox" name="ages" value="0-3"> 0–3 года</label><label><input type="checkbox" name="ages" value="4-11"> 4–11 лет</label><label><input type="checkbox" name="ages" value="12+"> 12+ лет</label></fieldset>
-            <div class="image-row"><div id="image-preview" class="image-preview" tabindex="0" aria-label="Обложка: перетащите изображение сюда">Перетащите фото сюда</div><div class="image-controls"><label>Обложка или фото<input name="image" placeholder="assets/... или https://..."></label><label class="upload-label">Загрузить фото<input id="image-upload" type="file" accept="image/jpeg,image/png,image/webp,image/avif"></label><small>Перетащите JPG, PNG, WebP или AVIF на область обложки. До 2,5 МБ.</small></div></div>
+            <div class="image-row"><div id="image-preview" class="image-preview" tabindex="0" aria-label="Обложка: перетащите изображение сюда">Перетащите фото сюда</div><div class="image-controls"><label>Обложка или фото<input name="image" placeholder="assets/... или https://..."></label><label class="upload-label">Загрузить фото<input id="image-upload" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif"></label><small>Перетащите JPG, PNG, WebP, AVIF или GIF на область обложки. До 2,5 МБ.</small></div></div>
             <label data-for="article video audio game">Описание картинки<input name="imageAlt" maxlength="200" placeholder="Что изображено на фото"></label>
             <label data-for="article story">Надзаголовок<input name="label" maxlength="80" placeholder="Например, Полезный совет"></label>
-            <label data-for="article">Текст статьи<textarea name="body" rows="13" placeholder="Основной текст статьи. Пустая строка — новый абзац.&#10;## Подзаголовок&#10;1. Пункт списка&#10;**Важные слова**"></textarea><small>Поддерживаются абзацы, подзаголовки «##», списки «1.» или «-» и жирный текст «**слова**».</small></label>
+            <div class="rich-editor-field" data-for="article">
+              <span class="field-label">Текст статьи</span>
+              <div class="rich-toolbar" role="toolbar" aria-label="Форматирование статьи">
+                <button type="button" data-rich-command="bold" aria-label="Жирный"><strong>Ж</strong></button>
+                <button type="button" data-rich-command="italic" aria-label="Курсив"><em>К</em></button>
+                <button type="button" data-rich-command="underline" aria-label="Подчёркнутый"><u>Ч</u></button>
+                <button type="button" data-rich-command="strikeThrough" aria-label="Зачёркнутый"><s>З</s></button>
+                <button type="button" data-rich-command="formatBlock" data-rich-value="H2" aria-label="Заголовок">H2</button>
+                <button type="button" data-rich-command="insertUnorderedList" aria-label="Маркированный список">• Список</button>
+                <button type="button" data-rich-command="insertOrderedList" aria-label="Нумерованный список">1. Список</button>
+                <label class="color-picker-label">Цвет
+                  <select id="rich-color" aria-label="Цвет текста">
+                    <option value="#222334">Чёрный</option><option value="#d73c3c">Красный</option><option value="#e77b1e">Оранжевый</option><option value="#c69a00">Жёлтый</option><option value="#25834a">Зелёный</option><option value="#2962c8">Синий</option><option value="#7a4da3">Фиолетовый</option>
+                  </select>
+                </label>
+                <button type="button" id="rich-insert-link">Ссылка</button>
+                <button type="button" id="rich-insert-image">Фото / GIF</button>
+                <button type="button" id="rich-insert-carousel">Карусель</button>
+              </div>
+              <div id="article-editor" class="article-editor" contenteditable="true" role="textbox" aria-label="Текст статьи" aria-multiline="true" data-placeholder="Введите текст статьи..."></div>
+              <textarea name="body" hidden></textarea>
+              <small>Выделите фрагмент и выберите формат. Фото, GIF и карусель можно вставить из файла или по HTTPS-ссылке.</small>
+            </div>
             <label data-for="story">Куда ведёт сторис<select name="linkedId" id="linked-item"><option value="">Без кнопки перехода</option></select></label>
             <label data-for="video audio">Прямая ссылка на файл<input name="mediaUrl" type="url" placeholder="https://.../file.mp4 или .../file.mp3"><small>Видео и аудио проигрываются прямо на сайте. Для больших файлов используйте ссылку на размещённый файл.</small></label>
             <label data-for="game">Ссылка на игру<input name="gameUrl" type="url" placeholder="https://.../game"><small>Игра откроется отдельной страницей.</small></label>
@@ -79,6 +101,8 @@
     </div>
   </div>
 
+  <dialog id="media-dialog"><form method="dialog" class="media-dialog-form"><h2>Вставить фото или GIF</h2><label>HTTPS-ссылка на изображение<input id="rich-media-url" type="url" placeholder="https://..."></label><label>Или загрузите файл<input id="rich-media-file" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif"></label><label>Описание изображения<input id="rich-media-alt" maxlength="200" placeholder="Что изображено"></label><div class="dialog-actions"><button id="rich-media-confirm" type="button" class="primary">Вставить</button><button type="button" class="secondary" data-close-dialog>Отмена</button></div></form></dialog>
+  <dialog id="carousel-dialog"><form method="dialog" class="media-dialog-form"><h2>Карусель фотографий</h2><label>Загрузите 2–12 изображений<input id="rich-carousel-files" type="file" accept="image/jpeg,image/png,image/webp,image/avif,image/gif" multiple></label><label>Или вставьте HTTPS-ссылки, каждую с новой строки<textarea id="rich-carousel-urls" rows="4" placeholder="https://.../photo-1.jpg&#10;https://.../photo-2.jpg"></textarea></label><small>Можно совместить ссылки и файлы. На сайте карусель листается кнопками и свайпом.</small><div class="dialog-actions"><button id="rich-carousel-confirm" type="button" class="primary">Вставить карусель</button><button type="button" class="secondary" data-close-dialog>Отмена</button></div></form></dialog>
   <dialog id="type-dialog"><form method="dialog"><h2>Что добавить?</h2><p>Выберите формат материала.</p><div class="type-options"><button value="article">Статья</button><button value="story">Сторис</button><button value="video">Видео</button><button value="audio">Аудио</button><button value="game">Игра</button></div><button value="cancel" class="text-button">Отмена</button></form></dialog>
 </body>
 </html>
