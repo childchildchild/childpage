@@ -1,5 +1,6 @@
 # Local visual checks and temporary browser profiles
 .qa/
+.codex/reviews/
 
 # Manually generated publication archives
 *.zip
