@@ -12,6 +12,10 @@ let currentId = '';
 let typeFilter = 'all';
 let previewMode = 'card';
 let noticeTimer;
+const localImageUrls = new Map();
+let pendingCoverUrl = '';
+let coverUploadId = 0;
+let coverUploadPromise = null;
 
 function notice(message, error = false) {
   const node = $('#notice');
@@ -44,6 +48,8 @@ async function loadContent() {
 }
 function imageSource(path) {
   if (!path) return '';
+  if (localImageUrls.has(path)) return localImageUrls.get(path);
+  if (path.startsWith('blob:')) return path;
   if (path.startsWith('assets/')) return `../${path}`;
   if (path.startsWith('https://')) return path;
   return '';
@@ -106,7 +112,7 @@ function appendRichRuns(doc, parent, runs) {
   }
 }
 function editorImageSource(source) {
-  return source?.startsWith('assets/') ? `../${source}` : source || '';
+  return imageSource(source);
 }
 function createRichMediaBlock(block) {
   const figure = document.createElement('figure');
@@ -466,6 +472,7 @@ function renderPreviewPage(doc, item) {
 }
 function updatePreview() {
   const item = readForm('draft');
+  if (pendingCoverUrl) item.image = pendingCoverUrl;
   $('.editor-grid').classList.toggle('preview-expanded', previewMode === 'page');
   for (const button of document.querySelectorAll('[data-preview-view]')) button.classList.toggle('active', button.dataset.previewView === previewMode);
   const doc = previewDocument(previewMode === 'card' ? 'catalog.css' : 'content-page.css');
@@ -478,6 +485,10 @@ function updatePreview() {
   else imagePreview.textContent = 'Нет изображения';
 }
 function openEditor(id = '', type = 'article') {
+  coverUploadId++;
+  coverUploadPromise = null;
+  if (pendingCoverUrl && ![...localImageUrls.values()].includes(pendingCoverUrl)) URL.revokeObjectURL(pendingCoverUrl);
+  pendingCoverUrl = '';
   currentId = id;
   previewMode = 'card';
   const item = content.items.find(record => record.id === id) || { type, status: 'draft', ages: [] };
@@ -539,6 +550,10 @@ function validateItem(item) {
   return '';
 }
 async function save(status) {
+  if (coverUploadPromise) {
+    notice('Дожидаюсь загрузки фото…');
+    try { await coverUploadPromise; } catch { return; }
+  }
   const item = readForm(status);
   const error = validateItem(item);
   if (error) { notice(error, true); return; }
@@ -591,27 +606,52 @@ async function deletePermanently(id) {
   try { await persistContent(updated); notice('Материал удалён навсегда.'); }
   catch (error) { notice(error.message, true); }
 }
-async function uploadImageFile(file) {
+async function uploadImageFile(file, previewUrl = '') {
   const supportedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif'];
   if (!supportedTypes.includes(file.type)) throw new Error('Поддерживаются JPG, PNG, WebP, AVIF и GIF.');
   if (file.size > 2_500_000) throw new Error('Файл должен быть меньше 2,5 МБ.');
-  const base64 = await new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result).split(',')[1]);
-    reader.onerror = () => reject(new Error('Не удалось прочитать файл.'));
-    reader.readAsDataURL(file);
-  });
-  const result = await request('upload', { mime: file.type, base64 });
-  return result.path;
+  const localUrl = previewUrl || URL.createObjectURL(file);
+  try {
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result).split(',')[1]);
+      reader.onerror = () => reject(new Error('Не удалось прочитать файл.'));
+      reader.readAsDataURL(file);
+    });
+    const result = await request('upload', { mime: file.type, base64 });
+    localImageUrls.set(result.path, localUrl);
+    return result.path;
+  } catch (error) {
+    URL.revokeObjectURL(localUrl);
+    throw error;
+  }
 }
 async function uploadImage(file) {
   if (!file) return;
+  const uploadId = ++coverUploadId;
+  const localUrl = URL.createObjectURL(file);
+  pendingCoverUrl = localUrl;
+  updatePreview();
   notice('Загружаю фото…');
+  const transfer = uploadImageFile(file, localUrl);
+  coverUploadPromise = transfer;
   try {
-    contentForm.elements.image.value = await uploadImageFile(file);
+    const path = await transfer;
+    if (uploadId !== coverUploadId) {
+      localImageUrls.delete(path);
+      URL.revokeObjectURL(localUrl);
+      return;
+    }
+    contentForm.elements.image.value = path;
+    pendingCoverUrl = '';
     updatePreview();
     notice('Фото загружено. Сохраните материал, чтобы использовать его.');
-  } catch (error) { notice(error.message, true); }
+  } catch (error) {
+    URL.revokeObjectURL(localUrl);
+    if (uploadId === coverUploadId) { pendingCoverUrl = ''; updatePreview(); notice(error.message, true); }
+  } finally {
+    if (coverUploadPromise === transfer) coverUploadPromise = null;
+  }
 }
 function httpsUrl(value) {
   let url;
@@ -682,6 +722,11 @@ $('#type-dialog').addEventListener('close', event => { if (event.currentTarget.r
 $('#back-list').addEventListener('click', () => { $('#editor-view').hidden = true; $('#list-view').hidden = false; renderList(); });
 $('#item-type').addEventListener('change', updateTypeFields);
 contentForm.addEventListener('input', updatePreview);
+contentForm.elements.image.addEventListener('input', () => {
+  coverUploadId++;
+  if (pendingCoverUrl) URL.revokeObjectURL(pendingCoverUrl);
+  pendingCoverUrl = '';
+});
 contentForm.addEventListener('submit', event => event.preventDefault());
 $('#save-draft').addEventListener('click', () => save($('#save-draft').textContent.includes('заготовку') ? 'planned' : 'draft'));
 $('#publish').addEventListener('click', () => save('published'));
