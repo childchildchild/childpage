@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex,nofollow">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; img-src 'self' data: https:; style-src 'self'; script-src 'self'; base-uri 'none'; form-action 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; img-src 'self' data: https:; media-src 'self' https:; style-src 'self'; script-src 'self'; base-uri 'none'; form-action 'self'">
   <title>Управление сайтом — Детская страница</title>
   <link rel="stylesheet" href="admin.css">
   <script src="admin.js" type="module"></script>
@@ -36,6 +36,7 @@
         <button type="button" data-filter="video">Видео <span id="count-video"></span></button>
         <button type="button" data-filter="audio">Аудио <span id="count-audio"></span></button>
         <button type="button" data-filter="game">Игры <span id="count-game"></span></button>
+        <button type="button" data-filter="trash">Корзина <span id="count-trash"></span></button>
       </nav>
       <div class="sidebar-bottom"><span id="signed-user"></span><button id="logout" type="button">Выйти</button></div>
     </aside>
@@ -58,11 +59,11 @@
         <div class="editor-grid">
           <form id="content-form" class="form-card">
             <div class="form-heading"><div><p class="eyebrow">Материал</p><h2 id="editor-title">Новый материал</h2></div><button id="delete-item" class="danger-text" type="button" hidden>Удалить</button></div>
-            <div class="two-cols"><label>Тип материала<select name="type" id="item-type"><option value="article">Статья</option><option value="story">Сторис</option><option value="video">Видео</option><option value="audio">Аудио</option><option value="game">Игра</option></select></label><label>Раздел<select name="category"><option value="for_all">Интересно всем</option><option value="cartoons">Мультики</option><option value="games">Игры</option><option value="tales">Сказки на ночь</option><option value="medicine">Медицина</option><option value="more">Больше</option></select></label></div>
+            <div class="two-cols"><label>Тип материала<select name="type" id="item-type"><option value="article">Статья</option><option value="story">Сторис</option><option value="video">Видео</option><option value="audio">Аудио</option><option value="game">Игра</option></select></label><label>Раздел<select name="category"><option value="for_all">Интересно всем</option><option value="cartoons">Мультики</option><option value="games">Игры</option><option value="tales">Сказки на ночь</option><option value="medicine">Медицина</option></select></label></div>
             <label>Название<input name="title" maxlength="160" required placeholder="Например, почему светят звёзды?"></label>
             <label>Короткое описание<textarea name="description" maxlength="400" rows="3" required placeholder="Этот текст появится на карточке"></textarea><small>На сайте видно не больше двух строк.</small></label>
             <fieldset class="age-choices"><legend>Для кого</legend><label><input type="checkbox" name="ages" value="0-3"> 0–3 года</label><label><input type="checkbox" name="ages" value="4-11"> 4–11 лет</label><label><input type="checkbox" name="ages" value="12+"> 12+ лет</label></fieldset>
-            <div class="image-row"><div id="image-preview" class="image-preview">Нет изображения</div><div class="image-controls"><label>Обложка или фото<input name="image" placeholder="assets/... или https://..."></label><label class="upload-label">Загрузить фото<input id="image-upload" type="file" accept="image/jpeg,image/png,image/webp,image/avif"></label><small>JPG, PNG, WebP, AVIF до 2,5 МБ.</small></div></div>
+            <div class="image-row"><div id="image-preview" class="image-preview" tabindex="0" aria-label="Обложка: перетащите изображение сюда">Перетащите фото сюда</div><div class="image-controls"><label>Обложка или фото<input name="image" placeholder="assets/... или https://..."></label><label class="upload-label">Загрузить фото<input id="image-upload" type="file" accept="image/jpeg,image/png,image/webp,image/avif"></label><small>Перетащите JPG, PNG, WebP или AVIF на область обложки. До 2,5 МБ.</small></div></div>
             <label data-for="article video audio game">Описание картинки<input name="imageAlt" maxlength="200" placeholder="Что изображено на фото"></label>
             <label data-for="article story">Надзаголовок<input name="label" maxlength="80" placeholder="Например, Полезный совет"></label>
             <label data-for="article">Текст статьи<textarea name="body" rows="13" placeholder="Основной текст статьи. Пустая строка — новый абзац.&#10;## Подзаголовок&#10;1. Пункт списка&#10;**Важные слова**"></textarea><small>Поддерживаются абзацы, подзаголовки «##», списки «1.» или «-» и жирный текст «**слова**».</small></label>
@@ -72,7 +73,7 @@
             <div class="editor-actions"><button id="save-draft" type="button" class="secondary">Сохранить черновик</button><button id="publish" type="button" class="primary">Опубликовать</button></div>
             <button id="unpublish" type="button" class="danger-text" hidden>Снять с публикации</button>
           </form>
-          <aside class="preview-column"><div class="preview-card"><p class="eyebrow">Предпросмотр карточки</p><div id="card-preview" class="card-preview"></div><p class="preview-hint">Изменения появятся на сайте после публикации Vercel.</p></div><div class="help-card"><h3>Как это работает</h3><p>Черновик виден только в панели. «Опубликовать» отправляет материал на сайт. Заготовки сохраняют старые пустые карточки, пока вы не заполните их.</p></div></aside>
+          <aside class="preview-column"><div class="preview-card"><p class="eyebrow">Предпросмотр сайта</p><div class="preview-switch" role="group" aria-label="Вид предпросмотра"><button type="button" data-preview-view="card" class="active">Карточка</button><button type="button" data-preview-view="page">Страница</button></div><iframe id="site-preview" title="Интерактивный предпросмотр карточки и страницы" sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe><p class="preview-hint">Нажмите на карточку, чтобы открыть страницу материала. Предпросмотр обновляется вместе с полями.</p></div><div class="help-card"><h3>Как это работает</h3><p>Черновик виден только в панели. «Опубликовать» отправляет материал на сайт. Заготовки сохраняют старые пустые карточки, пока вы их не заполните.</p></div></aside>
         </div>
       </section>
     </div>

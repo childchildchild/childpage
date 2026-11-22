@@ -1,12 +1,14 @@
 const apiUrl = '/api/admin';
 const $ = selector => document.querySelector(selector);
 const labels = { article: 'Статья', story: 'Сторис', video: 'Видео', audio: 'Аудио', game: 'Игра' };
-const states = { published: 'Опубликовано', draft: 'Черновик', planned: 'Заготовка' };
+const states = { published: 'Опубликовано', draft: 'Черновик', planned: 'Заготовка', trashed: 'В корзине' };
 const contentForm = $('#content-form');
+const trashLifetime = 7 * 24 * 60 * 60 * 1000;
 let content = { version: 1, items: [] };
 let sha = '';
 let currentId = '';
 let typeFilter = 'all';
+let previewMode = 'card';
 let noticeTimer;
 
 function notice(message, error = false) {
@@ -60,9 +62,49 @@ function renderList() {
   list.replaceChildren();
   const query = $('#filter-text').value.toLocaleLowerCase('ru').trim();
   const status = $('#filter-status').value;
-  const items = content.items.filter(item => (typeFilter === 'all' || item.type === typeFilter) && (status === 'all' || item.status === status) && (!query || `${item.title} ${item.description}`.toLocaleLowerCase('ru').includes(query)));
-  const sorted = [...items].sort((a, b) => (a.status === 'published' ? 0 : 1) - (b.status === 'published' ? 0 : 1) || Date.parse(b.publishedAt || b.updatedAt || 0) - Date.parse(a.publishedAt || a.updatedAt || 0));
+  const inTrash = typeFilter === 'trash';
+  $('#filter-status').hidden = inTrash;
+  const items = content.items.filter(item =>
+    (inTrash ? item.status === 'trashed' : item.status !== 'trashed' && (typeFilter === 'all' || item.type === typeFilter)) &&
+    (inTrash || status === 'all' || item.status === status) &&
+    (!query || `${item.title} ${item.description}`.toLocaleLowerCase('ru').includes(query))
+  );
+  const sorted = [...items].sort((a, b) => inTrash
+    ? Date.parse(b.deletedAt) - Date.parse(a.deletedAt)
+    : (a.status === 'published' ? 0 : 1) - (b.status === 'published' ? 0 : 1) || Date.parse(b.publishedAt || b.updatedAt || 0) - Date.parse(a.publishedAt || a.updatedAt || 0));
   for (const item of sorted) {
+    if (inTrash) {
+      const entry = document.createElement('div');
+      entry.className = 'trash-entry';
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      const thumb = document.createElement('span');
+      thumb.className = 'item-thumb';
+      const image = imageSource(item.image);
+      if (image) { const img = document.createElement('img'); img.src = image; img.alt = ''; thumb.append(img); }
+      else thumb.textContent = '◦';
+      const main = document.createElement('span');
+      main.className = 'item-main';
+      const title = document.createElement('strong');
+      title.textContent = item.title;
+      const meta = document.createElement('small');
+      const daysLeft = Math.max(0, Math.ceil((Date.parse(item.deletedAt) + trashLifetime - Date.now()) / 86400000));
+      meta.textContent = `${labels[item.type]} · удаление через ${daysLeft} дн.`;
+      main.append(title, meta);
+      row.append(thumb, main, statusBadge(item.status));
+      const actions = document.createElement('div');
+      actions.className = 'trash-actions';
+      const restore = document.createElement('button');
+      restore.type = 'button'; restore.className = 'secondary'; restore.textContent = 'Восстановить';
+      restore.addEventListener('click', () => restoreItem(item.id));
+      const destroy = document.createElement('button');
+      destroy.type = 'button'; destroy.className = 'danger-text'; destroy.textContent = 'Удалить навсегда';
+      destroy.addEventListener('click', () => deletePermanently(item.id));
+      actions.append(restore, destroy);
+      entry.append(row, actions);
+      list.append(entry);
+      continue;
+    }
     const row = document.createElement('button');
     row.type = 'button';
     row.className = 'item-row';
@@ -84,8 +126,10 @@ function renderList() {
     list.append(row);
   }
   $('#empty-list').hidden = sorted.length !== 0;
-  for (const type of ['article', 'story', 'video', 'audio', 'game']) $(`#count-${type}`).textContent = content.items.filter(item => item.type === type).length;
-  $('#count-all').textContent = content.items.length;
+  $('#empty-list').textContent = inTrash ? 'Корзина пуста.' : 'Здесь пока нет материалов.';
+  for (const type of ['article', 'story', 'video', 'audio', 'game']) $(`#count-${type}`).textContent = content.items.filter(item => item.type === type && item.status !== 'trashed').length;
+  $('#count-all').textContent = content.items.filter(item => item.status !== 'trashed').length;
+  $('#count-trash').textContent = content.items.filter(item => item.status === 'trashed').length;
   $('#stat-published').textContent = content.items.filter(item => item.status === 'published').length;
   $('#stat-draft').textContent = content.items.filter(item => item.status === 'draft').length;
   $('#stat-planned').textContent = content.items.filter(item => item.status === 'planned').length;
@@ -96,22 +140,123 @@ function updateTypeFields() {
   $('#editor-title').textContent = `${currentId ? 'Редактирование' : 'Новый материал'}: ${labels[type].toLocaleLowerCase('ru')}`;
   updatePreview();
 }
+function previewDocument(stylesheet) {
+  const frame = $('#site-preview');
+  const doc = frame.contentDocument;
+  const css = new URL(`../${stylesheet}`, location.href).href;
+  doc.open();
+  doc.write(`<!doctype html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="${css}"></head><body></body></html>`);
+  doc.close();
+  return doc;
+}
+function appendFormattedText(doc, parent, text) {
+  for (const part of text.split(/(\*\*.+?\*\*)/g)) {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      const strong = doc.createElement('strong');
+      strong.textContent = part.slice(2, -2);
+      parent.append(strong);
+    } else {
+      parent.append(doc.createTextNode(part));
+    }
+  }
+}
+function renderPreviewBody(doc, container, markdown) {
+  let list;
+  for (const raw of String(markdown || '').replace(/\r/g, '').split('\n')) {
+    const line = raw.trim();
+    if (!line) { list = undefined; continue; }
+    if (line.startsWith('## ')) {
+      list = undefined;
+      const heading = doc.createElement('h2');
+      appendFormattedText(doc, heading, line.slice(3));
+      container.append(heading);
+      continue;
+    }
+    const numbered = line.match(/^\d+\. (.+)$/);
+    const bullet = line.match(/^[-*] (.+)$/);
+    if (numbered || bullet) {
+      const kind = numbered ? 'ol' : 'ul';
+      if (!list || list.tagName.toLowerCase() !== kind) {
+        list = doc.createElement(kind);
+        container.append(list);
+      }
+      const item = doc.createElement('li');
+      appendFormattedText(doc, item, (numbered || bullet)[1]);
+      list.append(item);
+      continue;
+    }
+    list = undefined;
+    const paragraph = doc.createElement('p');
+    appendFormattedText(doc, paragraph, line);
+    container.append(paragraph);
+  }
+}
+function renderPreviewCard(doc, item) {
+  const page = doc.createElement('main'); page.className = 'catalog-page';
+  const header = doc.createElement('header'); header.className = 'catalog-header';
+  const brand = doc.createElement('span'); brand.textContent = 'Детская страница';
+  header.append(brand);
+  const section = doc.createElement('section'); section.className = 'catalog-content';
+  const eyebrow = doc.createElement('p'); eyebrow.className = 'eyebrow'; eyebrow.textContent = 'Материалы';
+  const heading = doc.createElement('h1'); heading.textContent = 'Предпросмотр';
+  const grid = doc.createElement('div'); grid.className = 'catalog-grid';
+  const card = doc.createElement('article'); card.className = 'catalog-card';
+  const link = doc.createElement('a'); link.href = '#preview-page';
+  const visual = doc.createElement('div'); visual.className = 'catalog-image';
+  const image = imageSource(item.image);
+  if (image) { const img = doc.createElement('img'); img.src = image; img.alt = item.imageAlt || ''; visual.append(img); }
+  else visual.textContent = 'Ожидается изображение';
+  const kind = doc.createElement('span'); kind.className = 'catalog-kind'; kind.textContent = labels[item.type];
+  const title = doc.createElement('h2'); title.textContent = item.title || 'Название материала';
+  const description = doc.createElement('p'); description.textContent = item.description || 'Короткое описание материала';
+  link.append(visual, kind, title, description);
+  link.addEventListener('click', event => { event.preventDefault(); previewMode = 'page'; updatePreview(); });
+  card.append(link); grid.append(card); section.append(eyebrow, heading, grid); page.append(header, section); doc.body.append(page);
+}
+function renderPreviewPage(doc, item) {
+  const page = doc.createElement('main'); page.className = 'article-page';
+  const header = doc.createElement('header'); header.className = 'article-header';
+  const back = doc.createElement('a'); back.className = 'article-back'; back.href = '#preview-card'; back.setAttribute('aria-label', 'Вернуться к карточке'); back.textContent = '←';
+  back.addEventListener('click', event => { event.preventDefault(); previewMode = 'card'; updatePreview(); });
+  const label = doc.createElement('span'); label.textContent = item.label || labels[item.type];
+  header.append(back, label);
+  const article = doc.createElement('article');
+  const image = imageSource(item.image);
+  if (image) { const photo = doc.createElement('img'); photo.className = 'article-photo'; photo.src = image; photo.alt = item.imageAlt || ''; article.append(photo); }
+  const body = doc.createElement('div'); body.className = 'article-body';
+  const title = doc.createElement('h1'); title.textContent = item.title || 'Название материала';
+  const intro = doc.createElement('p'); intro.className = 'article-intro'; intro.textContent = item.description || 'Короткое описание материала';
+  body.append(title, intro);
+  const media = item.mediaUrl?.startsWith('assets/') ? `../${item.mediaUrl}` : item.mediaUrl?.startsWith('https://') ? item.mediaUrl : '';
+  if (item.type === 'video' && media) {
+    const player = doc.createElement('video'); player.className = 'content-player'; player.controls = true; player.playsInline = true; player.preload = 'metadata'; player.src = media;
+    if (image) player.poster = image;
+    body.append(player);
+  } else if (item.type === 'audio' && media) {
+    const player = doc.createElement('audio'); player.className = 'content-audio'; player.controls = true; player.preload = 'metadata'; player.src = media; body.append(player);
+  } else if (item.type === 'game' && item.gameUrl) {
+    const game = doc.createElement('a'); game.className = 'article-home'; game.href = item.gameUrl; game.textContent = 'Открыть игру'; game.target = '_blank'; game.rel = 'noopener noreferrer'; body.append(game);
+  }
+  const text = doc.createElement('div'); text.className = 'article-text'; renderPreviewBody(doc, text, item.body); body.append(text);
+  const home = doc.createElement('a'); home.className = 'article-home'; home.href = '#preview-card'; home.textContent = 'Вернуться к карточке';
+  home.addEventListener('click', event => { event.preventDefault(); previewMode = 'card'; updatePreview(); });
+  body.append(home); article.append(body); page.append(header, article); doc.body.append(page);
+}
 function updatePreview() {
-  const preview = $('#card-preview');
-  preview.replaceChildren();
-  const path = imageSource(contentForm.elements.image.value.trim());
-  if (path) { const img = document.createElement('img'); img.src = path; img.alt = ''; preview.append(img); }
-  else { const box = document.createElement('div'); box.className = 'image-fallback'; box.textContent = 'Ожидается изображение'; preview.append(box); }
-  const title = document.createElement('h3'); title.textContent = contentForm.elements.title.value || 'Название материала';
-  const description = document.createElement('p'); description.textContent = contentForm.elements.description.value || 'Короткое описание материала';
-  preview.append(title, description);
+  const item = readForm('draft');
+  for (const button of document.querySelectorAll('[data-preview-view]')) button.classList.toggle('active', button.dataset.previewView === previewMode);
+  const doc = previewDocument(previewMode === 'card' ? 'catalog.css' : 'content-page.css');
+  if (previewMode === 'card') renderPreviewCard(doc, item);
+  else renderPreviewPage(doc, item);
   const imagePreview = $('#image-preview');
   imagePreview.replaceChildren();
+  const path = imageSource(item.image);
   if (path) { const img = document.createElement('img'); img.src = path; img.alt = ''; imagePreview.append(img); }
   else imagePreview.textContent = 'Нет изображения';
 }
 function openEditor(id = '', type = 'article') {
   currentId = id;
+  previewMode = 'card';
   const item = content.items.find(record => record.id === id) || { type, status: 'draft', ages: [] };
   contentForm.reset();
   for (const key of ['type', 'category', 'title', 'description', 'image', 'imageAlt', 'label', 'body', 'mediaUrl', 'gameUrl', 'linkedId']) {
@@ -146,7 +291,7 @@ function readForm(status) {
     status,
     title: get('title'),
     description: get('description'),
-    category: get('category'),
+    category: get('category') || old.category || 'for_all',
     ages: [...contentForm.querySelectorAll('input[name="ages"]:checked')].map(input => input.value),
     image: get('image'), imageAlt: get('imageAlt'), label: get('label'), body: get('body'),
     linkedId: get('linkedId'), mediaUrl: get('mediaUrl'), gameUrl: get('gameUrl'),
@@ -181,19 +326,45 @@ async function save(status) {
   } catch (failure) { notice(failure.message, true); }
   finally { buttons.forEach(button => { button.disabled = false; }); }
 }
+async function persistContent(updated) {
+  const result = await request('save', { content: updated, sha });
+  content = updated;
+  sha = result.sha;
+  renderList();
+}
 async function removeItem() {
   const item = content.items.find(record => record.id === currentId);
-  if (!item || !confirm(`Удалить «${item.title}»? Это действие уберёт материал с сайта после обновления.`)) return;
-  const updated = { version: 1, items: content.items.filter(record => record.id !== currentId) };
+  if (!item || item.status === 'trashed' || !confirm(`Переместить «${item.title}» в корзину? Его можно будет восстановить в течение 7 дней.`)) return;
+  const trashedItem = { ...item, status: 'trashed', previousStatus: item.status, deletedAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+  const updated = { version: 1, items: content.items.map(record => record.id === item.id ? trashedItem : record) };
   try {
-    const result = await request('save', { content: updated, sha });
-    content = updated; sha = result.sha; currentId = '';
+    await persistContent(updated);
+    currentId = '';
     $('#editor-view').hidden = true; $('#list-view').hidden = false; $('#view-title').textContent = 'Все материалы';
-    renderList(); notice('Материал удалён.');
+    notice('Материал перемещён в корзину. Он будет удалён окончательно через 7 дней.');
   } catch (error) { notice(error.message, true); }
+}
+async function restoreItem(id) {
+  const item = content.items.find(record => record.id === id && record.status === 'trashed');
+  if (!item) return;
+  const restored = { ...item, status: item.previousStatus, updatedAt: new Date().toISOString() };
+  delete restored.previousStatus;
+  delete restored.deletedAt;
+  const updated = { version: 1, items: content.items.map(record => record.id === id ? restored : record) };
+  try { await persistContent(updated); notice('Материал восстановлен.'); }
+  catch (error) { notice(error.message, true); }
+}
+async function deletePermanently(id) {
+  const item = content.items.find(record => record.id === id && record.status === 'trashed');
+  if (!item || !confirm(`Удалить «${item.title}» навсегда? Восстановить его будет нельзя.`)) return;
+  const updated = { version: 1, items: content.items.filter(record => record.id !== id) };
+  try { await persistContent(updated); notice('Материал удалён навсегда.'); }
+  catch (error) { notice(error.message, true); }
 }
 async function uploadImage(file) {
   if (!file) return;
+  const supportedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
+  if (!supportedTypes.includes(file.type)) { notice('Загрузите JPG, PNG, WebP или AVIF.', true); return; }
   if (file.size > 2_500_000) { notice('Фото должно быть меньше 2,5 МБ.', true); return; }
   notice('Загружаю фото…');
   try {
@@ -241,6 +412,22 @@ $('#publish').addEventListener('click', () => save('published'));
 $('#unpublish').addEventListener('click', () => save('draft'));
 $('#delete-item').addEventListener('click', removeItem);
 $('#image-upload').addEventListener('change', event => uploadImage(event.target.files[0]));
+$('#image-preview').addEventListener('dragover', event => {
+  event.preventDefault();
+  event.currentTarget.classList.add('is-dragging');
+});
+$('#image-preview').addEventListener('dragleave', event => {
+  if (!event.currentTarget.contains(event.relatedTarget)) event.currentTarget.classList.remove('is-dragging');
+});
+$('#image-preview').addEventListener('drop', event => {
+  event.preventDefault();
+  event.currentTarget.classList.remove('is-dragging');
+  uploadImage(event.dataTransfer.files[0]);
+});
+document.querySelectorAll('[data-preview-view]').forEach(button => button.addEventListener('click', () => {
+  previewMode = button.dataset.previewView;
+  updatePreview();
+}));
 
 try {
   const session = await request('session');

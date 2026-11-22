@@ -8,7 +8,7 @@ const source = JSON.parse(await readFile(join(root, 'content', 'content.json'), 
 if (source.version !== 1 || !Array.isArray(source.items)) throw new Error('Invalid content/content.json');
 
 const types = new Set(['article', 'story', 'video', 'audio', 'game']);
-const statuses = new Set(['draft', 'planned', 'published']);
+const statuses = new Set(['draft', 'planned', 'published', 'trashed']);
 const ids = new Set();
 for (const item of source.items) {
   if (!/^[a-z0-9][a-z0-9-]{1,63}$/.test(item.id) || ids.has(item.id)) throw new Error(`Invalid or duplicate id: ${item.id}`);

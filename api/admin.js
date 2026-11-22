@@ -5,9 +5,11 @@ const contentPath = 'content/content.json';
 const cookieName = 'childpage_admin';
 const maxAge = 12 * 60 * 60;
 const kinds = new Set(['article', 'story', 'video', 'audio', 'game']);
-const statuses = new Set(['draft', 'planned', 'published']);
+const activeStatuses = new Set(['draft', 'planned', 'published']);
+const statuses = new Set([...activeStatuses, 'trashed']);
 const categories = new Set(['cartoons', 'games', 'for_all', 'tales', 'medicine', 'more']);
 const ages = new Set(['0-3', '4-11', '12+']);
+const trashLifetime = 7 * 24 * 60 * 60 * 1000;
 
 function configurationReady() {
   return Boolean(process.env.ADMIN_SESSION_SECRET && process.env.GITHUB_CONTENT_TOKEN && process.env.ADMIN_USER_ONE && process.env.ADMIN_PASSWORD_ONE && process.env.ADMIN_USER_TWO && process.env.ADMIN_PASSWORD_TWO);
@@ -86,6 +88,12 @@ function validate(input) {
       publishedAt: text(item.publishedAt, 40),
       updatedAt: text(item.updatedAt, 40),
     };
+    if (item.status === 'trashed') {
+      const deletedAt = text(item.deletedAt, 40);
+      if (!activeStatuses.has(item.previousStatus) || !Number.isFinite(Date.parse(deletedAt))) throw new Error(`Проверьте данные корзины: ${item.id}`);
+      normalized.deletedAt = deletedAt;
+      normalized.previousStatus = item.previousStatus;
+    }
     if (!normalized.title || !normalized.description) throw new Error(`Заполните название и описание: ${item.id}`);
     if (item.status === 'published' && !Number.isFinite(Date.parse(item.publishedAt))) throw new Error(`Укажите дату публикации: ${item.id}`);
     if (item.status === 'published' && item.type === 'article' && !normalized.body) throw new Error(`Добавьте текст статьи: ${item.id}`);
@@ -129,7 +137,14 @@ export default async function handler(req, res) {
   try {
     if (action === 'content' && req.method === 'GET') {
       const file = await github(`${contentPath}?ref=main`);
-      return response(res, 200, { content: JSON.parse(Buffer.from(file.content.replace(/\s/g, ''), 'base64').toString('utf8')), sha: file.sha });
+      const content = JSON.parse(Buffer.from(file.content.replace(/\s/g, ''), 'base64').toString('utf8'));
+      const items = content.items.filter(item => item.status !== 'trashed' || Date.parse(item.deletedAt) > Date.now() - trashLifetime);
+      if (items.length !== content.items.length) {
+        const cleaned = validate({ version: content.version, items });
+        const updated = await github(contentPath, { method: 'PUT', body: JSON.stringify({ message: `Content: expire trash by ${session.user}`, content: Buffer.from(JSON.stringify(cleaned, null, 2) + '\n').toString('base64'), sha: file.sha, branch: 'main' }) });
+        return response(res, 200, { content: cleaned, sha: updated.content.sha });
+      }
+      return response(res, 200, { content, sha: file.sha });
     }
     if (action === 'save' && req.method === 'POST') {
       const content = validate(req.body?.content);
