@@ -254,7 +254,7 @@
       "gameUrl": "",
       "linkedId": "",
       "publishedAt": "2026-11-22T03:39:52.436Z",
-      "updatedAt": "2026-11-22T04:05:38.326Z",
+      "updatedAt": "2026-11-22T04:06:02.825Z",
       "bodyBlocks": [
         {
           "type": "paragraph",
@@ -304,8 +304,8 @@
             {
               "text": "Откуда появились овчарки?",
               "marks": [
-                "underline",
-                "italic"
+                "italic",
+                "underline"
               ]
             }
           ]
