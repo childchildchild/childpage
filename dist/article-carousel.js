@@ -5,6 +5,15 @@ for (const carousel of document.querySelectorAll('[data-carousel]')) {
   if (!track || !previous || !next) continue;
 
   const slides = [...track.querySelectorAll('.article-carousel-slide')];
+  const firstImage = slides[0]?.querySelector('img');
+  const fitSlides = () => {
+    if (firstImage?.naturalWidth && firstImage.naturalHeight) {
+      carousel.style.setProperty('--carousel-aspect-ratio', `${firstImage.naturalWidth} / ${firstImage.naturalHeight}`);
+    }
+  };
+  if (firstImage?.complete) fitSlides();
+  else firstImage?.addEventListener('load', fitSlides, { once: true });
+
   const update = () => {
     const index = Math.round(track.scrollLeft / track.clientWidth);
     previous.disabled = index <= 0;

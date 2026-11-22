@@ -394,6 +394,14 @@ function renderPreviewRichBody(doc, container, blocks) {
         const img = doc.createElement('img'); img.src = imageSource(image.src); img.alt = image.alt; slide.append(img);
         const caption = doc.createElement('figcaption'); caption.textContent = `${index + 1} / ${block.images.length}`; slide.append(caption); track.append(slide);
       }
+      const firstImage = track.querySelector('img');
+      const fitSlides = () => {
+        if (firstImage?.naturalWidth && firstImage.naturalHeight) {
+          carousel.style.setProperty('--carousel-aspect-ratio', `${firstImage.naturalWidth} / ${firstImage.naturalHeight}`);
+        }
+      };
+      if (firstImage?.complete) fitSlides();
+      else firstImage?.addEventListener('load', fitSlides, { once: true });
       const next = doc.createElement('button'); next.type = 'button'; next.className = 'article-carousel-arrow next'; next.textContent = '›'; next.setAttribute('aria-label', 'Следующее фото');
       previous.addEventListener('click', () => track.scrollBy({ left: -track.clientWidth, behavior: 'smooth' }));
       next.addEventListener('click', () => track.scrollBy({ left: track.clientWidth, behavior: 'smooth' }));
