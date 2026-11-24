@@ -44,9 +44,8 @@ let storyTrigger;
 let storyTouchStart;
 let storyResumeVideo = false;
 let storyClosing = false;
-let storyMotion;
-let storyAnimations = 0;
-const storyMotionDuration = 420;
+let storyMotion = [];
+const storyMotionDuration = 360;
 const reduceStoryMotion = () => window.childpagePreferences?.prefersReducedMotion() || matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 function storySourceRect() {
@@ -58,47 +57,36 @@ function storySourceRect() {
 
 async function animateStory(opening) {
   if (reduceStoryMotion()) return;
-  const rect = storySourceRect();
-  if (!rect) {
-    const fade = storyScreen.animate([{ opacity: opening ? 0 : 1 }, { opacity: opening ? 1 : 0 }], {
-      duration: 180, easing: 'ease-in-out', fill: 'both',
-    });
-    storyMotion = fade;
-    await fade.finished.catch(() => {});
-    fade.cancel();
-    return;
-  }
-
-  const image = document.createElement('div');
-  image.className = 'story-transition-image';
-  image.style.backgroundImage = getComputedStyle(storyTrigger).backgroundImage;
-  storyScreen.append(image);
-  storyAnimations += 1;
-  storyScreen.classList.add('story-animating');
-  const small = {
-    left: `${rect.left}px`, top: `${rect.top}px`,
-    width: `${rect.width}px`, height: `${rect.height}px`, borderRadius: '50%',
-  };
+  const source = storySourceRect();
   const target = storyScreen.getBoundingClientRect();
-  const large = {
-    left: `${target.left}px`, top: `${target.top}px`, width: `${target.width}px`, height: `${target.height}px`, borderRadius: getComputedStyle(storyScreen).borderRadius,
-  };
-  let animation;
+  const circle = source && target.width >= innerWidth - 1 && innerWidth < 700;
+  const options = { duration: storyMotionDuration, easing: opening ? 'cubic-bezier(.2,.7,.2,1)' : 'cubic-bezier(.4,0,.8,.3)', fill: 'both' };
+  let frames;
+  if (circle) {
+    const x = source.left + source.width / 2 - target.left;
+    const y = source.top + source.height / 2 - target.top;
+    const start = `circle(${source.width / 2}px at ${x}px ${y}px)`;
+    const end = `circle(${Math.hypot(Math.max(x, target.width - x), Math.max(y, target.height - y)) + 2}px at ${x}px ${y}px)`;
+    frames = opening ? [{ clipPath: start }, { clipPath: end }] : [{ clipPath: end }, { clipPath: start }];
+  } else {
+    frames = opening
+      ? [{ opacity: 0, transform: 'translateY(18px) scale(.96)' }, { opacity: 1, transform: 'translateY(0) scale(1)' }]
+      : [{ opacity: 1, transform: 'translateY(0) scale(1)' }, { opacity: 0, transform: 'translateY(18px) scale(.96)' }];
+  }
+  const animations = [storyScreen.animate(frames, options)];
+  const contentFrames = opening ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 1 }, { opacity: 0 }];
+  for (const element of [storyScreen.querySelector('.story-header'), storyScreen.querySelector('.story-content')]) {
+    animations.push(element.animate(contentFrames, { duration: opening ? 180 : 110, delay: opening ? 130 : 0, fill: 'both' }));
+  }
+  if (storyScreen.classList.contains('has-video')) {
+    animations.push(storyVideo.animate(contentFrames, { duration: opening ? 180 : 110, delay: opening ? 130 : 0, fill: 'both' }));
+  }
+  storyMotion = animations;
   try {
-    animation = image.animate(opening ? [small, large] : [large, small], {
-      duration: storyMotionDuration,
-      easing: opening ? 'cubic-bezier(.2,.75,.2,1)' : 'cubic-bezier(.6,0,.8,.25)',
-      fill: 'both',
-    });
-    storyMotion = animation;
-    await animation.finished;
-  } catch (_) {
-    // A resize or a quick second tap can interrupt the transition.
+    await Promise.all(animations.map(animation => animation.finished.catch(() => {})));
   } finally {
-    if (storyMotion === animation) storyMotion = null;
-    image.remove();
-    storyAnimations -= 1;
-    if (!storyAnimations) storyScreen.classList.remove('story-animating');
+    if (storyMotion === animations) storyMotion = [];
+    animations.forEach(animation => animation.cancel());
   }
 }
 
@@ -108,7 +96,7 @@ async function closeStory() {
   cancelAnimationFrame(storyFrame);
   storyVideo.pause();
   clearTimeout(storyTimeout);
-  storyMotion?.cancel();
+  storyMotion.forEach(animation => animation.cancel());
   storyScreen.classList.remove('story-entering');
   storyScreen.classList.add('story-leaving');
   await animateStory(false);
@@ -187,7 +175,7 @@ async function openStory(index, trigger) {
   goToStory(index);
   storyScreen.querySelector('.story-close').focus({ preventScroll: true });
   await animateStory(true);
-  storyScreen.classList.remove('story-entering');
+  if (!storyClosing) storyScreen.classList.remove('story-entering');
 }
 
 document.querySelectorAll('.story-preview').forEach(button => {
@@ -258,7 +246,7 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 storyScreen.addEventListener('close', () => {
-  storyScreen.classList.remove('story-entering', 'story-leaving', 'story-animating');
+  storyScreen.classList.remove('story-entering', 'story-leaving');
   storyClosing = false;
   cancelAnimationFrame(storyFrame);
   storyVideo.pause();
