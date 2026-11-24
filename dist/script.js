@@ -163,7 +163,7 @@ function renderSearch() {
     button.addEventListener('click', () => {
       closeSearch();
       if (item.url) {
-        window.location.href = item.url;
+        window.childpageArticleNavigation.go(item.url);
         return;
       }
       highlightedResult?.classList.remove('search-match');
