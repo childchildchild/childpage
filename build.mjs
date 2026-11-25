@@ -89,7 +89,10 @@ function renderPage(item) {
   const prefix = item.id === 'handwashing' ? '' : '../';
   const imageUrl = image.startsWith('assets/') ? prefix + image : image;
   const body = Array.isArray(item.bodyBlocks) ? renderRichBody(item.bodyBlocks, prefix) : renderBody(item.body);
-  const photo = image ? `<img class="article-photo" src="${escape(imageUrl)}" alt="${escape(item.imageAlt || '')}">` : '';
+  const photo = image ? `<img class="article-photo${item.id === 'planned-kolobok' ? ' article-photo--kolobok' : ''}" src="${escape(imageUrl)}" alt="${escape(item.imageAlt || '')}">` : '';
+  const photoCredit = image === 'assets/articles/kolobok.jpg'
+    ? '<p class="article-photo-credit">Фото: <a href="https://commons.wikimedia.org/wiki/File:Kolobok_(Gingerbreadman)_and_Fox.jpg" target="_blank" rel="noopener noreferrer">Oleksiy M</a>, <a href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</a></p>'
+    : '';
   let player = '';
   if (item.type === 'video' && media) player = `<video class="content-player" controls playsinline preload="metadata" ${image ? `poster="${escape(imageUrl)}"` : ''} src="${escape(media.startsWith('assets/') ? prefix + media : media)}"></video>`;
   if (item.type === 'audio' && media) player = `<audio class="content-audio" controls preload="metadata" src="${escape(media.startsWith('assets/') ? prefix + media : media)}"></audio>`;
@@ -97,9 +100,9 @@ function renderPage(item) {
   return `<!doctype html>
 <html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="color-scheme" content="light"><script src="${prefix}preferences.js?v=20261122-1"></script>${item.type === 'article' ? `<script src="${prefix}article-navigation.js?v=20261124-1"></script>` : ''}
 <meta name="article:published" content="${escape(item.publishedAt)}"><meta name="article:title" content="${title}"><meta name="article:description" content="${escape(item.description || '')}"><meta name="article:image" content="${escape(image)}">
-<title>${title} — Детская страница</title><link rel="stylesheet" href="${prefix}content-page.css?v=20261124-1"><link rel="stylesheet" href="${prefix}preferences.css?v=20261122-1"></head>
+<title>${title} — Детская страница</title><link rel="stylesheet" href="${prefix}content-page.css?v=20261125-1"><link rel="stylesheet" href="${prefix}preferences.css?v=20261122-1"></head>
 <body><main class="article-page"><header class="article-header"><a class="article-back" href="${prefix}index.html" aria-label="На главную"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 5 5 20l15 15M6 20h30"/></svg></a><span>${escape(item.label || kind)}</span></header>
-<article>${photo}<div class="article-body"><h1>${title}</h1><p class="article-intro">${escape(item.description || '')}</p>${player}<div class="article-text">${body}</div><a class="article-home" href="${prefix}index.html">На главную</a></div></article></main><script src="${prefix}article-carousel.js" defer></script></body></html>`;
+<article>${photo}${photoCredit}<div class="article-body"><h1>${title}</h1><p class="article-intro">${escape(item.description || '')}</p>${player}<div class="article-text">${body}</div><a class="article-home" href="${prefix}index.html">На главную</a></div></article></main><script src="${prefix}article-carousel.js" defer></script></body></html>`;
 }
 
 await mkdir(join(dist, 'read'), { recursive: true });
