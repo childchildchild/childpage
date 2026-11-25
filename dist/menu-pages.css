@@ -6,6 +6,7 @@ html.info-open,body.info-open{background:var(--paper)}
 body.info-open{overflow:hidden}
 .info-header{position:relative;display:flex;align-items:center;justify-content:center;flex:none;height:48px;margin-bottom:22px}
 .info-header h2{margin:0;font-size:32px;line-height:1;font-weight:700}
+.info-header h2:focus{outline:none}
 .info-back{position:absolute;left:0}
 .info-back i{font-size:32px}
 .info-scroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 2px max(24px,env(safe-area-inset-bottom,0px));scrollbar-width:none}
@@ -40,6 +41,22 @@ body.info-open{overflow:hidden}
 .about-steps li span{display:grid;place-items:center;flex:none;width:29px;height:29px;border-radius:50%;background:#cbcced;color:#302b62;font-size:15px;font-weight:700;line-height:1}
 .about-note{padding:20px;border-radius:22px;background:#efeff7}
 .about-note h3{margin-bottom:8px}
+.support-questions{display:grid;gap:9px}
+.support-questions details{border-radius:18px;background:#f0f0f0}
+.support-questions summary{position:relative;padding:17px 44px 17px 17px;list-style:none;font-size:17px;line-height:1.22;font-weight:700;cursor:pointer}
+.support-questions summary::-webkit-details-marker{display:none}
+.support-questions summary::after{content:'+';position:absolute;right:18px;top:14px;color:#7369bb;font-size:23px;font-weight:400}
+.support-questions details[open] summary::after{content:'−'}
+.support-questions details p{margin:0;padding:0 17px 17px;color:#454454;font-size:15px;line-height:1.42}
+.support-questions summary:focus-visible,.install-action:focus-visible,.install-copy:focus-visible{outline:3px solid #315dca;outline-offset:2px}
+.install-hero{display:flex;align-items:center;gap:17px;padding:18px;border-radius:25px;background:#e6e5f6}
+.install-hero img{flex:none;width:80px;height:80px;border-radius:20px;box-shadow:0 3px 10px #3332}
+.install-hero h3{margin:6px 0 0;font-size:25px;line-height:1.08}
+.install-intro{margin:20px 2px 0}
+.install-message{margin-top:20px;padding:16px 18px;border-radius:18px;background:#e6e5f6;color:#302b62;font-size:16px;font-weight:700;line-height:1.35}
+.install-action,.install-copy{width:100%;min-height:52px;margin-top:20px;padding:12px 18px;border:0;border-radius:18px;background:#7469bf;color:white;font:700 16px Roboto,Arial,sans-serif;cursor:pointer}
+.install-copy{margin-top:10px;background:#efeff7;color:#302b62}
+.install-feedback{min-height:18px;margin:10px 3px 0;color:#3b326e;font-size:14px;line-height:1.3}
 .confirm-dialog{width:min(calc(100% - 32px),390px);max-width:none;max-height:calc(100dvh - 32px);margin:auto;padding:24px;border:0;border-radius:26px;background:#fffdfb;color:#050505;font-family:Roboto,Arial,sans-serif}
 .confirm-dialog::backdrop{background:#1118}
 .confirm-dialog h2{margin:0 0 10px;font-size:26px;line-height:1.08}

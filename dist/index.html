@@ -5,6 +5,13 @@
   <script>document.documentElement.classList.add('scroll-reveal');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#cbcced">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Детская">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
   <script src="preferences.js?v=20261122-1"></script>
   <script src="article-navigation.js?v=20261124-1"></script>
   <style>html,body{background:#cbcced linear-gradient(to bottom,#cbcced 0,#cbcced 45svh,#fffdfb 75svh,#fffdfb 100%)}</style>
@@ -12,7 +19,7 @@
   <link rel="stylesheet" href="styles.css?v=20261125-1">
   <link rel="stylesheet" href="stories.css?v=20261125-1">
   <link rel="stylesheet" href="preferences.css?v=20261122-1">
-  <link rel="stylesheet" href="menu-pages.css?v=20261122-1">
+  <link rel="stylesheet" href="menu-pages.css?v=20261125-1">
   <link rel="stylesheet" href="assets/phosphor/bold/style.css">
   <link rel="stylesheet" href="assets/phosphor/fill/style.css">
   <script src="articles-data.js" defer></script>
@@ -20,7 +27,7 @@
   <script src="latest.js?v=20261125-1" defer></script>
   <script src="script.js?v=20261124-1" defer></script>
   <script src="stories.js?v=20261125-1" defer></script>
-  <script src="menu-pages.js?v=20261122-1" defer></script>
+  <script src="menu-pages.js?v=20261125-1" defer></script>
 </head>
 <body>
   <main class="page">
@@ -99,8 +106,8 @@
       <nav class="menu-shortcuts" aria-label="Дополнительные разделы">
         <button id="open-settings" type="button"><i class="ph-fill ph-gear" aria-hidden="true"></i>Настройки</button>
         <button type="button" data-menu-target=".latest"><i class="ph-fill ph-clock" aria-hidden="true"></i>Последнее</button>
-        <button type="button" disabled><i class="ph-fill ph-chat-circle-dots" aria-hidden="true"></i>Поддержка</button>
-        <button type="button" disabled><i class="ph-fill ph-stack" aria-hidden="true"></i>Ярлык</button>
+        <button id="open-support" type="button"><i class="ph-fill ph-chat-circle-dots" aria-hidden="true"></i>Поддержка</button>
+        <button id="open-install" type="button"><i class="ph-fill ph-stack" aria-hidden="true"></i>Ярлык</button>
         <button id="open-about" type="button"><i class="ph-fill ph-info" aria-hidden="true"></i>О сайте</button>
       </nav>
       <div class="menu-scroll">
@@ -194,6 +201,63 @@
         <h3>Важно</h3>
         <p class="info-copy">Сайт создан для досуга и знакомства с новыми темами. По вопросам самочувствия и лечения обращайтесь к сотрудникам отделения.</p>
       </section>
+    </div>
+  </dialog>
+  <dialog class="info-screen" id="support-screen" aria-labelledby="support-title">
+    <header class="info-header">
+      <button class="icon-button info-back" type="button" aria-label="Вернуться в меню"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i></button>
+      <h2 id="support-title">Поддержка</h2>
+    </header>
+    <div class="info-scroll">
+      <div class="info-intro">
+        <span class="info-eyebrow">Помощь по сайту</span>
+        <h3>Как вам помочь?</h3>
+        <p class="info-copy">Ответы на вопросы о сайте и материалах.</p>
+      </div>
+      <section class="info-section" aria-labelledby="support-questions-title">
+        <h3 id="support-questions-title">Частые вопросы</h3>
+        <div class="support-questions">
+          <details><summary>Как найти материал по возрасту?</summary><p>На главной странице откройте блок «По возрастам» или выберите тему в разделе «Контент». В списке материалов можно выбрать возраст и формат.</p></details>
+          <details><summary>Почему материал не открывается?</summary><p>Проверьте подключение к интернету и обновите страницу. Если сайт открыт внутри Telegram, попробуйте открыть его в браузере телефона.</p></details>
+          <details><summary>Где сохраняются настройки и прогресс?</summary><p>Они сохраняются на вашем телефоне в том браузере, где вы открыли сайт. На другом устройстве или после очистки данных браузера их может не быть.</p></details>
+          <details><summary>Как убрать звук или анимацию?</summary><p>Видео в сторис запускаются без звука. Звук можно включить или выключить в самой сторис. Чтобы уменьшить движение и увеличить текст, откройте «Меню» → «Настройки».</p></details>
+          <details><summary>Как добавить сайт на экран телефона?</summary><p>Откройте в меню вкладку «Ярлык». Там есть шаги для iPhone и Android.</p></details>
+        </div>
+      </section>
+      <section class="info-section about-note">
+        <h3>О здоровье ребёнка</h3>
+        <p class="info-copy">Сайт помогает провести время. Если ребёнку нехорошо или есть вопросы о лечении, обратитесь к сотрудникам отделения.</p>
+      </section>
+    </div>
+  </dialog>
+  <dialog class="info-screen" id="install-screen" aria-labelledby="install-title">
+    <header class="info-header">
+      <button class="icon-button info-back" type="button" aria-label="Вернуться в меню"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i></button>
+      <h2 id="install-title">Ярлык</h2>
+    </header>
+    <div class="info-scroll">
+      <div class="install-hero">
+        <img src="assets/icon-192.png" alt="Значок «Детской страницы»">
+        <div><span class="info-eyebrow">Всегда под рукой</span><h3>Сайт как приложение</h3></div>
+      </div>
+      <p class="info-copy install-intro">Добавьте «Детскую страницу» на экран телефона. Она будет открываться отдельным окном без адресной строки браузера.</p>
+      <div id="install-already" class="install-message" hidden>Вы уже открыли сайт через ярлык на экране телефона.</div>
+      <section class="info-section" id="install-ios" aria-labelledby="install-ios-title">
+        <h3 id="install-ios-title">На iPhone</h3>
+        <ol class="about-steps info-copy">
+          <li><span>1</span>Откройте этот сайт в Safari. Если вы в Telegram, выберите в его меню «Открыть в Safari».</li>
+          <li><span>2</span>В Safari нажмите «Поделиться» и выберите «На экран Домой».</li>
+          <li><span>3</span>Включите «Открыть как веб-приложение», если этот пункт есть, и нажмите «Добавить».</li>
+        </ol>
+      </section>
+      <section class="info-section" id="install-android" aria-labelledby="install-android-title">
+        <h3 id="install-android-title">На Android</h3>
+        <p class="info-copy">Откройте сайт в Chrome. В меню ⋮ выберите «Установить приложение» или «Добавить на главный экран».</p>
+      </section>
+      <button id="install-prompt-button" class="install-action" type="button" hidden>Установить на телефон</button>
+      <button id="install-copy-button" class="install-copy" type="button">Скопировать адрес сайта</button>
+      <p class="install-feedback" id="install-feedback" role="status" aria-live="polite"></p>
+      <p class="info-footnote">Для новых материалов и некоторых страниц понадобится интернет. На некоторых телефонах прогресс и настройки из браузера не переносятся в ярлык.</p>
     </div>
   </dialog>
   <dialog class="confirm-dialog" id="reset-progress-confirm" aria-labelledby="reset-progress-title">
