@@ -133,6 +133,10 @@ document.querySelector('#install-copy-button').addEventListener('click', async (
   }
 });
 
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
 const settings = [
   ['#setting-large-text', 'largeText'],
   ['#setting-reduce-motion', 'reduceMotion'],
