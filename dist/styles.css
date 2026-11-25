@@ -122,6 +122,8 @@ body.menu-open{overflow:hidden}
 .menu-categories img[src$="storytales.png"]{left:6%;bottom:9%;width:88%;height:auto;object-fit:contain}
 .menu-categories img[src$="medicine.png"]{left:33%;bottom:3px;width:66%}
 @media(max-width:370px){.menu-shortcuts button{font-size:12px;padding:8px 9px}.menu-categories button>span:first-child{left:12px;top:12px;font-size:12px}}
+@media(max-width:340px){.menu-categories button>span:first-child{left:10px;top:10px;max-width:calc(100% - 20px);font-size:11px;overflow-wrap:anywhere}.menu-categories img{height:55%}.menu-categories img[src$="for_all.png"]{height:53%}}
+@media(max-width:310px){.menu-categories{grid-template-columns:repeat(2,minmax(0,1fr))}.menu-categories button>span:first-child{left:12px;top:12px;max-width:calc(100% - 24px);font-size:12px}.menu-categories img{height:65%}.menu-categories img[src$="for_all.png"]{height:58%}}
 @media(max-height:720px){.search-screen{padding-top:max(24px,env(safe-area-inset-top,0px))}.search-empty{margin-top:100px}}
 @container hero (max-height:320px) and (max-width:375px){
   .hero-glow{width:155cqw;top:calc(29cqh + 52.5cqw)}
