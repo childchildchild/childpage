@@ -1,7 +1,7 @@
 const latestGrid = document.querySelector('.latest-grid');
 const contentItems = window.siteContent || [];
 const visibleCards = [
-  ...contentItems.filter(item => item.status === 'published' && item.type !== 'story').sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).slice(0, 8),
+  ...contentItems.filter(item => item.status === 'published' && item.type !== 'story').sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt)),
   ...contentItems.filter(item => item.status === 'planned' && item.type !== 'story'),
 ];
 
