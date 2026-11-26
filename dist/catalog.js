@@ -3,7 +3,7 @@ let category = params.get('category') || 'all';
 const names = { all: 'Все материалы', cartoons: 'Мультики', games: 'Игры', for_all: 'Интересно всем', tales: 'Сказки на ночь', medicine: 'Медицина', more: 'Больше' };
 const kinds = { article: 'Статья', story: 'Сторис', video: 'Видео', audio: 'Аудио', game: 'Игра' };
 if (!Object.hasOwn(names, category)) category = 'all';
-const ageNames = { '0-3': 'Для малышей 0–3 лет', '4-11': 'Для детей 4–11 лет', '12+': 'Для подростков 12+' };
+const ageNames = { '0-3': 'Для малышей 0–3 лет', '4-12': 'Для детей 4–12 лет', '13+': 'Для подростков 13+' };
 const ageFilter = document.querySelector('#age-filter');
 const typeFilter = document.querySelector('#type-filter');
 if ([...ageFilter.options].some(option => option.value === params.get('age'))) ageFilter.value = params.get('age');
