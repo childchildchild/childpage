@@ -6,6 +6,7 @@ import { normalizeRichBlocks, renderRichBody } from './content/rich-content.mjs'
 const root = dirname(fileURLToPath(import.meta.url));
 const dist = join(root, 'dist');
 const source = JSON.parse(await readFile(join(root, 'content', 'content.json'), 'utf8'));
+const optimizedImages = JSON.parse(await readFile(join(root, 'content', 'optimized-images.json'), 'utf8'));
 if (source.version !== 1 || !Array.isArray(source.items)) throw new Error('Invalid content/content.json');
 
 const types = new Set(['article', 'story', 'video', 'audio', 'game']);
@@ -22,7 +23,7 @@ for (const item of source.items) {
 const escape = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
 const safePath = value => {
   const path = String(value || '');
-  if (/^assets\/[a-zA-Z0-9/_\-.]+$/.test(path)) return path;
+  if (/^assets\/[a-zA-Z0-9/_\-.]+$/.test(path)) return optimizedImages[path] || path;
   if (/^https:\/\//.test(path)) return path;
   return '';
 };
@@ -88,9 +89,12 @@ function renderPage(item) {
   const link = safePath(item.gameUrl);
   const prefix = item.id === 'handwashing' ? '' : '../';
   const imageUrl = image.startsWith('assets/') ? prefix + image : image;
-  const body = Array.isArray(item.bodyBlocks) ? renderRichBody(item.bodyBlocks, prefix) : renderBody(item.body);
+  const blocks = item.bodyBlocks?.map(block => block.type === 'image'
+    ? { ...block, src: safePath(block.src) }
+    : block.type === 'carousel' ? { ...block, images: block.images.map(image => ({ ...image, src: safePath(image.src) })) } : block);
+  const body = Array.isArray(blocks) ? renderRichBody(blocks, prefix) : renderBody(item.body);
   const photo = image ? `<img class="article-photo${item.id === 'planned-kolobok' ? ' article-photo--kolobok' : ''}" src="${escape(imageUrl)}" alt="${escape(item.imageAlt || '')}">` : '';
-  const photoCredit = image === 'assets/articles/kolobok.jpg'
+  const photoCredit = item.image === 'assets/articles/kolobok.jpg'
     ? '<p class="article-photo-credit">Фото: <a href="https://commons.wikimedia.org/wiki/File:Kolobok_(Gingerbreadman)_and_Fox.jpg" target="_blank" rel="noopener noreferrer">Oleksiy M</a>, <a href="https://creativecommons.org/licenses/by/2.0/" target="_blank" rel="noopener noreferrer">CC BY 2.0</a></p>'
     : '';
   let player = '';
@@ -98,9 +102,9 @@ function renderPage(item) {
   if (item.type === 'audio' && media) player = `<audio class="content-audio" controls preload="metadata" src="${escape(media.startsWith('assets/') ? prefix + media : media)}"></audio>`;
   if (item.type === 'game' && link) player = `<a class="article-home" href="${escape(link.startsWith('assets/') ? prefix + link : link)}" ${link.startsWith('https://') ? 'target="_blank" rel="noopener noreferrer"' : ''}>Открыть игру</a>`;
   return `<!doctype html>
-<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="color-scheme" content="light"><meta name="theme-color" content="#cbcced"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Детская"><link rel="manifest" href="${prefix}manifest.webmanifest"><link rel="apple-touch-icon" href="${prefix}assets/apple-touch-icon.png"><script src="${prefix}preferences.js?v=20261122-1"></script>${item.type === 'article' ? `<script src="${prefix}article-navigation.js?v=20261124-1"></script>` : ''}
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="color-scheme" content="light"><meta name="theme-color" content="#cbcced"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Детская"><link rel="manifest" href="${prefix}manifest.webmanifest"><link rel="apple-touch-icon" href="${prefix}assets/apple-touch-icon.png"><script src="${prefix}preferences.js?v=20261122-1"></script>${item.type === 'article' ? `<script src="${prefix}article-navigation.js?v=20261127-1"></script>` : ''}
 <meta name="article:published" content="${escape(item.publishedAt)}"><meta name="article:title" content="${title}"><meta name="article:description" content="${escape(item.description || '')}"><meta name="article:image" content="${escape(image)}">
-<title>${title} — Детская страница</title><link rel="stylesheet" href="${prefix}content-page.css?v=20261125-2"><link rel="stylesheet" href="${prefix}preferences.css?v=20261122-1"></head>
+<title>${title} — Детская страница</title><link rel="stylesheet" href="${prefix}content-page.css?v=20261127-1"><link rel="stylesheet" href="${prefix}preferences.css?v=20261127-1"></head>
 <body><main class="article-page"><header class="article-header"><a class="article-back" href="${prefix}index.html" aria-label="На главную"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 5 5 20l15 15M6 20h30"/></svg></a><span>${escape(item.label || kind)}</span></header>
 <article>${photo}${photoCredit}<div class="article-body"><h1>${title}</h1><p class="article-intro">${escape(item.description || '')}</p>${player}<div class="article-text">${body}</div><a class="article-home" href="${prefix}index.html">На главную</a></div></article></main><script src="${prefix}article-carousel.js" defer></script></body></html>`;
 }

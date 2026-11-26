@@ -1,16 +1,20 @@
 const toolbar = document.querySelector('#floating-toolbar');
 const prefersLessMotion = () => window.childpagePreferences?.prefersReducedMotion() || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const sourceToolbar = document.querySelector('#content-toolbar');
+let toolbarFrame = 0;
 
 const updateFloatingToolbar = () => {
-  const revealProgress = Math.min(1, Math.max(0, window.scrollY - 8) / 56);
-  document.documentElement.style.setProperty('--details-opacity', String(revealProgress));
   const shouldShow = sourceToolbar.getBoundingClientRect().bottom < 10;
   toolbar.classList.toggle('visible', shouldShow);
   toolbar.setAttribute('aria-hidden', String(!shouldShow));
+  toolbar.inert = !shouldShow;
 };
 
-window.addEventListener('scroll', updateFloatingToolbar, { passive: true });
+window.addEventListener('scroll', () => {
+  if (toolbarFrame) return;
+  toolbarFrame = requestAnimationFrame(() => { toolbarFrame = 0; updateFloatingToolbar(); });
+}, { passive: true });
+window.addEventListener('resize', updateFloatingToolbar);
 updateFloatingToolbar();
 
 const searchScreen = document.querySelector('#search-screen');
@@ -22,7 +26,6 @@ const searchResults = document.querySelector('#search-results');
 const searchEmpty = document.querySelector('#search-empty');
 let searchTrigger;
 let searchFromMenu = false;
-let highlightedResult;
 let searchAnimations = [];
 let searchClosing = false;
 
@@ -54,24 +57,22 @@ function animateMenuToSearch(source) {
 }
 
 const normalizeSearch = value => value.toLocaleLowerCase('ru').replaceAll('ё', 'е').trim();
-const searchableItems = [...document.querySelectorAll('.content-tile, .age-card, .latest-card')].map(element => ({
-  element,
-  title: element.querySelector('h3')?.textContent || element.querySelector('span:last-child').textContent,
-  description: element.querySelector('p')?.textContent || 'Раздел контента',
+const sectionCategories = ['cartoons', 'games', 'for_all', 'tales', 'medicine', 'all'];
+const searchableItems = [...document.querySelectorAll('.content-tile')].map((element, index) => ({
+  title: element.querySelector('span:last-child').textContent,
+  description: 'Раздел контента',
   text: normalizeSearch(element.textContent),
-  url: element.dataset.articleUrl,
-})).concat((window.siteArticles || []).slice(8).map(article => ({
-  element: null,
-  title: article.title,
-  description: article.description,
-  text: normalizeSearch(`${article.title} ${article.description}`),
-  url: article.url,
-})), (window.siteContent || []).filter(item => item.type === 'story' && item.status === 'published').map(item => ({
-  element: null,
+  url: `catalog.html?category=${sectionCategories[index]}`,
+})).concat([...document.querySelectorAll('.age-card')].map(element => ({
+  title: `${element.querySelector('h3').textContent} · ${element.querySelector('.age-label').textContent}`,
+  description: element.querySelector('p').innerText,
+  text: normalizeSearch(element.textContent),
+  url: element.querySelector('.age-link').getAttribute('href'),
+})), (window.siteContent || []).filter(item => item.status === 'published').map(item => ({
   title: item.title,
   description: item.description,
   text: normalizeSearch(`${item.title} ${item.description}`),
-  url: `index.html?story=${encodeURIComponent(item.id)}`,
+  url: item.type === 'story' ? `index.html?story=${encodeURIComponent(item.id)}` : item.url,
 })));
 
 function restoreSharedSearch() {
@@ -162,16 +163,7 @@ function renderSearch() {
     button.append(title, description);
     button.addEventListener('click', () => {
       closeSearch();
-      if (item.url) {
-        window.childpageArticleNavigation.go(item.url);
-        return;
-      }
-      highlightedResult?.classList.remove('search-match');
-      highlightedResult = item.element;
-      item.element.classList.add('search-match');
-      const top = item.element.getBoundingClientRect().top + window.scrollY - 110;
-      window.scrollTo({ top, behavior: 'instant' });
-      updateFloatingToolbar();
+      window.childpageArticleNavigation.go(item.url);
     });
     searchResults.append(button);
   }

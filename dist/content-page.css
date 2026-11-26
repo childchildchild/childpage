@@ -41,4 +41,7 @@ html[data-reduce-motion="true"] .article-page{animation:none}
 .article-carousel-arrow.previous{left:10px}
 .article-carousel-arrow.next{right:10px}
 .article-carousel-arrow:disabled{opacity:.35}
+.article-back{width:44px;height:44px;top:23px;left:17px}
+.article-carousel-arrow{width:44px;height:44px}
+a:focus-visible,button:focus-visible{outline:3px solid #315dca;outline-offset:3px}
 @media(max-width:360px){.article-photo{height:250px}.article-body h1{font-size:34px}.article-intro{font-size:18px}.article-text{font-size:17px}}

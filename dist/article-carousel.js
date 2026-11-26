@@ -22,7 +22,8 @@ for (const carousel of document.querySelectorAll('[data-carousel]')) {
   const move = direction => {
     const index = Math.round(track.scrollLeft / track.clientWidth);
     const target = Math.max(0, Math.min(slides.length - 1, index + direction));
-    track.scrollTo({ left: target * track.clientWidth, behavior: 'smooth' });
+    const reduceMotion = window.childpagePreferences?.prefersReducedMotion() || matchMedia('(prefers-reduced-motion: reduce)').matches;
+    track.scrollTo({ left: target * track.clientWidth, behavior: reduceMotion ? 'instant' : 'smooth' });
   };
 
   previous.addEventListener('click', () => move(-1));

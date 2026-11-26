@@ -22,6 +22,7 @@ html[data-reduce-motion="true"] .story-screen::backdrop{animation:none}
 .story-close i{font-size:23px}
 .story-sound{display:grid;place-items:center;flex:none;width:42px;height:42px;padding:0;border:0;border-radius:50%;background:rgba(0,0,0,.32);color:white;cursor:pointer}
 .story-sound[hidden]{display:none}
+.story-close,.story-sound{width:44px;height:44px}
 .story-sound i{font-size:22px}
 .story-content{min-height:0;display:flex;flex-direction:column;justify-content:flex-end;padding:0 4px max(34px,calc(env(safe-area-inset-bottom,0px) + 12px))}
 .story-copy{padding:0 0 4px}

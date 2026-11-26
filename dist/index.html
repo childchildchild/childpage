@@ -2,7 +2,6 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <script>document.documentElement.classList.add('scroll-reveal');</script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="color-scheme" content="light">
   <meta name="theme-color" content="#cbcced">
@@ -13,19 +12,19 @@
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
   <script src="preferences.js?v=20261122-1"></script>
-  <script src="article-navigation.js?v=20261124-1"></script>
+  <script src="article-navigation.js?v=20261127-1"></script>
   <style>html,body{background:#cbcced linear-gradient(to bottom,#cbcced 0,#cbcced 45svh,#fffdfb 75svh,#fffdfb 100%)}</style>
   <title>Детская страница</title>
-  <link rel="stylesheet" href="styles.css?v=20261125-3">
-  <link rel="stylesheet" href="stories.css?v=20261125-1">
-  <link rel="stylesheet" href="preferences.css?v=20261122-1">
-  <link rel="stylesheet" href="menu-pages.css?v=20261125-2">
+  <link rel="stylesheet" href="styles.css?v=20261127-1">
+  <link rel="stylesheet" href="stories.css?v=20261127-1">
+  <link rel="stylesheet" href="preferences.css?v=20261127-1">
+  <link rel="stylesheet" href="menu-pages.css?v=20261127-1">
   <link rel="stylesheet" href="assets/phosphor/bold/style.css">
   <link rel="stylesheet" href="assets/phosphor/fill/style.css">
   <script src="articles-data.js" defer></script>
   <script src="content-data.js" defer></script>
   <script src="latest.js?v=20261125-1" defer></script>
-  <script src="script.js?v=20261124-1" defer></script>
+  <script src="script.js?v=20261127-1" defer></script>
   <script src="stories.js?v=20261125-1" defer></script>
   <script src="menu-pages.js?v=20261125-2" defer></script>
 </head>
@@ -36,7 +35,7 @@
       <img class="hero-glow" src="assets/under_planet.svg" alt="">
       <h1 id="page-title">ДЕТСКАЯ<br>СТРАНИЦА</h1>
       <div class="hero-visual">
-        <img class="planet" src="assets/planet.png" alt="Красочная планета Земля">
+        <img class="planet" fetchpriority="high" src="assets/optimized/planet.webp" alt="Красочная планета Земля">
         <div class="sticker sticker-top"><span>САМОЕ</span><span>ИНТЕРЕСНОЕ</span></div>
         <div class="sticker sticker-bottom"><span>ДЛЯ ДЕТЕЙ</span><span>И ПОДРОСТКОВ</span></div>
       </div>
@@ -52,12 +51,12 @@
       </div>
 
       <nav class="content-grid" aria-label="Разделы контента">
-        <button class="content-tile compact" type="button"><span class="tile-art"><img src="assets/cartoons.png" alt=""></span><span>Мультики</span></button>
-        <button class="content-tile compact" type="button"><span class="tile-art"><img src="assets/games.png" alt=""></span><span>Игры</span></button>
-        <button class="content-tile wide" type="button"><span class="tile-art"><img src="assets/for_all.png" alt=""></span><span>Интересно всем</span></button>
-        <button class="content-tile wide" type="button"><span class="tile-art"><img src="assets/storytales.png" alt=""></span><span>Сказки на ночь</span></button>
-        <button class="content-tile compact" type="button"><span class="tile-art"><img src="assets/medicine.png" alt=""></span><span>Медицина</span></button>
-        <button class="content-tile compact" type="button" data-open-menu><span class="tile-art"><img src="assets/more.png" alt=""></span><span>Больше</span></button>
+        <button class="content-tile compact" type="button"><span class="tile-art"><img src="assets/optimized/cartoons.webp" alt=""></span><span>Мультики</span></button>
+        <button class="content-tile compact" type="button"><span class="tile-art"><img src="assets/optimized/games.webp" alt=""></span><span>Игры</span></button>
+        <button class="content-tile wide" type="button"><span class="tile-art"><img src="assets/optimized/for_all.webp" alt=""></span><span>Интересно всем</span></button>
+        <button class="content-tile wide" type="button"><span class="tile-art"><img src="assets/optimized/storytales.webp" alt=""></span><span>Сказки на ночь</span></button>
+        <button class="content-tile compact" type="button"><span class="tile-art"><img src="assets/optimized/medicine.webp" alt=""></span><span>Медицина</span></button>
+        <button class="content-tile compact" type="button" data-open-menu><span class="tile-art"><img src="assets/optimized/more.webp" alt=""></span><span>Больше</span></button>
       </nav>
     </section>
 
@@ -67,16 +66,16 @@
     <section class="ages section" aria-labelledby="ages-title">
       <h2 id="ages-title">По возрастам</h2>
       <article class="age-card age-orange">
-        <div class="age-copy"><span class="age-label">0-3 ГОДА</span><h3>Первые шаги</h3><p>Сказки и открытия<br>вместе с малышом</p><a class="age-link" href="first-steps.html">Вперед</a></div>
-        <img src="assets/Star1.png" alt="Малыш">
+        <div class="age-copy"><span class="age-label">0-3 ГОДА</span><h3>Первые шаги</h3><p>Сказки и открытия<br>вместе с малышом</p><a class="age-link" href="catalog.html?age=0-3">Вперед</a></div>
+        <img src="assets/optimized/Star1.webp" alt="Малыш" loading="lazy" decoding="async">
       </article>
       <article class="age-card age-blue">
-        <div class="age-copy"><span class="age-label">4-11 ЛЕТ</span><h3>Учебная пора</h3><p>Космос, природа<br>и мир вокруг</p><button type="button">Вперед</button></div>
-        <img src="assets/Star2.png" alt="Ребёнок школьного возраста">
+        <div class="age-copy"><span class="age-label">4-11 ЛЕТ</span><h3>Учебная пора</h3><p>Космос, природа<br>и мир вокруг</p><a class="age-link" href="catalog.html?age=4-11">Вперед</a></div>
+        <img src="assets/optimized/Star2.webp" alt="Ребёнок школьного возраста" loading="lazy" decoding="async">
       </article>
       <article class="age-card age-red">
-        <div class="age-copy"><span class="age-label">12+ ЛЕТ</span><h3>Время решений</h3><p>Наука, технологии<br>и человек</p><button type="button">Вперед</button></div>
-        <img src="assets/Star_3.png" alt="Подростки">
+        <div class="age-copy"><span class="age-label">12+ ЛЕТ</span><h3>Время решений</h3><p>Наука, технологии<br>и человек</p><a class="age-link" href="catalog.html?age=12%2B">Вперед</a></div>
+        <img src="assets/optimized/Star_3.webp" alt="Подростки" loading="lazy" decoding="async">
       </article>
     </section>
 
@@ -86,7 +85,7 @@
     </section>
     </div>
   </main>
-  <div class="floating-toolbar" id="floating-toolbar" aria-hidden="true">
+  <div class="floating-toolbar" id="floating-toolbar" aria-hidden="true" inert>
     <button class="icon-button" type="button" aria-label="Открыть меню"><i class="ph-bold ph-list"></i></button>
     <div class="preview-bubbles small" role="group" aria-label="Сторис">
     </div>
@@ -112,18 +111,18 @@
       </nav>
       <div class="menu-scroll">
       <nav class="menu-categories" aria-label="Все разделы">
-        <button type="button" data-menu-target=".content-tile:nth-child(1)"><span>Мультики</span><img src="assets/cartoons.png" alt=""></button>
-        <button type="button" data-menu-target=".content-tile:nth-child(2)"><span>Игры</span><img src="assets/games.png" alt=""></button>
-        <button type="button" data-menu-target=".content-tile:nth-child(3)"><span>Интересно<br>всем</span><img src="assets/for_all.png" alt=""></button>
-        <button type="button" data-menu-target=".content-tile:nth-child(4)"><span>Сказки<br>на ночь</span><img src="assets/storytales.png" alt=""></button>
-        <button type="button" data-menu-target=".content-tile:nth-child(5)"><span>Медицина</span><img src="assets/medicine.png" alt=""></button>
-        <button type="button" disabled><span>Комиксы</span></button>
-        <button type="button" disabled><span>Аудиокниги</span></button>
-        <button type="button" disabled><span>Полезные<br>советы</span></button>
-        <button type="button" disabled><span>Технологии</span></button>
-        <button type="button" disabled><span>История<br>России</span></button>
-        <button type="button" disabled><span>Музыка</span></button>
-        <button type="button" disabled><span>Логика</span></button>
+        <button type="button" data-menu-target=".content-tile:nth-child(1)"><span>Мультики</span><img src="assets/optimized/cartoons.webp" alt=""></button>
+        <button type="button" data-menu-target=".content-tile:nth-child(2)"><span>Игры</span><img src="assets/optimized/games.webp" alt=""></button>
+        <button type="button" data-menu-target=".content-tile:nth-child(3)"><span>Интересно<br>всем</span><img src="assets/optimized/for_all.webp" alt=""></button>
+        <button type="button" data-menu-target=".content-tile:nth-child(4)"><span>Сказки<br>на ночь</span><img src="assets/optimized/storytales.webp" alt=""></button>
+        <button type="button" data-menu-target=".content-tile:nth-child(5)"><span>Медицина</span><img src="assets/optimized/medicine.webp" alt=""></button>
+        <button type="button" disabled><span>Комиксы</span><small class="coming-soon">Скоро</small></button>
+        <button type="button" disabled><span>Аудиокниги</span><small class="coming-soon">Скоро</small></button>
+        <button type="button" disabled><span>Полезные<br>советы</span><small class="coming-soon">Скоро</small></button>
+        <button type="button" disabled><span>Технологии</span><small class="coming-soon">Скоро</small></button>
+        <button type="button" disabled><span>История<br>России</span><small class="coming-soon">Скоро</small></button>
+        <button type="button" disabled><span>Музыка</span><small class="coming-soon">Скоро</small></button>
+        <button type="button" disabled><span>Логика</span><small class="coming-soon">Скоро</small></button>
       </nav>
       </div>
     </div>
@@ -137,7 +136,7 @@
     <div class="search-empty" id="search-empty">
       <img class="search-flower" src="assets/flower_find.png" alt="" aria-hidden="true">
       <h2>Найди то, что тебе<br>понравится</h2>
-      <p>История поиска пока что пустая</p>
+      <p>Напиши тему, название или возраст</p>
     </div>
     <div class="search-results" id="search-results" aria-live="polite"></div>
   </dialog>
@@ -183,7 +182,7 @@
       <div class="about-hero">
         <span>Для детей и родителей</span>
         <h3>ДЕТСКАЯ<br>СТРАНИЦА</h3>
-        <img src="assets/planet.png" alt="" aria-hidden="true">
+        <img src="assets/optimized/planet.webp" alt="" aria-hidden="true">
       </div>
       <section class="info-section about-section">
         <h3>Зачем этот сайт</h3>

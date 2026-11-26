@@ -2,6 +2,23 @@
   const storageKey = 'childpage-article-transition';
   const reduceMotion = () => window.childpagePreferences?.prefersReducedMotion() || matchMedia('(prefers-reduced-motion: reduce)').matches;
   const currentPath = location.pathname;
+  let backTarget;
+  // This file also runs in <head>; configure the return link once markup exists.
+  function configureBackLink() {
+    const link = document.querySelector('.article-back');
+    if (!link || !document.referrer) return;
+    try {
+      const from = new URL(document.referrer);
+      const home = new URL(link.href);
+      const catalog = new URL('catalog.html', home);
+      if (from.origin !== location.origin || ![home.pathname, new URL('./', home).pathname, catalog.pathname].includes(from.pathname)) return;
+      backTarget = from;
+      link.href = from.href;
+      link.setAttribute('aria-label', from.pathname === catalog.pathname ? 'Вернуться к подборке' : 'Вернуться на главную');
+    } catch {}
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', configureBackLink, { once: true });
+  else configureBackLink();
 
   function remember(url) {
     if (reduceMotion() || url.origin !== location.origin) return;
@@ -30,17 +47,27 @@
     const url = new URL(link.href);
     if (url.origin !== location.origin) return;
     const page = document.querySelector('.article-page');
+    const returnToSource = page && link.classList.contains('article-back') && backTarget && history.length > 1;
+    const navigate = () => returnToSource ? history.back() : location.assign(url.href);
     if (page && link.closest('.article-page') && (link.classList.contains('article-back') || link.classList.contains('article-home')) && !reduceMotion()) {
       event.preventDefault();
       document.documentElement.classList.remove('article-entering');
       page.classList.add('article-leaving');
-      setTimeout(() => location.assign(url.href), 280);
+      setTimeout(navigate, 280);
+      return;
+    }
+    if (returnToSource) {
+      event.preventDefault();
+      navigate();
       return;
     }
     remember(url);
   });
 
   addEventListener('pageshow', event => {
-    if (event.persisted) document.documentElement.classList.remove('article-entering');
+    if (event.persisted) {
+      document.documentElement.classList.remove('article-entering');
+      document.querySelector('.article-page')?.classList.remove('article-leaving');
+    }
   });
 })();
