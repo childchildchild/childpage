@@ -107,7 +107,6 @@ function render() {
     link.append(visual, ...(item.type === 'story' ? [kind] : []), title, description); card.append(link); grid.append(card);
   }
   document.querySelector('#catalog-empty').hidden = items.length > 0;
-  document.querySelector('#catalog-status').textContent = items.length ? `Найдено материалов: ${items.length}` : '';
   document.querySelector('#catalog-empty-message').textContent = available.length
     ? 'Для этого возраста и формата пока нет материалов. Попробуйте другой выбор.'
     : 'В этом разделе пока нет материалов. В других разделах уже есть что почитать и посмотреть.';
