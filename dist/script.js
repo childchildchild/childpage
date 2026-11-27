@@ -73,7 +73,7 @@ function animateMenuToSearch(source) {
 }
 
 const normalizeSearch = value => value.toLocaleLowerCase('ru').replaceAll('ё', 'е').trim();
-const searchableItems = (window.siteContent || []).filter(item => item.status === 'published').map(item => ({
+const searchableItems = (window.siteContent || []).filter(item => item.status === 'published' && item.type !== 'story').map(item => ({
   id: `content:${item.id}`,
   image: item.image || '',
   kind: item.cardType === 'tale' ? 'Сказка' : ({article:'Статья', story:'Сторис', video:'Видео', audio:'Аудио', game:'Игра'}[item.type] || 'Материал'),
