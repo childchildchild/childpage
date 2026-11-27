@@ -1725,7 +1725,7 @@
       "id": "item-cf23f1e4-8f0a-4183-94c2-02b28f525fba",
       "type": "article",
       "cardType": "",
-      "cardStatus": "",
+      "cardStatus": "new",
       "status": "published",
       "title": "Почему у жирафа такая длинная шея?",
       "description": "Как жираф ест листья с самых высоких веток",
@@ -1748,7 +1748,7 @@
       "gameUrl": "",
       "linkedId": "",
       "publishedAt": "2026-11-27T15:53:30.492Z",
-      "updatedAt": "2026-11-27T15:53:30.492Z",
+      "updatedAt": "2026-11-27T16:23:50.758Z",
       "bodyBlocks": [
         {
           "type": "paragraph",
