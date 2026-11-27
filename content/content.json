@@ -1201,7 +1201,7 @@
       "id": "item-623e48c6-b3cf-41bb-9357-7d3238bc63f9",
       "type": "article",
       "cardType": "",
-      "cardStatus": "",
+      "cardStatus": "interesting",
       "status": "published",
       "title": "Как спят животные?",
       "description": "Одни спят стоя, другие вниз головой, а дельфины спят наполовину",
@@ -1224,7 +1224,7 @@
       "gameUrl": "",
       "linkedId": "",
       "publishedAt": "2026-11-27T15:28:39.201Z",
-      "updatedAt": "2026-11-27T15:37:36.043Z",
+      "updatedAt": "2026-11-27T15:38:05.912Z",
       "bodyBlocks": [
         {
           "type": "paragraph",
