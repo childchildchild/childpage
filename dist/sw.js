@@ -1,4 +1,4 @@
-const CACHE_NAME = 'childpage-shell-20261127-1';
+const CACHE_NAME = 'childpage-shell-20261127-2';
 const SHELL = [
   'index.html',
   'styles.css',
@@ -25,9 +25,9 @@ const SHELL = [
   'assets/optimized/storytales.webp',
   'assets/optimized/medicine.webp',
   'assets/optimized/more.webp',
-  'assets/optimized/Star1.webp',
-  'assets/optimized/Star2.webp',
-  'assets/optimized/Star_3.webp',
+  'assets/optimized/age-baby.webp',
+  'assets/optimized/age-girl.webp',
+  'assets/optimized/age-teens.webp',
   'assets/flower_find.png',
   'assets/optimized/story_hands.webp',
   'assets/optimized/story_tale.webp',
