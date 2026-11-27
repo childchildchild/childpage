@@ -2,7 +2,7 @@
 .age-landing-hero,.age-content-toolbar{display:none}
 html[data-age-page=orange] .catalog-page{--age-panel:#5b382d;--age-accent:#ff752b;--age-pattern:url('assets/optimized/ellipse_under_1.webp');--age-portrait-x:-8px;--head-x:34cqw;--head-y:34cqw;--head-rx:14cqw;--head-ry:22cqw}
 html[data-age-page=blue] .catalog-page{--age-panel:#202d49;--age-accent:#2f68f3;--age-pattern:url('assets/optimized/ellipse_under_2.webp');--age-portrait-x:-20px;--head-x:27cqw;--head-y:31cqw;--head-rx:17cqw;--head-ry:25cqw}
-html[data-age-page=red] .catalog-page{--age-panel:#4b2022;--age-accent:#ff3034;--age-pattern:url('assets/optimized/ellipse_under_3.webp');--age-portrait-x:-5px;--head-x:47cqw;--head-y:30cqw;--head-rx:13cqw;--head-ry:19cqw}
+html[data-age-page=red] .catalog-page{--age-panel:#4b2022;--age-accent:#ff3034;--age-pattern:url('assets/optimized/ellipse_under_3.webp');--age-portrait-x:11px;--head-x:calc(47cqw + 16px);--head-y:30cqw;--head-rx:13cqw;--head-ry:19cqw}
 html[data-age-page] .age-landing-hero{display:block;position:relative;width:100%;height:clamp(360px,109cqw,460px);overflow:hidden;background:var(--age-panel);color:white}
 html[data-age-page] .catalog-header{display:none}
 .age-landing-header{position:relative;display:grid;place-items:center;height:76px;padding:32px 60px 0}
