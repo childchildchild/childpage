@@ -73,24 +73,7 @@ function animateMenuToSearch(source) {
 }
 
 const normalizeSearch = value => value.toLocaleLowerCase('ru').replaceAll('ё', 'е').trim();
-const sectionCategories = ['cartoons', 'games', 'for_all', 'tales', 'medicine', 'all'];
-const searchableItems = [...document.querySelectorAll('.content-tile')].map((element, index) => ({
-  id: `section:${sectionCategories[index]}`,
-  image: element.querySelector('img')?.getAttribute('src') || '',
-  kind: 'Раздел',
-  title: element.querySelector('span:last-child').textContent,
-  description: 'Раздел контента',
-  text: normalizeSearch(element.textContent),
-  url: `catalog.html?category=${sectionCategories[index]}`,
-})).concat([...document.querySelectorAll('.age-card')].map(element => ({
-  id: `age:${element.querySelector('.age-link').getAttribute('href')}`,
-  image: element.querySelector('img')?.getAttribute('src') || '',
-  kind: 'Подборка по возрасту',
-  title: `${element.querySelector('h3').textContent} · ${element.querySelector('.age-label').textContent}`,
-  description: element.querySelector('p').innerText,
-  text: normalizeSearch(element.textContent),
-  url: element.querySelector('.age-link').getAttribute('href'),
-})), (window.siteContent || []).filter(item => item.status === 'published').map(item => ({
+const searchableItems = (window.siteContent || []).filter(item => item.status === 'published').map(item => ({
   id: `content:${item.id}`,
   image: item.image || '',
   kind: item.cardType === 'tale' ? 'Сказка' : ({article:'Статья', story:'Сторис', video:'Видео', audio:'Аудио', game:'Игра'}[item.type] || 'Материал'),
@@ -98,7 +81,7 @@ const searchableItems = [...document.querySelectorAll('.content-tile')].map((ele
   description: item.description,
   text: normalizeSearch(`${item.title} ${item.description}`),
   url: item.type === 'story' ? `index.html?story=${encodeURIComponent(item.id)}` : item.url,
-})));
+}));
 
 // Store only IDs of opened results; resolve current names, images and links from site data.
 const searchItemsById = new Map(searchableItems.map(item => [item.id, item]));
