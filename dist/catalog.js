@@ -4,6 +4,17 @@ const names = { all: 'Все материалы', cartoons: 'Мультики', 
 const kinds = { article: 'Статья', story: 'Сторис', video: 'Видео', audio: 'Аудио', game: 'Игра' };
 if (!Object.hasOwn(names, category)) category = 'all';
 const ageNames = { '0-3': 'Для малышей 0–3 лет', '4-12': 'Для детей 4–12 лет', '13+': 'Для подростков 13+' };
+const ageLanding = {
+  '0-3': {title:'Первые шаги',label:'0–3 ГОДА',theme:'orange',portrait:'age-baby.webp'},
+  '4-12': {title:'Учебная пора',label:'4–12 ЛЕТ',theme:'blue',portrait:'age-girl.webp'},
+  '13+': {title:'Время решений',label:'13+ ЛЕТ',theme:'red',portrait:'age-teens.webp'},
+};
+const hero = document.createElement('section'); hero.className = 'age-landing-hero'; hero.setAttribute('aria-labelledby','age-landing-title');
+hero.innerHTML = '<header class="age-landing-header"><a href="index.html#ages-title" aria-label="К возрастам"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i></a><h1 id="age-landing-title"></h1></header><div class="age-landing-art"><div class="age-landing-circle" aria-hidden="true"></div><img id="age-landing-portrait" alt=""><span id="age-landing-label"></span></div>';
+document.querySelector('.catalog-page').prepend(hero);
+const ageToolbar = document.createElement('div'); ageToolbar.className = 'age-content-toolbar';
+ageToolbar.innerHTML = '<a href="index.html?open=menu" aria-label="Открыть меню"><i class="ph-bold ph-list" aria-hidden="true"></i></a><h2>Контент</h2><a href="index.html?open=search" aria-label="Открыть поиск"><i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i></a>';
+document.querySelector('.catalog-content').prepend(ageToolbar);
 const ageFilter = document.querySelector('#age-filter');
 const typeFilter = document.querySelector('#type-filter');
 const filterControls = new Map();
@@ -83,6 +94,16 @@ function render() {
   grid.replaceChildren();
   const age = ageFilter.value;
   const type = typeFilter.value;
+  const landing = (category === 'all' || category === 'more') ? ageLanding[age] : null;
+  if (landing) document.documentElement.dataset.agePage = landing.theme;
+  else document.documentElement.removeAttribute('data-age-page');
+  if (landing) {
+    hero.querySelector('h1').textContent = landing.title;
+    hero.querySelector('img').src = `assets/optimized/${landing.portrait}`;
+    hero.querySelector('img').alt = age === '0-3' ? 'Малыш' : age === '4-12' ? 'Ребёнок школьного возраста' : 'Подростки';
+    hero.querySelector('#age-landing-label').textContent = landing.label;
+    document.querySelector('.catalog-content').setAttribute('aria-labelledby','age-landing-title');
+  } else document.querySelector('.catalog-content').setAttribute('aria-labelledby','catalog-title');
   const title = (category === 'all' || category === 'more') && ageNames[age] ? ageNames[age] : names[category];
   document.querySelector('#catalog-title').textContent = title;
   document.title = `${title} — Детская страница`;
@@ -92,6 +113,11 @@ function render() {
     else url.searchParams.set(key, value);
   }
   history.replaceState(null, '', url);
+  if (landing) {
+    const backToAge = encodeURIComponent(`catalog.html${url.search}`);
+    ageToolbar.querySelector('[aria-label="Открыть меню"]').href = `index.html?open=menu&return=${backToAge}`;
+    ageToolbar.querySelector('[aria-label="Открыть поиск"]').href = `index.html?open=search&return=${backToAge}`;
+  }
   const available = (window.siteContent || []).filter(item => item.status === 'published' && (category === 'all' || category === 'more' || item.category === category));
   const items = available.filter(item => (age === 'all' || !item.ages?.length || item.ages.includes(age)) && (type === 'all' || item.type === type)).sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
   for (const item of items) {

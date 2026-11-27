@@ -2,6 +2,7 @@ const toolbar = document.querySelector('#floating-toolbar');
 const backToTop = document.querySelector('#back-to-top');
 const prefersLessMotion = () => window.childpagePreferences?.prefersReducedMotion() || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const sourceToolbar = document.querySelector('#content-toolbar');
+let catalogReturnUrl = null;
 let toolbarFrame = 0;
 
 const updateFloatingToolbar = () => {
@@ -183,6 +184,7 @@ function openSearch(trigger, fromMenu = false) {
 
 function backFromSearch() {
   if (searchClosing) return;
+  if (!searchFromMenu && catalogReturnUrl) { location.assign(catalogReturnUrl); return; }
   if (searchFromMenu) {
     const finish = () => {
       searchFromMenu = false;
@@ -266,7 +268,8 @@ function closeMenu(afterClose) {
   window.setTimeout(() => {
     menuSheet.close();
     menuClosing = false;
-    afterClose?.();
+    if (afterClose) afterClose();
+    else if (catalogReturnUrl) location.assign(catalogReturnUrl);
   }, prefersLessMotion() ? 0 : 240);
 }
 
@@ -330,3 +333,15 @@ menuHeader.addEventListener('touchend', event => {
   if (menuTouchStart !== undefined && event.changedTouches[0].clientY - menuTouchStart > 60) closeMenu();
   menuTouchStart = undefined;
 }, { passive: true });
+const panelParams = new URLSearchParams(location.search);
+const requestedPanel = panelParams.get('open');
+if (requestedPanel === 'menu' || requestedPanel === 'search') {
+  try {
+    const target = new URL(panelParams.get('return') || '', location.href);
+    if (target.origin === location.origin && target.pathname.endsWith('/catalog.html') && target.searchParams.has('age')) catalogReturnUrl = target.href;
+  } catch {}
+  const cleanUrl = new URL(location.href); cleanUrl.searchParams.delete('open'); cleanUrl.searchParams.delete('return');
+  history.replaceState(history.state, '', cleanUrl);
+  if (requestedPanel === 'menu') openMenu(document.querySelector('#content-toolbar button[aria-label="Открыть меню"]'));
+  else openSearch(document.querySelector('#content-toolbar button[aria-label="Открыть поиск"]'));
+}
