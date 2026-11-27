@@ -903,19 +903,29 @@ async function uploadImageFile(file, previewUrl = '') {
     throw error;
   }
 }
-async function uploadStoryVideo(file) {
+async function uploadStoryVideo(file, fieldName = 'storyVideoUrl') {
   if (!file || mutationBusy) return;
-  if (file.type !== 'video/mp4' || file.size > 2_500_000 || !file.size) { notice('Выберите MP4 до 2,5 МБ.', true); return; }
+  if (file.type !== 'video/mp4' || file.size > 50_000_000 || !file.size) { notice('Выберите MP4 до 50 МБ.', true); return; }
   const uploadId = ++storyVideoUploadId;
   const localUrl = URL.createObjectURL(file);
-  const field = contentForm.elements.storyVideoUrl;
+  const field = contentForm.elements[fieldName];
   const previousSource = field.value;
   field.value = localUrl;
   localVideoUrls.set(localUrl, localUrl);
-  updateStoryVideoPreview();
+  if (fieldName === 'storyVideoUrl') updateStoryVideoPreview();
   updateSaveState();
   notice('Загружаю видео…');
   const transfer = (async () => {
+    if (file.size > 2_500_000) {
+      const {upload} = await import('./blob-client.js?v=20261127-1');
+      const result = await upload(`videos/${crypto.randomUUID()}.mp4`, file, {
+        access:'public',handleUploadUrl:'/api/admin?action=blob-upload',multipart:true,
+        onUploadProgress:({percentage}) => {
+          if (uploadId === storyVideoUploadId) $('#editor-save-state').textContent = `Загружаю видео: ${Math.round(percentage)} %`;
+        },
+      });
+      return {path:result.url};
+    }
     const base64 = await new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(String(reader.result).split(',')[1]);
@@ -930,12 +940,12 @@ async function uploadStoryVideo(file) {
     if (uploadId !== storyVideoUploadId) { localVideoUrls.delete(localUrl); URL.revokeObjectURL(localUrl); return; }
     localVideoUrls.set(result.path, localUrl);
     field.value = result.path;
-    updateStoryVideoPreview();
-    notice('Видео загружено. Сохраните сторис, чтобы оно появилось на сайте.');
+    if (fieldName === 'storyVideoUrl') updateStoryVideoPreview();
+    notice('Видео загружено. Сохраните материал, чтобы оно появилось на сайте.');
   } catch (error) {
     localVideoUrls.delete(localUrl);
     URL.revokeObjectURL(localUrl);
-    if (uploadId === storyVideoUploadId) { field.value = previousSource; updateStoryVideoPreview(); notice(error.message, true); }
+    if (uploadId === storyVideoUploadId) { field.value = previousSource; if (fieldName === 'storyVideoUrl') updateStoryVideoPreview(); notice(error.message, true); }
   } finally {
     if (storyVideoUploadPromise === transfer) storyVideoUploadPromise = null;
     updateSaveState();
@@ -1139,7 +1149,9 @@ $('#unpublish').addEventListener('click', () => save('draft'));
 $('#delete-item').addEventListener('click', removeItem);
 $('#image-upload').addEventListener('change', event => chooseCover(event.target.files[0]));
 $('#story-video-upload').addEventListener('change', event => { uploadStoryVideo(event.target.files[0]); event.target.value = ''; });
+$('#material-video-upload').addEventListener('change', event => { uploadStoryVideo(event.target.files[0], 'mediaUrl'); event.target.value = ''; });
 contentForm.elements.storyVideoUrl.addEventListener('input', () => { storyVideoUploadId++; });
+contentForm.elements.mediaUrl.addEventListener('input', () => { storyVideoUploadId++; });
 $('#image-upload').addEventListener('change', event => { event.target.value = ''; });
 $('#crop-cover').addEventListener('click', cropCurrentCover);
 $('#image-preview').addEventListener('keydown', event => {

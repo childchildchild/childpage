@@ -1,0 +1,13 @@
+{
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@vercel/blob": "^2.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.27.0"
+  },
+  "scripts": {
+    "build:blob-client": "esbuild vendor/blob-client.js --bundle --minify --format=esm --platform=browser --outfile=dist/admin/blob-client.js"
+  }
+}

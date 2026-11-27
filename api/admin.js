@@ -201,7 +201,7 @@ export async function validate(input) {
 export default async function handler(req, res) {
   if (!configurationReady()) return response(res, 503, { error: 'Админка ещё не настроена на Vercel.' });
   if (!['GET', 'POST'].includes(req.method)) return response(res, 405, { error: 'Метод не поддерживается.' });
-  const action = req.method === 'GET' ? req.query.action : req.body?.action;
+  const action = req.method === 'GET' ? req.query.action : req.body?.action || req.query.action;
   const session = sessionFrom(req);
   if (req.method === 'POST') {
     const origin = req.headers.origin;
@@ -231,6 +231,21 @@ export default async function handler(req, res) {
   if (action === 'logout' && req.method === 'POST') {
     setCookie(res, '', 0);
     return response(res, 200, { ok: true });
+  }
+  if (action === 'blob-upload' && req.method === 'POST') {
+    try {
+      const {handleUpload} = await import('@vercel/blob/client');
+      const result = await handleUpload({
+        body:req.body, request:req,
+        onBeforeGenerateToken:async pathname => {
+          if (!session) throw new Error('Войдите в админку.');
+          if (!/^videos\/[a-zA-Z0-9._-]+\.mp4$/.test(pathname)) throw new Error('Разрешена загрузка только MP4.');
+          return {allowedContentTypes:['video/mp4'],maximumSizeInBytes:50_000_000,addRandomSuffix:true};
+        },
+        onUploadCompleted:async () => {},
+      });
+      return response(res,200,result);
+    } catch (error) { return response(res,400,{error:error.message||'Не удалось загрузить видео.'}); }
   }
   if (!session) return response(res, 401, { error: 'Войдите в админку.' });
   if (action === 'session' && req.method === 'GET') return response(res, 200, { user: session.user });
