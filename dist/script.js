@@ -125,12 +125,8 @@ function openSearchResult(item) {
   closeSearch();
   window.childpageArticleNavigation.go(item.url);
 }
-function renderSearchHistory() {
-  searchHistoryList.replaceChildren();
-  for (const id of searchHistory) {
-    const item = searchItemsById.get(id);
-    const row = document.createElement('li');
-    const open = document.createElement('button'); open.type = 'button'; open.className = 'search-history-open';
+function createSearchEntry(item, className) {
+    const open = document.createElement('button'); open.type = 'button'; open.className = `search-entry ${className}`;
     const visual = document.createElement('span'); visual.className = 'search-history-thumb';
     const fallback = document.createElement('i'); fallback.className = 'ph-bold ph-article'; fallback.setAttribute('aria-hidden', 'true'); visual.append(fallback);
     if (item.image) {
@@ -141,6 +137,14 @@ function renderSearchHistory() {
     const title = document.createElement('strong'); title.textContent = item.title;
     const kind = document.createElement('small'); kind.textContent = item.kind; text.append(title, kind); open.append(visual, text);
     open.addEventListener('click', () => openSearchResult(item));
+    return open;
+}
+function renderSearchHistory() {
+  searchHistoryList.replaceChildren();
+  for (const id of searchHistory) {
+    const item = searchItemsById.get(id);
+    const row = document.createElement('li');
+    const open = createSearchEntry(item, 'search-history-open');
     const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'search-history-remove'; remove.setAttribute('aria-label', `Удалить «${item.title}» из истории`);
     const cross = document.createElement('i'); cross.className = 'ph-bold ph-x'; cross.setAttribute('aria-hidden', 'true'); remove.append(cross);
     remove.addEventListener('click', () => {
@@ -233,16 +237,7 @@ function renderSearch() {
   }
 
   for (const item of matches) {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'search-result';
-    const title = document.createElement('strong');
-    title.textContent = item.title;
-    const description = document.createElement('span');
-    description.textContent = item.description;
-    button.append(title, description);
-    button.addEventListener('click', () => openSearchResult(item));
-    searchResults.append(button);
+    searchResults.append(createSearchEntry(item, 'search-result'));
   }
 }
 
