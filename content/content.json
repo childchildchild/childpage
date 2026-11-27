@@ -2427,6 +2427,34 @@
           ]
         }
       ]
+    },
+    {
+      "id": "item-a21c06b7-3d72-4fd3-9d2b-4aec405f1b33",
+      "type": "story",
+      "cardType": "",
+      "cardStatus": "",
+      "status": "published",
+      "title": "Как делают шоколад?",
+      "description": "Плитка шоколада проходит огромный путь до того как появится на полке в магазине",
+      "category": "for_all",
+      "ages": [
+        "0-3",
+        "4-12",
+        "13+"
+      ],
+      "tags": [
+        "как делают",
+        "шоколад"
+      ],
+      "image": "https://i.pinimg.com/originals/06/b5/78/06b578c914ad2eb519280af4b9b6f906.jpg",
+      "imageAlt": "",
+      "label": "",
+      "body": "",
+      "mediaUrl": "",
+      "gameUrl": "",
+      "linkedId": "item-8492c54c-2a39-4c35-b31c-805444f8ae57",
+      "publishedAt": "2026-11-27T16:49:47.522Z",
+      "updatedAt": "2026-11-27T16:49:47.522Z"
     }
   ]
 }
