@@ -51,6 +51,15 @@ function finish(value) {
 function toBlob(canvas, quality) {
   return new Promise(resolve => canvas.toBlob(resolve, 'image/webp', quality));
 }
+function cropGeometry(state) {
+  const width = state.frameWidth / state.scale;
+  const height = state.frameHeight / state.scale;
+  return {
+    width, height,
+    x: Math.max(0, Math.min(state.width - width, (state.width - width) / 2 - state.offsetX / state.scale)),
+    y: Math.max(0, Math.min(state.height - height, (state.height - height) / 2 - state.offsetY / state.scale)),
+  };
+}
 async function decodeWithTimeout(image, milliseconds) {
   let timer;
   try {
@@ -62,24 +71,64 @@ async function decodeWithTimeout(image, milliseconds) {
 }
 async function makeCroppedFile() {
   const state = current;
-  const sourceWidth = state.frameWidth / state.scale;
-  const sourceHeight = state.frameHeight / state.scale;
-  const sourceX = Math.max(0, Math.min(state.width - sourceWidth, (state.width - sourceWidth) / 2 - state.offsetX / state.scale));
-  const sourceY = Math.max(0, Math.min(state.height - sourceHeight, (state.height - sourceHeight) / 2 - state.offsetY / state.scale));
+  if (state.isGif) return makeCroppedGif(state);
+  const crop = cropGeometry(state);
   const canvas = document.createElement('canvas');
   const context = canvas.getContext('2d');
   if (!context) throw new Error('Не удалось подготовить фото.');
   let blob;
   for (const [limit, quality] of [[2200, .9], [1700, .8], [1200, .7]]) {
-    const scale = Math.min(1, limit / Math.max(sourceWidth, sourceHeight));
-    canvas.width = Math.max(1, Math.round(sourceWidth * scale));
-    canvas.height = Math.max(1, Math.round(sourceHeight * scale));
-    context.drawImage(state.image, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height);
+    const scale = Math.min(1, limit / Math.max(crop.width, crop.height));
+    canvas.width = Math.max(1, Math.round(crop.width * scale));
+    canvas.height = Math.max(1, Math.round(crop.height * scale));
+    context.drawImage(state.image, crop.x, crop.y, crop.width, crop.height, 0, 0, canvas.width, canvas.height);
     blob = await toBlob(canvas, quality);
     if (blob && blob.size <= 2_500_000) break;
   }
   if (!blob || blob.size > 2_500_000) throw new Error('Фото после кадрирования слишком большое.');
   return new File([blob], `photo-${Date.now()}.${blob.type === 'image/webp' ? 'webp' : 'png'}`, { type: blob.type || 'image/png' });
+}
+async function makeCroppedGif(state) {
+  const {parseGIF,decompressFrames,GIFEncoder,quantize,applyPalette} = await import('./gif-codec.js?v=20261127-1');
+  const source = state.source instanceof Blob ? state.source : await (await fetch(state.url)).blob();
+  const parsed = parseGIF(await source.arrayBuffer());
+  const frames = decompressFrames(parsed, true);
+  if (!frames.length || frames.length > 200) throw new Error('Этот GIF слишком длинный для кадрирования на телефоне. Оставьте его без изменений.');
+  const crop = cropGeometry(state);
+  const full = document.createElement('canvas'); full.width = parsed.lsd.width; full.height = parsed.lsd.height;
+  const fullContext = full.getContext('2d', {willReadFrequently:true});
+  const patch = document.createElement('canvas'); const patchContext = patch.getContext('2d');
+  const output = document.createElement('canvas'); const outputContext = output.getContext('2d', {willReadFrequently:true});
+  if (!fullContext || !patchContext || !outputContext) throw new Error('Не удалось обработать GIF на этом устройстве.');
+  for (const [limit, colors] of [[480,128],[360,96],[260,64]]) {
+    const scale = Math.min(1, limit / Math.max(crop.width,crop.height));
+    output.width = Math.max(1, Math.round(crop.width * scale));
+    output.height = Math.max(1, Math.round(crop.height * scale));
+    fullContext.clearRect(0,0,full.width,full.height);
+    const gif = GIFEncoder();
+    let previous, snapshot;
+    for (const [index, frame] of frames.entries()) {
+      if (previous?.disposalType === 2) fullContext.clearRect(previous.dims.left,previous.dims.top,previous.dims.width,previous.dims.height);
+      else if (previous?.disposalType === 3 && snapshot) fullContext.putImageData(snapshot,0,0);
+      snapshot = frame.disposalType === 3 ? fullContext.getImageData(0,0,full.width,full.height) : null;
+      patch.width = frame.dims.width; patch.height = frame.dims.height;
+      patchContext.putImageData(new ImageData(frame.patch,patch.width,patch.height),0,0);
+      fullContext.drawImage(patch,frame.dims.left,frame.dims.top);
+      outputContext.clearRect(0,0,output.width,output.height);
+      outputContext.drawImage(full,crop.x,crop.y,crop.width,crop.height,0,0,output.width,output.height);
+      const rgba = outputContext.getImageData(0,0,output.width,output.height).data;
+      const palette = quantize(rgba,colors,{format:'rgba4444',oneBitAlpha:true});
+      const indexed = applyPalette(rgba,palette,'rgba4444');
+      const transparentIndex = palette.findIndex(color => color[3] === 0);
+      gif.writeFrame(indexed,output.width,output.height,{palette,delay:Math.max(20,frame.delay||100),transparent:transparentIndex>=0,transparentIndex:Math.max(0,transparentIndex),dispose:2});
+      previous = frame;
+      if (index % 5 === 0) await new Promise(resolve => setTimeout(resolve,0));
+    }
+    gif.finish();
+    const bytes = gif.bytes();
+    if (bytes.length <= 2_500_000) return new File([bytes],`animation-${Date.now()}.gif`,{type:'image/gif'});
+  }
+  throw new Error('Кадрированный GIF получился больше 2,5 МБ. Попробуйте меньшую область или оставьте исходный файл.');
 }
 
 export async function cropImage(source, options = {}) {
@@ -115,9 +164,10 @@ export async function cropImage(source, options = {}) {
     throw new Error('Файл не похож на фотографию.');
   }
   return new Promise(resolve => {
-    current = { source, url, ownsUrl, image, width: image.naturalWidth, height: image.naturalHeight, frameWidth: 0, frameHeight: 0, scale: 1, zoom: 1, offsetX: 0, offsetY: 0, resolve };
+    const isGif = Boolean(options.animated || source instanceof File && source.type === 'image/gif' || /\.gif(?:$|[?#])/i.test(String(source)));
+    current = { source, url, ownsUrl, image, isGif, width: image.naturalWidth, height: image.naturalHeight, frameWidth: 0, frameHeight: 0, scale: 1, zoom: 1, offsetX: 0, offsetY: 0, resolve };
     document.querySelector('#crop-caption').textContent = options.caption || 'Перемещайте фото пальцем. Масштаб меняется ползунком.';
-    document.querySelector('#crop-warning').hidden = !(source instanceof File && source.type === 'image/gif') && !String(source).toLowerCase().endsWith('.gif');
+    document.querySelector('#crop-warning').hidden = !isGif;
     ratioSelect.value = options.ratio || 'original';
     document.querySelector('#crop-custom').hidden = ratioSelect.value !== 'custom';
     zoomInput.value = '1';

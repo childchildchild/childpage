@@ -13,7 +13,8 @@
   <link rel="stylesheet" href="admin-ui.css?v=20261127-6">
   <link rel="stylesheet" href="editor-preview-layout.css?v=20261127-2">
   <link rel="stylesheet" href="emoji-picker.css?v=20261127-1">
-  <script src="admin.js?v=20261127-15" type="module"></script>
+  <link rel="stylesheet" href="rich-editor-improvements.css?v=20261127-2">
+  <script src="admin.js?v=20261127-17" type="module"></script>
 </head>
 <body>
   <div id="admin-loading" class="admin-loading" role="status">Загружаю панель…</div>
@@ -127,7 +128,7 @@
       <p id="crop-caption" class="crop-caption">Перемещайте фото пальцем. Масштаб меняется ползунком.</p>
       <div id="crop-stage" class="crop-stage"><div id="crop-frame" class="crop-frame"><img id="crop-image" alt="Кадрируемое фото" draggable="false"><div class="crop-grid" aria-hidden="true"></div></div></div>
       <div class="crop-controls"><label>Форма кадра<select id="crop-ratio"><option value="original">Оригинал</option><option value="card">Карточка</option><option value="square">Квадрат</option><option value="story">Сторис</option><option value="landscape">Широкое фото</option><option value="custom">Свои пропорции</option></select></label><div id="crop-custom" class="crop-custom" hidden><label>Ширина<input id="crop-custom-width" type="number" min="1" max="30" value="4"></label><span>:</span><label>Высота<input id="crop-custom-height" type="number" min="1" max="30" value="3"></label></div><label>Масштаб<input id="crop-zoom" type="range" min="1" max="3" step="0.01" value="1"></label></div>
-      <p id="crop-warning" class="crop-warning" hidden>После кадрирования GIF станет неподвижным изображением.</p>
+      <p id="crop-warning" class="crop-warning" hidden>GIF останется анимированным после кадрирования. Обработка может занять несколько секунд.</p>
       <div class="crop-actions"><button id="crop-skip" type="button" class="secondary">Оставить как есть</button><button id="crop-apply" type="button" class="primary">Применить</button></div>
     </div>
   </dialog>

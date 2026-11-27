@@ -1,7 +1,7 @@
 import { initUI, syncSelects, ask } from './ui.js?v=20261127-4';
 import { initEmojiPicker } from './emoji-picker.js?v=20261127-2';
 import { initPhotoCarousel } from '../article-carousel.js?v=20261127-2';
-import { cropImage } from './crop.js';
+import { cropImage } from './crop.js?v=20261127-2';
 import { normalizeTags } from '../content-tags.js?v=20261127-1';
 import { createTagInput } from './tag-input.js?v=20261127-3';
 
@@ -274,12 +274,24 @@ function createRichMediaBlock(block) {
     strip.append(item);
   }
   figure.append(strip);
-  const caption = document.createElement('figcaption');
-  caption.textContent = block.type === 'carousel' ? `Карусель · ${images.length} фото` : 'Фото / GIF';
+  const actions = document.createElement('div'); actions.className = 'rich-media-actions';
+  for (const [direction, label, icon] of [['up','Переместить выше','arrow-up'],['down','Переместить ниже','arrow-down']]) {
+    const move = document.createElement('button'); move.type = 'button'; move.dataset.moveRichBlock = direction;
+    move.setAttribute('aria-label', label); move.title = label;
+    move.innerHTML = `<i class="ph-bold ph-${icon}" aria-hidden="true"></i>`;
+    actions.append(move);
+  }
   const remove = document.createElement('button');
-  remove.type = 'button'; remove.dataset.removeRichBlock = ''; remove.textContent = 'Удалить блок';
-  figure.append(caption, remove);
+  remove.type = 'button'; remove.dataset.removeRichBlock = ''; remove.setAttribute('aria-label', 'Удалить изображение'); remove.title = 'Удалить изображение';
+  remove.innerHTML = '<i class="ph-bold ph-trash" aria-hidden="true"></i>';
+  actions.append(remove); figure.append(actions);
   return figure;
+}
+function updateRichBlockControls() {
+  for (const figure of articleEditor.querySelectorAll(':scope > .rich-media-block')) {
+    figure.querySelector('[data-move-rich-block="up"]').disabled = !figure.previousElementSibling;
+    figure.querySelector('[data-move-rich-block="down"]').disabled = !figure.nextElementSibling;
+  }
 }
 function editorRuns(element) {
   const runs = [];
@@ -341,6 +353,20 @@ function readRichBlocks() {
   for (const node of articleEditor.childNodes) readNode(node);
   return blocks;
 }
+function normalizeEditorLists() {
+  for (const paragraph of articleEditor.querySelectorAll('p')) {
+    const list = [...paragraph.children].find(child => child.matches('ol,ul'));
+    if (!list) continue;
+    const before = document.createElement('p');
+    const after = document.createElement('p');
+    let target = before;
+    for (const child of [...paragraph.childNodes]) {
+      if (child === list) { target = after; continue; }
+      target.append(child);
+    }
+    paragraph.replaceWith(...(before.textContent.trim() ? [before] : []), list, ...(after.textContent.trim() ? [after] : []));
+  }
+}
 function setRichEditor(item) {
   articleEditor.replaceChildren();
   const blocks = Array.isArray(item.bodyBlocks) ? item.bodyBlocks : parseLegacyBody(item.body);
@@ -359,18 +385,21 @@ function setRichEditor(item) {
     appendRichRuns(document, element, block.runs);
     articleEditor.append(element);
   }
+  updateRichBlockControls();
 }
 let savedEditorRange;
 function rememberEditorSelection() {
+  if (document.activeElement !== articleEditor) return;
   const selection = window.getSelection();
   if (selection?.rangeCount && articleEditor.contains(selection.anchorNode)) savedEditorRange = selection.getRangeAt(0).cloneRange();
 }
 function restoreEditorSelection() {
-  articleEditor.focus();
-  if (!savedEditorRange || !articleEditor.contains(savedEditorRange.commonAncestorContainer)) return;
+  const range = savedEditorRange?.cloneRange();
+  articleEditor.focus({preventScroll:true});
+  if (!range || !articleEditor.contains(range.commonAncestorContainer)) return;
   const selection = window.getSelection();
   selection.removeAllRanges();
-  selection.addRange(savedEditorRange);
+  selection.addRange(range);
 }
 function insertEmoji(emoji) {
   if (mutationBusy) return;
@@ -398,15 +427,25 @@ function insertRichBlock(block) {
   restoreEditorSelection();
   const selection = window.getSelection();
   const range = selection?.rangeCount ? selection.getRangeAt(0).cloneRange() : document.createRange();
+  range.collapse(false);
   const selectedNode = range.startContainer.nodeType === Node.ELEMENT_NODE ? range.startContainer : range.startContainer.parentElement;
   const currentBlock = selectedNode?.closest('p,h1,h2,h3,h4,h5,h6,ul,ol');
-  if (currentBlock && articleEditor.contains(currentBlock)) { range.setStartAfter(currentBlock); range.collapse(true); }
-  else { range.selectNodeContents(articleEditor); range.collapse(false); }
-  range.insertNode(figure);
-  const paragraph = document.createElement('p'); paragraph.append(document.createElement('br')); figure.after(paragraph);
-  const nextRange = document.createRange(); nextRange.setStart(paragraph, 0); nextRange.collapse(true);
+  let nextBlock;
+  if (currentBlock && articleEditor.contains(currentBlock) && /^(P|H[1-6])$/.test(currentBlock.tagName)) {
+    const suffix = range.cloneRange(); suffix.setEnd(currentBlock, currentBlock.childNodes.length);
+    const remaining = suffix.extractContents();
+    if (remaining.textContent || remaining.childNodes.length) { nextBlock = currentBlock.cloneNode(false); nextBlock.append(remaining); currentBlock.after(figure, nextBlock); }
+    else currentBlock.after(figure);
+    if (!currentBlock.textContent.trim()) currentBlock.remove();
+  } else if (currentBlock && articleEditor.contains(currentBlock)) currentBlock.after(figure);
+  else if (range.startContainer === articleEditor) articleEditor.insertBefore(figure, articleEditor.childNodes[range.startOffset] || null);
+  else articleEditor.append(figure);
+  nextBlock ||= figure.nextElementSibling;
+  if (!nextBlock || nextBlock.matches('figure')) { nextBlock = document.createElement('p'); nextBlock.append(document.createElement('br')); figure.after(nextBlock); }
+  const nextRange = document.createRange(); nextRange.selectNodeContents(nextBlock); nextRange.collapse(true);
   selection?.removeAllRanges(); selection?.addRange(nextRange);
   rememberEditorSelection();
+  updateRichBlockControls();
   updatePreview();
 }
 function renderList() {
@@ -944,7 +983,7 @@ async function cropCurrentCover() {
   if (!path) return;
   const generation = editorGeneration;
   try {
-    const result = await cropImage(imageSource(path), { ratio: contentForm.elements.type.value === 'story' ? 'story' : 'card', caption: 'Измените кадр уже загруженной обложки.' });
+    const result = await cropImage(imageSource(path), { ratio: contentForm.elements.type.value === 'story' ? 'story' : 'card', animated:/\.gif(?:$|[?#])/i.test(path), caption: 'Измените кадр уже загруженной обложки.' });
     if (generation === editorGeneration && editorOpen() && result instanceof File) await uploadImage(result);
   } catch (error) { if (generation === editorGeneration) notice(error.message, true); }
 }
@@ -955,7 +994,7 @@ async function cropRichPhoto(button) {
   const image = button.closest('.rich-media-item').querySelector('img');
   const oldSource = image.dataset.src;
   try {
-    const result = await cropImage(imageSource(oldSource), { ratio: figure.dataset.richType === 'carousel' ? 'card' : 'original', caption: 'Кадрируйте это фото, не удаляя его из статьи.' });
+    const result = await cropImage(imageSource(oldSource), { ratio: figure.dataset.richType === 'carousel' ? 'card' : 'original', animated:/\.gif(?:$|[?#])/i.test(oldSource), caption: 'Кадрируйте это фото, не удаляя его из статьи.' });
     if (!(result instanceof File) || generation !== editorGeneration || !figure.isConnected) return;
     const localUrl = URL.createObjectURL(result);
     image.src = localUrl;
@@ -1147,14 +1186,23 @@ articleEditor.addEventListener('click', event => {
   if (mutationBusy) return;
   const crop = event.target.closest('[data-crop-rich-image]');
   if (crop) { cropRichPhoto(crop); return; }
+  const move = event.target.closest('[data-move-rich-block]');
+  if (move) {
+    const figure = move.closest('[data-rich-type]');
+    const neighbor = move.dataset.moveRichBlock === 'up' ? figure.previousElementSibling : figure.nextElementSibling;
+    if (neighbor) { if (move.dataset.moveRichBlock === 'up') neighbor.before(figure); else neighbor.after(figure); updateRichBlockControls(); updatePreview(); }
+    return;
+  }
   const remove = event.target.closest('[data-remove-rich-block]');
-  if (remove) { remove.closest('[data-rich-type]').remove(); updatePreview(); }
+  if (remove) { remove.closest('[data-rich-type]').remove(); updateRichBlockControls(); updatePreview(); }
 });
+document.querySelector('.rich-toolbar').addEventListener('pointerdown', rememberEditorSelection, true);
 document.querySelectorAll('[data-rich-command]').forEach(button => {
   button.addEventListener('mousedown', event => event.preventDefault());
   button.addEventListener('click', () => {
     restoreEditorSelection();
     document.execCommand(button.dataset.richCommand, false, button.dataset.richValue || null);
+    if (['insertOrderedList','insertUnorderedList'].includes(button.dataset.richCommand)) normalizeEditorLists();
     rememberEditorSelection();
     updatePreview();
   });
