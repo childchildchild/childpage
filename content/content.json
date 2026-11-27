@@ -1847,12 +1847,15 @@
       "id": "item-2f5d0c04-365a-4307-b443-6116745c7878",
       "type": "article",
       "cardType": "",
-      "cardStatus": "",
+      "cardStatus": "new",
       "status": "published",
       "title": "Как работает смартфон?",
       "description": "Что внутри телефона и как он находит нужную песню или картинку",
       "category": "for_all",
-      "ages": [],
+      "ages": [
+        "4-12",
+        "13+"
+      ],
       "tags": [
         "технологии",
         "как",
@@ -1866,7 +1869,7 @@
       "gameUrl": "",
       "linkedId": "",
       "publishedAt": "2026-11-27T16:07:33.996Z",
-      "updatedAt": "2026-11-27T16:07:33.996Z",
+      "updatedAt": "2026-11-27T16:23:03.598Z",
       "bodyBlocks": [
         {
           "type": "paragraph",
