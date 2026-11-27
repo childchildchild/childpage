@@ -434,7 +434,7 @@
       "type": "article",
       "cardType": "article",
       "cardStatus": "",
-      "status": "published",
+      "status": "trashed",
       "title": "Что такое геолокация?",
       "description": "Как телефон находит тебя на карте и почему точка иногда ошибается",
       "category": "for_all",
@@ -456,7 +456,9 @@
       "gameUrl": "",
       "linkedId": "",
       "publishedAt": "2026-11-25T06:32:25.083Z",
-      "updatedAt": "2026-11-25T06:32:23.083Z"
+      "updatedAt": "2026-11-27T15:15:17.637Z",
+      "deletedAt": "2026-11-27T15:15:17.637Z",
+      "previousStatus": "published"
     },
     {
       "id": "planned-watermelon",
