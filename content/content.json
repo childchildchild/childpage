@@ -307,7 +307,7 @@
       "type": "article",
       "cardType": "article",
       "cardStatus": "",
-      "status": "published",
+      "status": "trashed",
       "title": "Сколько звёзд на небе?",
       "description": "Сколько звёзд можно увидеть и почему их трудно сосчитать",
       "category": "for_all",
@@ -324,7 +324,9 @@
       "gameUrl": "",
       "linkedId": "",
       "publishedAt": "2026-11-25T06:32:23.083Z",
-      "updatedAt": "2026-11-27T14:01:04.469Z",
+      "updatedAt": "2026-11-27T15:15:26.531Z",
+      "deletedAt": "2026-11-27T15:15:26.531Z",
+      "previousStatus": "published",
       "bodyBlocks": [
         {
           "type": "paragraph",
