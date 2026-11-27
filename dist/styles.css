@@ -71,6 +71,11 @@ img.latest-image{display:block;width:100%;padding:0;object-fit:cover}
 .latest-card[data-article-url="read/planned-kolobok.html"] img.latest-image{object-position:center bottom}
 .latest-card h3{margin:10px 0 5px;font-size:20px;line-height:1.08}
 .latest-card p{margin:0;color:#4d4d4d;font-size:16px;line-height:1.35;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}
+@supports(grid-template-rows:subgrid){
+  .latest-grid{row-gap:0}
+  .latest-card{display:grid;grid-row:span 3;grid-template-rows:subgrid;padding-bottom:28px}
+  .latest-card>a,.latest-card>div{display:grid;grid-row:span 3;grid-template-rows:subgrid}
+}
 .search-screen{position:fixed;inset:0;width:100%;max-width:430px;height:100%;height:100dvh;max-height:none;margin:0 auto;padding:max(68px,env(safe-area-inset-top,0px)) 18px max(32px,env(safe-area-inset-bottom,0px));border:0;background:var(--paper);color:var(--ink);overflow-y:auto;overscroll-behavior:contain}
 .search-screen[open]:not(.from-menu){animation:search-slide-in .28s cubic-bezier(.22,.61,.36,1)}
 .search-screen.from-menu::backdrop{animation:search-backdrop-in .34s ease both}
