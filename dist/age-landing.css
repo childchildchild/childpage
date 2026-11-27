@@ -5,10 +5,10 @@ html[data-age-page=blue] .catalog-page{--age-panel:#202d49;--age-accent:#2f68f3;
 html[data-age-page=red] .catalog-page{--age-panel:#4b2022;--age-accent:#ff3034;--age-pattern:url('assets/optimized/ellipse_under_3.webp');--age-portrait-x:-5px;--head-x:47cqw;--head-y:30cqw;--head-rx:13cqw;--head-ry:19cqw}
 html[data-age-page] .age-landing-hero{display:block;position:relative;width:100%;height:clamp(360px,109cqw,460px);overflow:hidden;background:var(--age-panel);color:white}
 html[data-age-page] .catalog-header{display:none}
-.age-landing-header{position:relative;display:grid;place-items:center;min-height:48px;padding:40px 60px 0}
-.age-landing-header h1{margin:0;font-size:clamp(21px,5.7cqw,26px);line-height:1.15;text-align:center}
+.age-landing-header{position:relative;display:grid;place-items:center;height:76px;padding:32px 60px 0}
+.age-landing-header h1{margin:0;font-family:Roboto,Arial,sans-serif;font-size:clamp(21px,5.7cqw,26px);font-weight:700;line-height:1.1;text-align:center}
 .age-landing-header a{position:absolute;left:22px;bottom:0;display:grid;place-items:center;width:44px;height:44px;color:white;text-decoration:none}
-.age-landing-header a i{font-size:26px}
+.age-landing-header a svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
 .age-landing-art{position:absolute;top:30cqw;left:50%;width:68cqw;height:72cqw;transform:translateX(-50%)}
 .age-landing-circle{position:absolute;top:3cqw;left:7.5cqw;width:53cqw;aspect-ratio:1;background:var(--age-accent);-webkit-mask:var(--age-pattern) center/contain no-repeat;mask:var(--age-pattern) center/contain no-repeat}
 .age-portrait-mask{position:absolute;inset:0;-webkit-mask-image:radial-gradient(ellipse calc(26.5cqw + 2px) calc(26.5cqw + 2px) at 34cqw 29.5cqw,#000 99%,transparent 100%),radial-gradient(ellipse var(--head-rx) var(--head-ry) at var(--head-x) calc(var(--head-y) - 12cqw),#000 99%,transparent 100%);mask-image:radial-gradient(ellipse calc(26.5cqw + 2px) calc(26.5cqw + 2px) at 34cqw 29.5cqw,#000 99%,transparent 100%),radial-gradient(ellipse var(--head-rx) var(--head-ry) at var(--head-x) calc(var(--head-y) - 12cqw),#000 99%,transparent 100%)}

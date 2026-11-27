@@ -10,7 +10,7 @@ const ageLanding = {
   '13+': {title:'Время решений',label:'13+ ЛЕТ',theme:'red',portrait:'age-teens.webp'},
 };
 const hero = document.createElement('section'); hero.className = 'age-landing-hero'; hero.setAttribute('aria-labelledby','age-landing-title');
-hero.innerHTML = '<header class="age-landing-header"><a href="index.html#ages-title" aria-label="К возрастам"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i></a><h1 id="age-landing-title"></h1></header><div class="age-landing-art"><div class="age-landing-circle" aria-hidden="true"></div><div class="age-portrait-mask"><img id="age-landing-portrait" alt=""></div><span id="age-landing-label"></span></div>';
+hero.innerHTML = '<header class="age-landing-header"><a href="index.html#ages-title" aria-label="К возрастам"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 5 5 20l15 15M6 20h30"/></svg></a><h1 id="age-landing-title"></h1></header><div class="age-landing-art"><div class="age-landing-circle" aria-hidden="true"></div><div class="age-portrait-mask"><img id="age-landing-portrait" alt=""></div><span id="age-landing-label"></span></div>';
 document.querySelector('.catalog-page').prepend(hero);
 const ageToolbar = document.createElement('div'); ageToolbar.className = 'age-content-toolbar content-toolbar'; ageToolbar.id = 'content-toolbar';
 ageToolbar.innerHTML = '<button class="icon-button" type="button" aria-label="Открыть меню"><i class="ph-bold ph-list" aria-hidden="true"></i></button><h2>Контент</h2><button class="icon-button" type="button" aria-label="Открыть поиск"><i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i></button>';
