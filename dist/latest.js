@@ -34,3 +34,33 @@ for (const item of visibleCards) {
   card.append(container);
   latestGrid.append(card);
 }
+
+// Share a compact text budget between the full heading and its excerpt.
+// One heading line leaves three excerpt lines; two leave two, and so on.
+function fitLatestExcerpts() {
+  const updates = [...latestGrid.querySelectorAll('.latest-card')].map(card => {
+    const title = card.querySelector('h3');
+    const lineHeight = Number.parseFloat(getComputedStyle(title).lineHeight);
+    const titleLines = Math.max(1, Math.round(title.getBoundingClientRect().height / lineHeight));
+    return { card, lines: String(Math.max(1, 4 - titleLines)) };
+  });
+  for (const { card, lines } of updates) {
+    if (card.style.getPropertyValue('--excerpt-lines') !== lines) card.style.setProperty('--excerpt-lines', lines);
+  }
+}
+
+let excerptFrame = 0;
+function scheduleExcerptFit() {
+  if (excerptFrame) return;
+  excerptFrame = requestAnimationFrame(() => { excerptFrame = 0; fitLatestExcerpts(); });
+}
+
+fitLatestExcerpts();
+document.fonts.ready.then(scheduleExcerptFit);
+if ('ResizeObserver' in window) {
+  const observer = new ResizeObserver(scheduleExcerptFit);
+  observer.observe(latestGrid);
+  latestGrid.querySelectorAll('h3').forEach(title => observer.observe(title));
+} else {
+  window.addEventListener('resize', scheduleExcerptFit, { passive: true });
+}
