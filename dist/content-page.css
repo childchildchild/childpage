@@ -47,3 +47,9 @@ html[data-reduce-motion="true"] .article-page{animation:none}
 a:focus-visible,button:focus-visible{outline:3px solid #315dca;outline-offset:3px}
 @media(max-width:360px){.article-photo{height:250px}.article-body h1{font-size:34px}.article-intro{font-size:18px}.article-text{font-size:17px}}
 .carousel-draggable{cursor:grab;user-select:none;-webkit-user-select:none}.carousel-draggable.is-dragging{cursor:grabbing;scroll-snap-type:none;scroll-behavior:auto}.carousel-draggable.is-dragging a{cursor:grabbing}
+@media(orientation:landscape) and (max-height:540px) and (max-width:1024px){
+  .article-header{height:70px}.article-back{top:13px}
+  .article-photo{height:220px}
+}
+video:fullscreen{width:100vw;height:100dvh;max-height:none;margin:0;border-radius:0;object-fit:contain;background:#000}
+video:-webkit-full-screen{width:100vw;height:100vh;max-height:none;margin:0;border-radius:0;object-fit:contain;background:#000}
