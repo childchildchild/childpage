@@ -43,6 +43,7 @@ button{font:inherit;color:inherit}
 .floating-toolbar .icon-button i{font-size:34px}
 .section{padding:45px 16px 0;background:var(--paper)}
 .below-fold{background:var(--paper)}
+.scroll-reveal .below-fold>.section{opacity:var(--details-opacity,1)}
 
 .section>h2{margin:0 0 30px;text-align:center;font-size:42px;line-height:1;font-weight:700}
 .ages{padding-top:20px}

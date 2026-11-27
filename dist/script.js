@@ -4,6 +4,10 @@ const sourceToolbar = document.querySelector('#content-toolbar');
 let toolbarFrame = 0;
 
 const updateFloatingToolbar = () => {
+  const revealProgress = prefersLessMotion()
+    ? (window.scrollY > 8 ? 1 : 0)
+    : Math.min(1, Math.max(0, window.scrollY - 8) / 56);
+  document.documentElement.style.setProperty('--details-opacity', String(revealProgress));
   const shouldShow = sourceToolbar.getBoundingClientRect().bottom < 10;
   toolbar.classList.toggle('visible', shouldShow);
   toolbar.setAttribute('aria-hidden', String(!shouldShow));
@@ -15,7 +19,9 @@ window.addEventListener('scroll', () => {
   toolbarFrame = requestAnimationFrame(() => { toolbarFrame = 0; updateFloatingToolbar(); });
 }, { passive: true });
 window.addEventListener('resize', updateFloatingToolbar);
+window.addEventListener('pageshow', updateFloatingToolbar);
 updateFloatingToolbar();
+document.documentElement.classList.add('scroll-reveal');
 
 const searchScreen = document.querySelector('#search-screen');
 const searchInput = document.querySelector('#search-input');
