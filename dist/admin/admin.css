@@ -107,3 +107,36 @@ dialog{width:min(440px,calc(100% - 32px));padding:26px;border:0;border-radius:22
 .image-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
 .image-actions .secondary{min-height:35px;padding:8px 12px;border-radius:9px;font-size:14px}
 .story-video-field{display:grid;gap:11px}.story-video-field[hidden]{display:none}.story-video-field .field-label{font-size:14px;font-weight:700;color:#3b3b4d}.story-video-field .image-actions span{font-size:13px;color:#77788b}.story-video-field>video{width:min(100%,230px);max-height:350px;border-radius:14px;background:#15151e}.story-video-field>video[hidden]{display:none}
+.admin-loading{min-height:100dvh;display:grid;place-items:center;padding:24px;color:#5c55ac;font-size:18px}
+.editor-save-state{margin:0;padding:9px 12px;border-radius:10px;background:#f1f0fa;color:#5c55ac;font-size:14px;line-height:1.4;font-weight:500}
+.editor-save-state.has-changes{background:#fff4df;color:#82510f}
+.editor-validation{margin:0;padding:12px 14px;border:1px solid #ecc3c7;border-radius:10px;background:#fff0f1;color:#9c2638;font-size:16px;line-height:1.4}
+#content-load-error,#content-loading{margin-bottom:18px}
+#content-error-message{margin:0 0 12px}
+.form-card [aria-invalid="true"]{border-color:#b44252!important;box-shadow:0 0 0 3px #b442521a!important}
+.form-card[aria-busy="true"] button{cursor:progress}
+button:disabled{cursor:not-allowed}
+button:focus-visible,a:focus-visible,.upload-label:focus-visible,.image-preview:focus-visible{outline:3px solid #615aaa;outline-offset:3px}
+.form-card input:not([type=checkbox]):not([type=file]),.form-card textarea,.form-card select,.media-dialog-form input:not([type=file]),.media-dialog-form textarea{font-size:16px}
+.age-choices label{min-height:44px;padding:4px 3px}
+.age-choices input{width:18px;height:18px;flex:none}
+.upload-label,.image-actions .secondary,.preview-switch button{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+.rich-toolbar button,.rich-toolbar select{min-width:44px;min-height:44px;font-size:14px}
+.rich-toolbar select{font-size:16px}
+.form-card small,.preview-hint,.help-card p,.item-main small{font-size:14px;line-height:1.4}
+.trash-actions{flex-wrap:wrap}
+.trash-actions .secondary,.trash-actions .danger-text{min-height:44px;font-size:14px}
+.sidebar-bottom span{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+dialog{max-height:calc(100dvh - 24px);overflow:auto}
+.image-preview{font-size:14px;line-height:1.35}
+@media(max-width:680px){
+  .side-nav button{min-height:44px;font-size:14px}
+  .stats span,.sidebar-bottom{font-size:14px}
+  .editor-head a{display:inline-flex;align-items:center;min-height:44px;font-size:14px}
+  .rich-toolbar button{min-height:44px;padding:8px;font-size:14px}
+  .rich-toolbar .color-picker-label{font-size:14px}
+  .rich-toolbar .color-picker-label select{min-height:44px}
+  .image-row{display:grid;grid-template-columns:88px minmax(0,1fr);align-items:start;gap:12px}
+  .image-preview{width:88px;height:88px}
+  .image-controls{min-width:0}
+}

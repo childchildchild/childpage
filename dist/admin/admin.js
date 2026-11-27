@@ -14,6 +14,104 @@ let currentId = '';
 let typeFilter = 'all';
 let previewMode = 'card';
 let noticeTimer;
+let editorGeneration = 0;
+let savedEditorSnapshot = '';
+let mutationBusy = false;
+let releaseMutation = null;
+let previewTimer = 0;
+let previewRevision = 0;
+let mediaOperation = 0;
+let listScrollY = 0;
+let loadingContent = false;
+const filterTitles = { all: 'Все материалы', article: 'Статьи', story: 'Сторис', video: 'Видео', audio: 'Аудио', game: 'Игры', trash: 'Корзина' };
+
+function editorOpen() { return !$('#app-view').hidden && !$('#editor-view').hidden; }
+function editorSnapshot() {
+  const item = readForm('draft');
+  for (const key of ['id', 'status', 'publishedAt', 'updatedAt']) delete item[key];
+  return JSON.stringify(item);
+}
+function editorHasChanges() {
+  return editorOpen() && Boolean(savedEditorSnapshot) && (editorSnapshot() !== savedEditorSnapshot || Boolean(pendingCoverUrl) || Boolean(coverUploadPromise) || Boolean(storyVideoUploadPromise) || richUploads.size > 0);
+}
+function updateSaveState() {
+  const state = $('#editor-save-state');
+  if (!state || mutationBusy) return;
+  const message = editorHasChanges() ? 'Есть несохранённые изменения' : currentId ? 'Все изменения сохранены' : 'Новый материал';
+  if (state.textContent !== message) state.textContent = message;
+  state.classList.toggle('has-changes', editorHasChanges());
+}
+function allowNavigation() {
+  if (mutationBusy) { notice('Дождитесь завершения операции.'); return false; }
+  return !editorHasChanges() || confirm('Есть несохранённые изменения. Выйти без сохранения?');
+}
+function invalidateEditorMedia() {
+  clearTimeout(previewTimer);
+  previewRevision++;
+  editorGeneration++;
+  mediaOperation++;
+  coverUploadId++;
+  storyVideoUploadId++;
+  storyVideoUploadPromise = null;
+  coverUploadPromise = null;
+  richUploads.clear();
+  if (pendingCoverUrl && ![...localImageUrls.values()].includes(pendingCoverUrl)) URL.revokeObjectURL(pendingCoverUrl);
+  pendingCoverUrl = '';
+}
+function beginMutation(message) {
+  if (mutationBusy) return false;
+  mutationBusy = true;
+  const controls = [...$('#app-view').querySelectorAll('button,input,select,textarea')].map(control => [control, control.disabled]);
+  controls.forEach(([control]) => { control.disabled = true; });
+  const editable = articleEditor.contentEditable;
+  articleEditor.contentEditable = 'false';
+  contentForm.setAttribute('aria-busy', 'true');
+  $('#editor-save-state').textContent = message;
+  releaseMutation = () => {
+    controls.forEach(([control, disabled]) => { control.disabled = disabled; });
+    articleEditor.contentEditable = editable;
+    contentForm.removeAttribute('aria-busy');
+  };
+  notice(message);
+  return true;
+}
+function endMutation() {
+  releaseMutation?.();
+  releaseMutation = null;
+  mutationBusy = false;
+  $('#crop-cover').disabled = !contentForm.elements.image.value.trim();
+  updateSaveState();
+}
+function showList(force = false, keepNotice = false) {
+  if (!force && !allowNavigation()) return;
+  if (!keepNotice) { clearTimeout(noticeTimer); $('#notice').classList.remove('show', 'error'); }
+  const focusId = currentId;
+  invalidateEditorMedia();
+  savedEditorSnapshot = '';
+  $('#editor-view').hidden = true;
+  $('#list-view').hidden = false;
+  $('#view-title').textContent = filterTitles[typeFilter];
+  renderList();
+  window.scrollTo({ top: listScrollY, behavior: 'instant' });
+  [...document.querySelectorAll('.item-row[data-item-id]')].find(row => row.dataset.itemId === focusId)?.focus({ preventScroll: true });
+}
+function clearFormError() {
+  $('#editor-validation').hidden = true;
+  contentForm.querySelectorAll('[aria-invalid="true"]').forEach(control => { control.removeAttribute('aria-invalid'); control.removeAttribute('aria-describedby'); });
+}
+function showFormError(error) {
+  const control = error.field === 'body' ? articleEditor : contentForm.elements[error.field];
+  const summary = $('#editor-validation');
+  summary.textContent = error.message;
+  summary.hidden = false;
+  if (control) {
+    control.setAttribute('aria-invalid', 'true');
+    control.setAttribute('aria-describedby', summary.id);
+    control.focus({ preventScroll: true });
+    control.scrollIntoView({ block: 'center', behavior: 'instant' });
+  }
+  notice(error.message, true);
+}
 const localImageUrls = new Map();
 let pendingCoverUrl = '';
 let coverUploadId = 0;
@@ -32,25 +130,51 @@ function notice(message, error = false) {
   noticeTimer = setTimeout(() => node.classList.remove('show'), 6000);
 }
 async function request(action, body) {
-  const response = await fetch(`${apiUrl}?action=${encodeURIComponent(action)}`, {
-    method: body ? 'POST' : 'GET',
-    credentials: 'same-origin',
-    headers: body ? { 'Content-Type': 'application/json' } : {},
-    body: body ? JSON.stringify({ action, ...body }) : undefined,
-  });
-  const result = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(result.error || 'Не удалось связаться с сервером.');
-  return result;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 45000);
+  try {
+    const response = await fetch(`${apiUrl}?action=${encodeURIComponent(action)}`, {
+      method: body ? 'POST' : 'GET', credentials: 'same-origin', signal: controller.signal,
+      headers: body ? { 'Content-Type': 'application/json' } : {},
+      body: body ? JSON.stringify({ action, ...body }) : undefined,
+    });
+    const result = await response.json().catch(() => null);
+    if (!response.ok) {
+      const message = response.status === 409 ? 'Материалы уже изменены в другой вкладке. Ваши правки остались в форме. Скопируйте их перед обновлением списка.'
+        : response.status === 401 ? (action === 'login' ? result?.error || 'Проверьте логин и пароль.' : 'Сеанс закончился. Правки остались в форме. Скопируйте их перед повторным входом.')
+        : result?.error || 'Не удалось связаться с сервером. Повторите попытку.';
+      const error = new Error(message); error.status = response.status; throw error;
+    }
+    if (!result || typeof result !== 'object') throw new Error('Сервер прислал непонятный ответ. Повторите попытку.');
+    return result;
+  } catch (error) {
+    if (error.name === 'AbortError') throw new Error('Сервер не ответил вовремя. Проверьте соединение и повторите попытку; правки остались в форме.');
+    if (error instanceof TypeError) throw new Error('Нет связи с сервером. Проверьте интернет и повторите попытку.');
+    throw error;
+  } finally { clearTimeout(timer); }
 }
 function setView(loggedIn) {
+  $('#admin-loading').hidden = true;
   $('#login-view').hidden = loggedIn;
   $('#app-view').hidden = !loggedIn;
 }
 async function loadContent() {
   const result = await request('content');
+  if (result.content?.version !== 1 || !Array.isArray(result.content.items)) throw new Error('Не удалось прочитать список материалов. Повторите вход.');
   content = result.content;
   sha = result.sha;
   renderList();
+}
+async function refreshContent() {
+  if (loadingContent) return;
+  loadingContent = true;
+  $('#content-loading').hidden = false;
+  $('#content-load-error').hidden = true;
+  $('#retry-content').disabled = true;
+  $('#new-item').disabled = true;
+  try { await loadContent(); $('#new-item').disabled = false; }
+  catch (error) { $('#content-error-message').textContent = error.message; $('#content-load-error').hidden = false; }
+  finally { loadingContent = false; $('#content-loading').hidden = true; $('#retry-content').disabled = false; }
 }
 function imageSource(path) {
   if (!path) return '';
@@ -268,7 +392,7 @@ function renderList() {
   const items = content.items.filter(item =>
     (inTrash ? item.status === 'trashed' : item.status !== 'trashed' && (typeFilter === 'all' || item.type === typeFilter)) &&
     (inTrash || status === 'all' || item.status === status) &&
-    (!query || `${item.title} ${item.description}`.toLocaleLowerCase('ru').includes(query))
+    (!query || `${item.title || 'Без названия'} ${item.description}`.toLocaleLowerCase('ru').includes(query))
   );
   const sorted = [...items].sort((a, b) => inTrash
     ? Date.parse(b.deletedAt) - Date.parse(a.deletedAt)
@@ -282,12 +406,12 @@ function renderList() {
       const thumb = document.createElement('span');
       thumb.className = 'item-thumb';
       const image = imageSource(item.image);
-      if (image) { const img = document.createElement('img'); img.src = image; img.alt = ''; thumb.append(img); }
+      if (image) { const img = document.createElement('img'); img.src = image; img.alt = ''; img.loading = 'lazy'; img.decoding = 'async'; thumb.append(img); }
       else thumb.textContent = '◦';
       const main = document.createElement('span');
       main.className = 'item-main';
       const title = document.createElement('strong');
-      title.textContent = item.title;
+      title.textContent = item.title || 'Без названия';
       const meta = document.createElement('small');
       const daysLeft = Math.max(0, Math.ceil((Date.parse(item.deletedAt) + trashLifetime - Date.now()) / 86400000));
       meta.textContent = `${labels[item.type]} · удаление через ${daysLeft} дн.`;
@@ -309,16 +433,17 @@ function renderList() {
     const row = document.createElement('button');
     row.type = 'button';
     row.className = 'item-row';
+    row.dataset.itemId = item.id;
     row.addEventListener('click', () => openEditor(item.id));
     const thumb = document.createElement('span');
     thumb.className = 'item-thumb';
     const image = imageSource(item.image);
-    if (image) { const img = document.createElement('img'); img.src = image; img.alt = ''; thumb.append(img); }
+    if (image) { const img = document.createElement('img'); img.src = image; img.alt = ''; img.loading = 'lazy'; img.decoding = 'async'; thumb.append(img); }
     else thumb.textContent = '◦';
     const main = document.createElement('span');
     main.className = 'item-main';
     const title = document.createElement('strong');
-    title.textContent = item.title;
+    title.textContent = item.title || 'Без названия';
     const meta = document.createElement('small');
     meta.textContent = labels[item.type] + (item.publishedAt && item.status === 'published' ? ` · ${new Date(item.publishedAt).toLocaleDateString('ru-RU')}` : '');
     main.append(title, meta);
@@ -327,7 +452,15 @@ function renderList() {
     list.append(row);
   }
   $('#empty-list').hidden = sorted.length !== 0;
-  $('#empty-list').textContent = inTrash ? 'Корзина пуста.' : 'Здесь пока нет материалов.';
+  const hasFilters = Boolean(query) || (!inTrash && status !== 'all');
+  $('#empty-list').textContent = hasFilters ? 'По этим условиям ничего не найдено. Попробуйте другой запрос или сбросьте фильтры.'
+    : inTrash ? 'Корзина пуста.' : 'В этом разделе пока нет материалов. Можно добавить первый.';
+  $('#clear-filters').hidden = !hasFilters;
+  document.querySelectorAll('.side-nav button').forEach(button => {
+    button.classList.toggle('active', button.dataset.filter === typeFilter);
+    if (button.dataset.filter === typeFilter) button.setAttribute('aria-current', 'page');
+    else button.removeAttribute('aria-current');
+  });
   for (const type of ['article', 'story', 'video', 'audio', 'game']) $(`#count-${type}`).textContent = content.items.filter(item => item.type === type && item.status !== 'trashed').length;
   $('#count-all').textContent = content.items.filter(item => item.status !== 'trashed').length;
   $('#count-trash').textContent = content.items.filter(item => item.status === 'trashed').length;
@@ -359,7 +492,7 @@ function previewDocument(stylesheet) {
   const doc = frame.contentDocument;
   const css = new URL(`../${stylesheet}`, location.href).href;
   doc.open();
-  doc.write(`<!doctype html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="${css}"><link rel="stylesheet" href="${new URL("../card-badges.css?v=20261127-3", location.href).href}"><link rel="stylesheet" href="${new URL("../assets/phosphor/bold/style.css", location.href).href}"></head><body></body></html>`);
+  doc.write(`<!doctype html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="${css}"><link rel="stylesheet" href="${new URL("../card-badges.css?v=20261127-3", location.href).href}"><link rel="stylesheet" href="${new URL("../assets/phosphor/bold/style.css", location.href).href}"><link rel="stylesheet" href="${new URL("preview.css?v=20261127-1", location.href).href}"></head><body></body></html>`);
   doc.close();
   return doc;
 }
@@ -444,14 +577,10 @@ function renderPreviewRichBody(doc, container, blocks) {
   }
 }
 function renderPreviewCard(doc, item) {
+  doc.body.classList.add('admin-card-preview');
   const page = doc.createElement('main'); page.className = 'catalog-page';
-  const header = doc.createElement('header'); header.className = 'catalog-header';
-  const brand = doc.createElement('span'); brand.textContent = 'Детская страница';
-  header.append(brand);
   const section = doc.createElement('section'); section.className = 'catalog-content';
-  const eyebrow = doc.createElement('p'); eyebrow.className = 'eyebrow'; eyebrow.textContent = 'Материалы';
-  const heading = doc.createElement('h1'); heading.textContent = 'Предпросмотр';
-  const grid = doc.createElement('div'); grid.className = 'catalog-grid';
+  const grid = doc.createElement('div'); grid.className = 'catalog-grid admin-card-grid';
   const card = doc.createElement('article'); card.className = 'catalog-card';
   const link = doc.createElement('a'); link.href = '#preview-page';
   const visual = doc.createElement('div'); visual.className = 'catalog-image';
@@ -464,12 +593,13 @@ function renderPreviewCard(doc, item) {
   const description = doc.createElement('p'); description.textContent = item.description || 'Короткое описание материала';
   link.append(visual, ...(item.type === 'story' ? [kind] : []), title, description);
   link.addEventListener('click', event => { event.preventDefault(); previewMode = 'page'; updatePreview(); });
-  card.append(link); grid.append(card); section.append(eyebrow, heading, grid); page.append(header, section); doc.body.append(page);
+  card.append(link); grid.append(card); section.append(grid); page.append(section); doc.body.append(page);
 }
 function renderPreviewPage(doc, item) {
   const page = doc.createElement('main'); page.className = 'article-page';
   const header = doc.createElement('header'); header.className = 'article-header';
-  const back = doc.createElement('a'); back.className = 'article-back'; back.href = '#preview-card'; back.setAttribute('aria-label', 'Вернуться к карточке'); back.textContent = '←';
+  const back = doc.createElement('a'); back.className = 'article-back'; back.href = '#preview-card'; back.setAttribute('aria-label', 'Вернуться к карточке');
+  back.innerHTML = '<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 5 5 20l15 15M6 20h30"/></svg>';
   back.addEventListener('click', event => { event.preventDefault(); previewMode = 'card'; updatePreview(); });
   const label = doc.createElement('span'); label.textContent = item.label || labels[item.type];
   header.append(back, label);
@@ -498,29 +628,44 @@ function renderPreviewPage(doc, item) {
   home.addEventListener('click', event => { event.preventDefault(); previewMode = 'card'; updatePreview(); });
   body.append(home); article.append(body); page.append(header, article); doc.body.append(page);
 }
+function schedulePreview() {
+  updateSaveState();
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(updatePreview, 180);
+}
 function updatePreview() {
+  clearTimeout(previewTimer);
+  if ($('#editor-view').hidden) return;
+  updateSaveState();
   updateStoryVideoPreview();
   const item = readForm('draft');
   if (pendingCoverUrl) item.image = pendingCoverUrl;
-  $('#crop-cover').disabled = !item.image;
+  $('#crop-cover').disabled = mutationBusy || !item.image;
   $('.editor-grid').classList.toggle('preview-expanded', previewMode === 'page');
   for (const button of document.querySelectorAll('[data-preview-view]')) button.classList.toggle('active', button.dataset.previewView === previewMode);
+  const frame = $('#site-preview');
+  const oldScroll = frame.contentDocument?.body?.dataset.previewMode === previewMode ? frame.contentWindow.scrollY : 0;
+  const revision = ++previewRevision;
+  frame.addEventListener('load', () => {
+    if (revision === previewRevision) frame.contentWindow.scrollTo(0, oldScroll);
+  }, { once: true });
   const doc = previewDocument(previewMode === 'card' ? 'catalog.css' : 'content-page.css');
+  doc.body.dataset.previewMode = previewMode;
   if (previewMode === 'card') renderPreviewCard(doc, item);
   else renderPreviewPage(doc, item);
   const imagePreview = $('#image-preview');
   imagePreview.replaceChildren();
   const path = imageSource(item.image);
-  if (path) { const img = document.createElement('img'); img.src = path; img.alt = ''; imagePreview.append(img); }
+  if (path) { const img = document.createElement('img'); img.src = path; img.alt = ''; img.addEventListener('error', () => { if (img.isConnected) imagePreview.textContent = 'Фото не загрузилось. Проверьте ссылку.'; }, { once: true }); imagePreview.append(img); }
   else imagePreview.textContent = 'Нет изображения';
 }
-function openEditor(id = '', type = 'article') {
-  coverUploadId++;
-  storyVideoUploadId++;
-  storyVideoUploadPromise = null;
-  coverUploadPromise = null;
-  if (pendingCoverUrl && ![...localImageUrls.values()].includes(pendingCoverUrl)) URL.revokeObjectURL(pendingCoverUrl);
-  pendingCoverUrl = '';
+function openEditor(id = '', type = 'article', force = false) {
+  if (!force && !allowNavigation()) return;
+  if (!force) { clearTimeout(noticeTimer); $('#notice').classList.remove('show', 'error'); }
+  if (!editorOpen()) listScrollY = window.scrollY;
+  invalidateEditorMedia();
+  clearTimeout(previewTimer);
+  previewRevision++;
   currentId = id;
   previewMode = 'card';
   const item = content.items.find(record => record.id === id) || { type, status: 'draft', ages: [] };
@@ -530,6 +675,7 @@ function openEditor(id = '', type = 'article') {
   }
   contentForm.elements.storyVideoUrl.value = item.type === 'story' ? item.mediaUrl || '' : '';
   setRichEditor(item);
+  savedEditorRange = null;
   contentForm.querySelectorAll('input[name="ages"]').forEach(input => { input.checked = item.ages?.includes(input.value) || false; });
   const linked = $('#linked-item');
   linked.replaceChildren(new Option('Без кнопки перехода', ''));
@@ -546,8 +692,11 @@ function openEditor(id = '', type = 'article') {
   const link = $('#public-link'); link.hidden = item.status !== 'published'; link.href = contentUrl(item);
   $('#list-view').hidden = true;
   $('#editor-view').hidden = false;
-  $('#view-title').textContent = id ? item.title : 'Новый материал';
+  $('#view-title').textContent = id ? item.title || 'Без названия' : 'Новый материал';
   updateTypeFields();
+  clearFormError();
+  savedEditorSnapshot = editorSnapshot();
+  updateSaveState();
   window.scrollTo(0, 0);
 }
 function readForm(status) {
@@ -572,48 +721,57 @@ function readForm(status) {
     updatedAt: now,
   };
 }
+function validMaterialUrl(value, mp4 = false) {
+  if (/^assets\//.test(value)) {
+    const parts = value.slice(7).split('/');
+    return parts.every(part => part && part !== '.' && part !== '..' && /^[a-zA-Z0-9_.-]+$/.test(part)) && (!mp4 || /\.mp4$/i.test(value));
+  }
+  try { return new URL(value).protocol === 'https:'; } catch { return false; }
+}
 function validateItem(item) {
-  if (!item.title || !item.description) return 'Заполните название и короткое описание.';
-  if (item.status !== 'published') return '';
+  if (!['published', 'planned'].includes(item.status)) return null;
+  if (!item.title) return { message: 'Добавьте название материала.', field: 'title' };
+  if (!item.description) return { message: 'Добавьте короткое описание для карточки.', field: 'description' };
+  if (item.image && !validMaterialUrl(item.image)) return { message: 'Обложка должна быть файлом из assets/ или корректной HTTPS-ссылкой.', field: 'image' };
+  if (item.status !== 'published') return null;
   if (item.type === 'article' && !item.bodyBlocks?.some(block => {
     const runs = block.type === 'list' ? block.items.flat() : block.runs || [];
     return runs.some(run => run.text.trim());
-  })) return 'Добавьте текст статьи.';
-  if (item.type === 'story' && !item.image) return 'Добавьте фото сторис.';
-  if (item.type === 'story' && item.mediaUrl && !(/^https:\/\//.test(item.mediaUrl) || /^assets\/[a-zA-Z0-9/_\-.]+\.mp4$/.test(item.mediaUrl))) return 'Укажите прямую HTTPS-ссылку на MP4.';
-  if (['video', 'audio'].includes(item.type) && !item.mediaUrl) return 'Добавьте прямую ссылку на медиафайл.';
-  if (item.type === 'game' && !item.gameUrl) return 'Добавьте ссылку на игру.';
-  return '';
+  })) return { message: 'Добавьте текст статьи.', field: 'body' };
+  if (item.type === 'story' && !item.image) return { message: 'Добавьте фото сторис.', field: 'image' };
+  if (item.type === 'story' && item.mediaUrl && !validMaterialUrl(item.mediaUrl, true)) return { message: 'Укажите прямую HTTPS-ссылку на MP4 или загруженный MP4 из assets/.', field: 'storyVideoUrl' };
+  if (['video', 'audio'].includes(item.type) && !validMaterialUrl(item.mediaUrl)) return { message: 'Добавьте корректную HTTPS-ссылку на медиафайл или путь assets/.', field: 'mediaUrl' };
+  if (item.type === 'game' && !validMaterialUrl(item.gameUrl)) return { message: 'Добавьте корректную HTTPS-ссылку на игру или путь assets/.', field: 'gameUrl' };
+  return null;
 }
 async function save(status) {
-  if (storyVideoUploadPromise) {
-    notice('Дожидаюсь загрузки видео…');
-    try { await storyVideoUploadPromise; } catch { return; }
-  }
-  if (coverUploadPromise) {
-    notice('Дожидаюсь загрузки фото…');
-    try { await coverUploadPromise; } catch { return; }
-  }
-  if (richUploads.size) {
-    notice('Дожидаюсь загрузки фото в статье…');
-    try { await Promise.all([...richUploads]); } catch { return; }
-  }
-  const item = readForm(status);
-  const error = validateItem(item);
-  if (error) { notice(error, true); return; }
-  const index = content.items.findIndex(record => record.id === currentId);
-  const updated = { version: 1, items: [...content.items] };
-  if (index < 0) updated.items.push(item); else updated.items[index] = item;
-  const buttons = [...$('#editor-view').querySelectorAll('button')];
-  buttons.forEach(button => { button.disabled = true; });
+  if (!beginMutation('Сохраняю материал…')) return;
+  let savedId = '';
+  let validationError;
   try {
+    clearFormError();
+    if (storyVideoUploadPromise || coverUploadPromise || richUploads.size) {
+      $('#editor-save-state').textContent = 'Дожидаюсь загрузки файлов…';
+      while (storyVideoUploadPromise || coverUploadPromise || richUploads.size) {
+        await Promise.all([storyVideoUploadPromise, coverUploadPromise, ...richUploads].filter(Boolean));
+      }
+    }
+    const item = readForm(status);
+    validationError = validateItem(item);
+    if (validationError) return;
+    const index = content.items.findIndex(record => record.id === currentId);
+    const updated = { version: 1, items: [...content.items] };
+    if (index < 0) updated.items.push(item); else updated.items[index] = item;
+    $('#editor-save-state').textContent = 'Отправляю изменения…';
     const result = await request('save', { content: updated, sha });
-    content = updated; sha = result.sha; currentId = item.id;
-    notice(status === 'published' ? 'Материал отправлен на сайт. Vercel обновит его после сборки.' : 'Изменения сохранены.');
-    openEditor(item.id);
-    renderList();
+    content = updated; sha = result.sha; savedId = item.id;
+    notice(status === 'published' ? 'Изменения сохранены и отправлены на сайт. Проверьте результат после его обновления.' : 'Черновик сохранён.');
   } catch (failure) { notice(failure.message, true); }
-  finally { buttons.forEach(button => { button.disabled = false; }); }
+  finally {
+    endMutation();
+    if (validationError) showFormError(validationError);
+    else if (savedId) { openEditor(savedId, 'article', true); renderList(); }
+  }
 }
 async function persistContent(updated) {
   const result = await request('save', { content: updated, sha });
@@ -622,16 +780,19 @@ async function persistContent(updated) {
   renderList();
 }
 async function removeItem() {
+  if (mutationBusy) return;
   const item = content.items.find(record => record.id === currentId);
-  if (!item || item.status === 'trashed' || !confirm(`Переместить «${item.title}» в корзину? Его можно будет восстановить в течение 7 дней.`)) return;
+  if (!item || item.status === 'trashed' || !confirm(`Переместить «${item.title || 'Без названия'}» в корзину? Его можно будет восстановить в течение 7 дней.`)) return;
   const trashedItem = { ...item, status: 'trashed', previousStatus: item.status, deletedAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
   const updated = { version: 1, items: content.items.map(record => record.id === item.id ? trashedItem : record) };
+  if (!beginMutation('Перемещаю в корзину…')) return;
+  let removed = false;
   try {
     await persistContent(updated);
-    currentId = '';
-    $('#editor-view').hidden = true; $('#list-view').hidden = false; $('#view-title').textContent = 'Все материалы';
+    removed = true;
     notice('Материал перемещён в корзину. Он будет удалён окончательно через 7 дней.');
   } catch (error) { notice(error.message, true); }
+  finally { endMutation(); if (removed) { showList(true, true); currentId = ''; } }
 }
 async function restoreItem(id) {
   const item = content.items.find(record => record.id === id && record.status === 'trashed');
@@ -640,15 +801,20 @@ async function restoreItem(id) {
   delete restored.previousStatus;
   delete restored.deletedAt;
   const updated = { version: 1, items: content.items.map(record => record.id === id ? restored : record) };
+  if (!beginMutation('Восстанавливаю материал…')) return;
   try { await persistContent(updated); notice('Материал восстановлен.'); }
   catch (error) { notice(error.message, true); }
+  finally { endMutation(); }
 }
 async function deletePermanently(id) {
+  if (mutationBusy) return;
   const item = content.items.find(record => record.id === id && record.status === 'trashed');
-  if (!item || !confirm(`Удалить «${item.title}» навсегда? Восстановить его будет нельзя.`)) return;
+  if (!item || !confirm(`Удалить «${item.title || 'Без названия'}» навсегда? Восстановить его будет нельзя.`)) return;
   const updated = { version: 1, items: content.items.filter(record => record.id !== id) };
+  if (!beginMutation('Удаляю материал…')) return;
   try { await persistContent(updated); notice('Материал удалён навсегда.'); }
   catch (error) { notice(error.message, true); }
+  finally { endMutation(); }
 }
 async function uploadImageFile(file, previewUrl = '') {
   const supportedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/avif', 'image/gif'];
@@ -671,14 +837,16 @@ async function uploadImageFile(file, previewUrl = '') {
   }
 }
 async function uploadStoryVideo(file) {
-  if (!file) return;
+  if (!file || mutationBusy) return;
   if (file.type !== 'video/mp4' || file.size > 2_500_000 || !file.size) { notice('Выберите MP4 до 2,5 МБ.', true); return; }
   const uploadId = ++storyVideoUploadId;
   const localUrl = URL.createObjectURL(file);
   const field = contentForm.elements.storyVideoUrl;
+  const previousSource = field.value;
   field.value = localUrl;
   localVideoUrls.set(localUrl, localUrl);
   updateStoryVideoPreview();
+  updateSaveState();
   notice('Загружаю видео…');
   const transfer = (async () => {
     const base64 = await new Promise((resolve, reject) => {
@@ -692,15 +860,18 @@ async function uploadStoryVideo(file) {
   storyVideoUploadPromise = transfer;
   try {
     const result = await transfer;
-    if (uploadId !== storyVideoUploadId) return;
+    if (uploadId !== storyVideoUploadId) { localVideoUrls.delete(localUrl); URL.revokeObjectURL(localUrl); return; }
     localVideoUrls.set(result.path, localUrl);
     field.value = result.path;
     updateStoryVideoPreview();
     notice('Видео загружено. Сохраните сторис, чтобы оно появилось на сайте.');
   } catch (error) {
-    if (uploadId === storyVideoUploadId) { field.value = ''; updateStoryVideoPreview(); notice(error.message, true); }
+    localVideoUrls.delete(localUrl);
+    URL.revokeObjectURL(localUrl);
+    if (uploadId === storyVideoUploadId) { field.value = previousSource; updateStoryVideoPreview(); notice(error.message, true); }
   } finally {
     if (storyVideoUploadPromise === transfer) storyVideoUploadPromise = null;
+    updateSaveState();
   }
 }
 async function uploadImage(file) {
@@ -728,45 +899,52 @@ async function uploadImage(file) {
     if (uploadId === coverUploadId) { pendingCoverUrl = ''; updatePreview(); notice(error.message, true); }
   } finally {
     if (coverUploadPromise === transfer) coverUploadPromise = null;
+    updateSaveState();
   }
 }
 async function chooseCover(file) {
-  if (!file) return;
+  if (!file || mutationBusy) return;
+  const generation = editorGeneration;
   try {
     const result = await cropImage(file, { ratio: contentForm.elements.type.value === 'story' ? 'story' : 'card', caption: 'Настройте кадр обложки пальцем или мышью.' });
-    if (result instanceof File) await uploadImage(result);
-  } catch (error) { notice(error.message, true); }
+    if (generation === editorGeneration && editorOpen() && result instanceof File) await uploadImage(result);
+  } catch (error) { if (generation === editorGeneration) notice(error.message, true); }
 }
 async function cropCurrentCover() {
+  if (mutationBusy) return;
   const path = contentForm.elements.image.value.trim();
   if (!path) return;
+  const generation = editorGeneration;
   try {
     const result = await cropImage(imageSource(path), { ratio: contentForm.elements.type.value === 'story' ? 'story' : 'card', caption: 'Измените кадр уже загруженной обложки.' });
-    if (result instanceof File) await uploadImage(result);
-  } catch (error) { notice(error.message, true); }
+    if (generation === editorGeneration && editorOpen() && result instanceof File) await uploadImage(result);
+  } catch (error) { if (generation === editorGeneration) notice(error.message, true); }
 }
 async function cropRichPhoto(button) {
+  if (mutationBusy) return;
+  const generation = editorGeneration;
   const figure = button.closest('[data-rich-type]');
   const image = button.closest('.rich-media-item').querySelector('img');
   const oldSource = image.dataset.src;
   try {
     const result = await cropImage(imageSource(oldSource), { ratio: figure.dataset.richType === 'carousel' ? 'card' : 'original', caption: 'Кадрируйте это фото, не удаляя его из статьи.' });
-    if (!(result instanceof File)) return;
+    if (!(result instanceof File) || generation !== editorGeneration || !figure.isConnected) return;
     const localUrl = URL.createObjectURL(result);
     image.src = localUrl;
     const transfer = uploadImageFile(result, localUrl);
     richUploads.add(transfer);
     notice('Загружаю кадрированное фото…');
     try {
-      image.dataset.src = await transfer;
+      const src = await transfer;
+      if (generation !== editorGeneration || !figure.isConnected) return;
+      image.dataset.src = src;
       image.src = imageSource(image.dataset.src);
       updatePreview();
       notice('Фото в статье обновлено. Сохраните материал.');
     } catch (error) {
-      image.src = imageSource(oldSource);
-      notice(error.message, true);
-    } finally { richUploads.delete(transfer); }
-  } catch (error) { notice(error.message, true); }
+      if (generation === editorGeneration && figure.isConnected) { image.src = imageSource(oldSource); notice(error.message, true); }
+    } finally { richUploads.delete(transfer); updateSaveState(); }
+  } catch (error) { if (generation === editorGeneration) notice(error.message, true); }
 }
 function httpsUrl(value) {
   let url;
@@ -780,23 +958,37 @@ function closeMediaDialog(dialogId) {
   dialog.close();
 }
 async function insertRichImage() {
+  if (mutationBusy) return;
+  const generation = editorGeneration;
+  const operation = ++mediaOperation;
+  const stillCurrent = () => generation === editorGeneration && operation === mediaOperation && editorOpen();
   const file = $('#rich-media-file').files[0];
   const url = $('#rich-media-url').value.trim();
+  const alt = $('#rich-media-alt').value.trim();
   if (file && url) { notice('Выберите файл или ссылку, но не оба варианта.', true); return; }
   const button = $('#rich-media-confirm');
   button.disabled = true;
+  let transfer;
   try {
     const selected = file || httpsUrl(url);
     const cropped = await cropImage(selected, { ratio: 'original', caption: 'Выберите кадр фотографии для статьи.' });
-    if (cropped === null) return;
-    const src = cropped instanceof File ? await uploadImageFile(cropped) : cropped;
-    insertRichBlock({ type: 'image', src, alt: $('#rich-media-alt').value.trim() });
+    if (cropped === null || !stillCurrent()) return;
+    transfer = cropped instanceof File ? uploadImageFile(cropped) : Promise.resolve(cropped);
+    richUploads.add(transfer);
+    updateSaveState();
+    const src = await transfer;
+    if (!stillCurrent()) return;
+    insertRichBlock({ type: 'image', src, alt });
     closeMediaDialog('media-dialog');
     notice('Изображение добавлено в статью.');
-  } catch (error) { notice(error.message, true); }
-  finally { button.disabled = false; }
+  } catch (error) { if (stillCurrent()) notice(error.message, true); }
+  finally { if (transfer) richUploads.delete(transfer); if (operation === mediaOperation) button.disabled = false; updateSaveState(); }
 }
 async function insertRichCarousel() {
+  if (mutationBusy) return;
+  const generation = editorGeneration;
+  const operation = ++mediaOperation;
+  const stillCurrent = () => generation === editorGeneration && operation === mediaOperation && editorOpen();
   const files = [...$('#rich-carousel-files').files];
   const urls = $('#rich-carousel-urls').value.split(/\r?\n/).map(value => value.trim()).filter(Boolean);
   if (files.length + urls.length < 2 || files.length + urls.length > 12) { notice('Добавьте в карусель от 2 до 12 изображений.', true); return; }
@@ -807,19 +999,26 @@ async function insertRichCarousel() {
     const cropped = [];
     for (const [index, source] of sources.entries()) {
       const result = await cropImage(source, { ratio: 'card', caption: `Кадрируйте фото ${index + 1} из ${sources.length}.` });
-      if (result === null) return;
+      if (result === null || !stillCurrent()) return;
       cropped.push({ value: result, alt: source instanceof File ? source.name.replace(/\.[^.]+$/, '') : `Фото ${index + 1}` });
     }
     const images = [];
     for (const [index, item] of cropped.entries()) {
+      if (!stillCurrent()) return;
       if (item.value instanceof File) notice(`Загружаю фото ${index + 1} из ${cropped.length}…`);
-      images.push({ src: item.value instanceof File ? await uploadImageFile(item.value) : item.value, alt: item.alt || `Фото ${index + 1}` });
+      const transfer = item.value instanceof File ? uploadImageFile(item.value) : Promise.resolve(item.value);
+      richUploads.add(transfer);
+      updateSaveState();
+      let src;
+      try { src = await transfer; } finally { richUploads.delete(transfer); }
+      if (!stillCurrent()) return;
+      images.push({ src, alt: item.alt || `Фото ${index + 1}` });
     }
     insertRichBlock({ type: 'carousel', images });
     closeMediaDialog('carousel-dialog');
     notice('Карусель добавлена в статью.');
-  } catch (error) { notice(error.message, true); }
-  finally { button.disabled = false; }
+  } catch (error) { if (stillCurrent()) notice(error.message, true); }
+  finally { if (operation === mediaOperation) button.disabled = false; updateSaveState(); }
 }
 
 $('#login-form').addEventListener('submit', async event => {
@@ -830,23 +1029,37 @@ $('#login-form').addEventListener('submit', async event => {
     const result = await request('login', { user: form.elements.user.value, password: form.elements.password.value });
     form.elements.password.value = '';
     $('#signed-user').textContent = result.user;
-    await loadContent(); setView(true);
+    setView(true); await refreshContent();
   } catch (error) { notice(error.message, true); }
   finally { button.disabled = false; }
 });
-$('#logout').addEventListener('click', async () => { await request('logout', {}); setView(false); });
+$('#logout').addEventListener('click', async () => {
+  if (!allowNavigation() || !beginMutation('Выхожу из панели…')) return;
+  try { await request('logout', {}); typeFilter = 'all'; listScrollY = 0; showList(true); currentId = ''; setView(false); }
+  catch (error) { notice(error.message, true); }
+  finally { endMutation(); }
+});
 document.querySelectorAll('.side-nav button').forEach(button => button.addEventListener('click', () => {
-  document.querySelector('.side-nav .active')?.classList.remove('active'); button.classList.add('active');
-  typeFilter = button.dataset.filter; $('#view-title').textContent = button.textContent.trim().replace(/\d+$/, '').trim();
-  $('#editor-view').hidden = true; $('#list-view').hidden = false; renderList();
+  if (!allowNavigation()) return;
+  typeFilter = button.dataset.filter;
+  listScrollY = 0;
+  showList(true);
 }));
 $('#filter-text').addEventListener('input', renderList);
 $('#filter-status').addEventListener('change', renderList);
-$('#new-item').addEventListener('click', () => $('#type-dialog').showModal());
+$('#retry-content').addEventListener('click', refreshContent);
+$('#clear-filters').addEventListener('click', () => { $('#filter-text').value = ''; $('#filter-status').value = 'all'; renderList(); $('#filter-text').focus(); });
+$('#new-item').addEventListener('click', () => {
+  if (mutationBusy) return;
+  const dialog = $('#type-dialog'); dialog.returnValue = 'cancel'; dialog.showModal();
+});
 $('#type-dialog').addEventListener('close', event => { if (event.currentTarget.returnValue !== 'cancel' && labels[event.currentTarget.returnValue]) openEditor('', event.currentTarget.returnValue); });
-$('#back-list').addEventListener('click', () => { $('#editor-view').hidden = true; $('#list-view').hidden = false; renderList(); });
+$('#back-list').addEventListener('click', () => showList());
 $('#item-type').addEventListener('change', updateTypeFields);
-contentForm.addEventListener('input', updatePreview);
+contentForm.addEventListener('input', event => {
+  if (event.target.getAttribute('aria-invalid') === 'true' || event.target.closest('[aria-invalid="true"]')) clearFormError();
+  schedulePreview();
+});
 contentForm.elements.image.addEventListener('input', () => {
   coverUploadId++;
   if (pendingCoverUrl) URL.revokeObjectURL(pendingCoverUrl);
@@ -862,6 +1075,26 @@ $('#story-video-upload').addEventListener('change', event => { uploadStoryVideo(
 contentForm.elements.storyVideoUrl.addEventListener('input', () => { storyVideoUploadId++; });
 $('#image-upload').addEventListener('change', event => { event.target.value = ''; });
 $('#crop-cover').addEventListener('click', cropCurrentCover);
+$('#image-preview').addEventListener('keydown', event => {
+  if (['Enter', ' '].includes(event.key) && !mutationBusy) { event.preventDefault(); $('#image-upload').click(); }
+});
+$('#image-preview').addEventListener('click', () => { if (!mutationBusy) $('#image-upload').click(); });
+document.querySelectorAll('.upload-label').forEach(label => {
+  label.tabIndex = 0;
+  label.setAttribute('role', 'button');
+  label.addEventListener('keydown', event => {
+    if (['Enter', ' '].includes(event.key) && !mutationBusy) { event.preventDefault(); label.querySelector('input[type="file"]').click(); }
+  });
+});
+window.addEventListener('beforeunload', event => {
+  if (editorHasChanges() || mutationBusy) { event.preventDefault(); event.returnValue = ''; }
+});
+document.addEventListener('click', event => {
+  const link = event.target.closest('a[href]');
+  if (!link || event.defaultPrevented || event.ctrlKey || event.metaKey || event.shiftKey || event.button !== 0 || link.target === '_blank' || link.getAttribute('href').startsWith('#')) return;
+  if (!allowNavigation()) event.preventDefault();
+  else savedEditorSnapshot = '';
+});
 $('#image-preview').addEventListener('dragover', event => {
   event.preventDefault();
   event.currentTarget.classList.add('is-dragging');
@@ -882,6 +1115,7 @@ articleEditor.addEventListener('mouseup', rememberEditorSelection);
 articleEditor.addEventListener('keyup', rememberEditorSelection);
 articleEditor.addEventListener('input', rememberEditorSelection);
 articleEditor.addEventListener('click', event => {
+  if (mutationBusy) return;
   const crop = event.target.closest('[data-crop-rich-image]');
   if (crop) { cropRichPhoto(crop); return; }
   const remove = event.target.closest('[data-remove-rich-block]');
@@ -921,13 +1155,21 @@ $('#rich-insert-carousel').addEventListener('click', () => { rememberEditorSelec
 $('#rich-media-confirm').addEventListener('click', insertRichImage);
 $('#rich-carousel-confirm').addEventListener('click', insertRichCarousel);
 document.querySelectorAll('[data-close-dialog]').forEach(button => button.addEventListener('click', () => button.closest('dialog').close()));
+for (const id of ['media-dialog', 'carousel-dialog']) {
+  const dialog = $(`#${id}`);
+  dialog.addEventListener('close', () => {
+    mediaOperation++;
+    dialog.querySelector('form').reset();
+    dialog.querySelectorAll('button').forEach(button => { button.disabled = false; });
+  });
+}
 
 try {
   const session = await request('session');
   $('#signed-user').textContent = session.user;
-  await loadContent();
   setView(true);
+  await refreshContent();
 } catch (error) {
   setView(false);
-  if (!error.message.includes('Войдите')) notice(error.message, true);
+  if (error.status !== 401) notice(error.message, true);
 }

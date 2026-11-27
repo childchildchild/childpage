@@ -139,6 +139,13 @@ async function github(path, options = {}) {
 function text(value, max = 20000) {
   return typeof value === 'string' ? value.trim().slice(0, max) : '';
 }
+export function validMaterialUrl(value, mp4 = false) {
+  if (/^assets\//.test(value)) {
+    const parts = value.slice(7).split('/');
+    return parts.every(part => part && part !== '.' && part !== '..' && /^[a-zA-Z0-9_.-]+$/.test(part)) && (!mp4 || /\.mp4$/i.test(value));
+  }
+  try { return new URL(value).protocol === 'https:'; } catch { return false; }
+}
 export async function validate(input) {
   const { hasRichText, normalizeRichBlocks } = await import('../content/rich-content.mjs');
   if (!input || input.version !== 1 || !Array.isArray(input.items) || input.items.length > 500) throw new Error('Неверный формат материалов.');
@@ -176,13 +183,14 @@ export async function validate(input) {
       normalized.previousStatus = item.previousStatus;
     }
     if (item.bodyBlocks !== undefined) normalized.bodyBlocks = normalizeRichBlocks(item.bodyBlocks);
-    if (!normalized.title || !normalized.description) throw new Error(`Заполните название и описание: ${item.id}`);
+    if (['published', 'planned'].includes(item.status) && (!normalized.title || !normalized.description)) throw new Error(`Заполните название и описание: ${item.id}`);
+    if (['published', 'planned'].includes(item.status) && normalized.image && !validMaterialUrl(normalized.image)) throw new Error(`Проверьте HTTPS-ссылку или путь обложки: ${item.id}`);
     if (item.status === 'published' && !Number.isFinite(Date.parse(item.publishedAt))) throw new Error(`Укажите дату публикации: ${item.id}`);
     if (item.status === 'published' && item.type === 'article' && !(item.bodyBlocks !== undefined ? hasRichText(normalized.bodyBlocks) : normalized.body)) throw new Error(`Добавьте текст статьи: ${item.id}`);
     if (item.status === 'published' && item.type === 'story' && !normalized.image) throw new Error(`Добавьте обложку сторис: ${item.id}`);
-    if (item.type === 'story' && normalized.mediaUrl && !/^https:\/\//.test(normalized.mediaUrl) && !/^assets\/[a-zA-Z0-9/_\-.]+\.mp4$/.test(normalized.mediaUrl)) throw new Error(`Укажите ссылку на MP4 для сторис: ${item.id}`);
-    if (item.status === 'published' && ['video', 'audio'].includes(item.type) && !/^https:\/\//.test(normalized.mediaUrl) && !/^assets\/[a-zA-Z0-9/_\-.]+$/.test(normalized.mediaUrl)) throw new Error(`Добавьте ссылку на медиафайл: ${item.id}`);
-    if (item.status === 'published' && item.type === 'game' && !/^https:\/\//.test(normalized.gameUrl) && !/^assets\/[a-zA-Z0-9/_\-.]+$/.test(normalized.gameUrl)) throw new Error(`Добавьте ссылку на игру: ${item.id}`);
+    if (item.status === 'published' && item.type === 'story' && normalized.mediaUrl && !validMaterialUrl(normalized.mediaUrl, true)) throw new Error(`Укажите ссылку на MP4 для сторис: ${item.id}`);
+    if (item.status === 'published' && ['video', 'audio'].includes(item.type) && !validMaterialUrl(normalized.mediaUrl)) throw new Error(`Добавьте ссылку на медиафайл: ${item.id}`);
+    if (item.status === 'published' && item.type === 'game' && !validMaterialUrl(normalized.gameUrl)) throw new Error(`Добавьте ссылку на игру: ${item.id}`);
     return normalized;
   });
   return { version: 1, items };

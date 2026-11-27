@@ -1,6 +1,20 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import handler, { validImageBytes, validStoryVideoBytes, validate } from './admin.js';
+import handler, { validImageBytes, validStoryVideoBytes, validate, validMaterialUrl } from './admin.js';
+
+test('allows unfinished drafts while keeping published and planned cards complete', async () => {
+  const item = { id: 'unfinished-draft', type: 'article', status: 'draft', title: '', description: '', body: '', mediaUrl: 'unfinished link' };
+  const result = await validate({ version: 1, items: [item] });
+  assert.equal(result.items[0].title, '');
+  for (const status of ['published', 'planned']) await assert.rejects(validate({ version: 1, items: [{ ...item, status }] }));
+});
+
+test('accepts HTTPS and site assets, rejects malformed URLs and traversal', async () => {
+  for (const url of ['https://example.org/video.mp4?key=public', 'assets/uploads/video.mp4']) assert.equal(validMaterialUrl(url, true), true);
+  for (const url of ['https://', 'javascript:alert(1)', 'http://example.org/', 'assets/../api/admin', 'assets//file.png']) assert.equal(validMaterialUrl(url), false, url);
+  const item = { id: 'bad-video', type: 'video', status: 'published', title: 'Video', description: 'Description', publishedAt: '2026-11-27T00:00:00Z', mediaUrl: 'https://' };
+  await assert.rejects(validate({ version: 1, items: [item] }));
+});
 
 test('keeps card badges separate from publication status when saving content', async () => {
   const item = { id: 'badge-example', type: 'article', status: 'published', title: 'Example', description: 'Description', body: 'Article text', publishedAt: '2026-11-27T00:00:00Z', cardType: 'tale', cardStatus: 'interesting' };

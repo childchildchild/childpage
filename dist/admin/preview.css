@@ -1,0 +1,3 @@
+.admin-card-preview .catalog-content{padding:24px 16px}
+.admin-card-grid{grid-template-columns:minmax(0,1fr);width:min(100%,190px);margin-inline:auto}
+.admin-card-preview .catalog-card h2{overflow-wrap:anywhere}
