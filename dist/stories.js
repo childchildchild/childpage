@@ -183,7 +183,22 @@ document.querySelectorAll('.story-preview').forEach(button => {
 });
 const requestedStory = new URLSearchParams(location.search).get('story');
 const requestedStoryIndex = publishedStories.findIndex(item => item.id === requestedStory);
-if (requestedStoryIndex >= 0) requestAnimationFrame(() => openStory(requestedStoryIndex));
+// Treat story links as one-time actions, not the homepage's saved state.
+if (new URLSearchParams(location.search).has('story')) {
+  const homeUrl = new URL(location.href);
+  homeUrl.searchParams.delete('story');
+  history.replaceState(history.state, '', homeUrl);
+}
+const storyNavigationType = performance.getEntriesByType('navigation')[0]?.type;
+if (requestedStoryIndex >= 0 && storyNavigationType !== 'reload' && storyNavigationType !== 'back_forward') {
+  requestAnimationFrame(() => openStory(requestedStoryIndex));
+}
+window.addEventListener('pageshow', event => {
+  if (event.persisted && storyScreen.open) {
+    storyMotion.forEach(animation => animation.cancel());
+    storyScreen.close();
+  }
+});
 
 stories.forEach((story, index) => {
   const image = new Image();
