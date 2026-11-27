@@ -99,7 +99,7 @@
       "type": "story",
       "cardType": "",
       "cardStatus": "",
-      "status": "published",
+      "status": "trashed",
       "title": "Моем руки!",
       "description": "Мой руки с мылом перед едой и после туалета. Маленьким детям может помочь взрослый.",
       "category": "medicine",
@@ -120,7 +120,9 @@
       "gameUrl": "",
       "linkedId": "handwashing",
       "publishedAt": "2026-11-22T04:03:00+03:00",
-      "updatedAt": "2026-11-27T15:16:39.775Z"
+      "updatedAt": "2026-11-27T15:46:53.186Z",
+      "deletedAt": "2026-11-27T15:46:53.186Z",
+      "previousStatus": "published"
     },
     {
       "id": "story-tale",
