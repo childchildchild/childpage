@@ -1,3 +1,184 @@
 <!doctype html>
-<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="color-scheme" content="light"><meta name="theme-color" content="#cbcced"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Детская"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png"><title>Материалы — Детская страница</title><script src="preferences.js?v=20261122-1"></script><script src="article-navigation.js?v=20261127-1"></script><link rel="stylesheet" href="catalog.css?v=20261127-8"><link rel="stylesheet" href="age-landing.css?v=20261127-5"><link rel="stylesheet" href="preferences.css?v=20261127-1"><script src="content-data.js" defer></script><link rel="stylesheet" href="assets/phosphor/bold/style.css"><link rel="stylesheet" href="card-badges.css?v=20261127-3"><script src="card-badges.js?v=20261127-2" defer></script><script src="catalog.js?v=20261127-7" defer></script></head>
-<body><main class="catalog-page"><header class="catalog-header"><a href="index.html" aria-label="На главную"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 5 5 20l15 15M6 20h30"/></svg></a><h1 id="catalog-title">Все материалы</h1></header><section class="catalog-content" aria-labelledby="catalog-title"><div class="catalog-controls"><label>Возраст<select id="age-filter"><option value="all">Любой возраст</option><option value="0-3">0–3 года</option><option value="4-12">4–12 лет</option><option value="13+">13+ лет</option></select></label><label>Формат<select id="type-filter"><option value="all">Все форматы</option><option value="article">Статьи</option><option value="story">Сторис</option><option value="video">Видео</option><option value="audio">Аудио</option><option value="game">Игры</option></select></label></div><div id="catalog-grid" class="catalog-grid"></div><div id="catalog-empty" class="catalog-empty" hidden><p id="catalog-empty-message">Здесь пока нет опубликованных материалов.</p><button id="catalog-reset" type="button" hidden>Сбросить фильтры</button><a href="catalog.html">Все материалы</a></div></section></main></body></html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="color-scheme" content="light"><meta name="theme-color" content="#cbcced"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Детская"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="assets/apple-touch-icon.png"><title>Материалы — Детская страница</title><script src="preferences.js?v=20261122-1"></script><script src="article-navigation.js?v=20261127-1"></script><link rel="stylesheet" href="styles.css?v=20261127-25"><link rel="stylesheet" href="menu-pages.css?v=20261127-3"><link rel="stylesheet" href="catalog.css?v=20261127-10"><link rel="stylesheet" href="age-landing.css?v=20261127-6"><link rel="stylesheet" href="preferences.css?v=20261127-1"><script src="content-data.js" defer></script><link rel="stylesheet" href="assets/phosphor/bold/style.css"><link rel="stylesheet" href="card-badges.css?v=20261127-3"><script src="card-badges.js?v=20261127-2" defer></script><script src="catalog.js?v=20261127-9" defer></script><script src="script.js?v=20261127-11" defer></script><script src="menu-pages.js?v=20261125-2" defer></script></head>
+<body><main class="catalog-page"><header class="catalog-header"><a href="index.html" aria-label="На главную"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 5 5 20l15 15M6 20h30"/></svg></a><h1 id="catalog-title">Все материалы</h1></header><section class="catalog-content" aria-labelledby="catalog-title"><div class="catalog-controls"><label>Возраст<select id="age-filter"><option value="all">Любой возраст</option><option value="0-3">0–3 года</option><option value="4-12">4–12 лет</option><option value="13+">13+ лет</option></select></label><label>Формат<select id="type-filter"><option value="all">Все форматы</option><option value="article">Статьи</option><option value="story">Сторис</option><option value="video">Видео</option><option value="audio">Аудио</option><option value="game">Игры</option></select></label></div><div id="catalog-grid" class="catalog-grid"></div><div id="catalog-empty" class="catalog-empty" hidden><p id="catalog-empty-message">Здесь пока нет опубликованных материалов.</p><button id="catalog-reset" type="button" hidden>Сбросить фильтры</button><a href="catalog.html">Все материалы</a></div></section></main><!-- shared-panels:start -->
+  <dialog class="menu-sheet" id="menu-sheet" aria-labelledby="menu-title">
+    <header class="menu-header">
+      <button class="icon-button" id="menu-back" type="button" aria-label="Закрыть меню"><i class="ph-bold ph-arrow-left"></i></button>
+      <h2 id="menu-title">Меню</h2>
+    </header>
+    <div class="menu-body">
+      <div class="menu-search-slot" id="menu-search" tabindex="-1">
+        <form class="search-form" role="search">
+          <label class="search-field"><i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i><input id="search-input" type="search" placeholder="Поиск" aria-label="Поиск по сайту" autocomplete="off" readonly></label>
+        </form>
+      </div>
+      <nav class="menu-shortcuts" aria-label="Дополнительные разделы">
+        <button id="open-settings" type="button"><i class="ph-fill ph-gear" aria-hidden="true"></i>Настройки</button>
+        <button type="button" data-menu-target=".latest"><i class="ph-fill ph-clock" aria-hidden="true"></i>Последнее</button>
+        <button id="open-support" type="button"><i class="ph-fill ph-chat-circle-dots" aria-hidden="true"></i>Поддержка</button>
+        <button id="open-install" type="button"><i class="ph-fill ph-stack" aria-hidden="true"></i>Ярлык</button>
+        <button id="open-about" type="button"><i class="ph-fill ph-info" aria-hidden="true"></i>О сайте</button>
+      </nav>
+      <div class="menu-scroll">
+      <nav class="menu-categories" aria-label="Все разделы">
+        <button type="button" data-menu-target=".content-tile:nth-child(1)"><span>Мультики</span><img src="assets/optimized/cartoons.webp" alt=""></button>
+        <button type="button" data-menu-target=".content-tile:nth-child(2)"><span>Игры</span><img src="assets/optimized/games.webp" alt=""></button>
+        <button type="button" data-menu-target=".content-tile:nth-child(3)"><span>Интересно<br>всем</span><img src="assets/optimized/for_all.webp" alt=""></button>
+        <button type="button" data-menu-target=".content-tile:nth-child(4)"><span>Сказки<br>на ночь</span><img src="assets/optimized/storytales.webp" alt=""></button>
+        <button type="button" data-menu-target=".content-tile:nth-child(5)"><span>Медицина</span><img src="assets/optimized/medicine.webp" alt=""></button>
+        <button type="button" disabled><span>Комиксы</span><small class="coming-soon">Скоро</small></button>
+        <button type="button" disabled><span>Аудиокниги</span><small class="coming-soon">Скоро</small></button>
+        <button type="button" disabled><span>Полезные<br>советы</span><small class="coming-soon">Скоро</small></button>
+        <button type="button" disabled><span>Технологии</span><small class="coming-soon">Скоро</small></button>
+        <button type="button" disabled><span>История<br>России</span><small class="coming-soon">Скоро</small></button>
+        <button type="button" disabled><span>Музыка</span><small class="coming-soon">Скоро</small></button>
+        <button type="button" disabled><span>Логика</span><small class="coming-soon">Скоро</small></button>
+      </nav>
+      </div>
+    </div>
+  </dialog>
+  <dialog class="search-screen" id="search-screen" aria-labelledby="search-title">
+    <header class="search-header">
+      <button class="icon-button search-back" id="search-back" type="button" aria-label="Вернуться на главную"><i class="ph-bold ph-arrow-left"></i></button>
+      <h2 id="search-title">Поиск</h2>
+    </header>
+    <div class="search-slot" id="search-slot"></div>
+    <section id="search-history" class="search-history" aria-labelledby="search-history-title" hidden>
+      <div class="search-history-heading"><h3 id="search-history-title">История поиска</h3><button id="search-history-clear" type="button">Очистить</button></div>
+      <ul id="search-history-list" class="search-history-list"></ul>
+    </section>
+    <div class="search-empty" id="search-empty">
+      <img class="search-flower" src="assets/flower_find.png" alt="" aria-hidden="true">
+      <h2>Найди то, что тебе<br>понравится</h2>
+      <p>История поиска пока что пустая</p>
+    </div>
+    <div class="search-results" id="search-results" aria-live="polite"></div>
+  </dialog>
+  <dialog class="info-screen" id="settings-screen" aria-labelledby="settings-title">
+    <header class="info-header">
+      <button class="icon-button info-back" type="button" aria-label="Вернуться в меню"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i></button>
+      <h2 id="settings-title">Настройки</h2>
+    </header>
+    <div class="info-scroll">
+      <div class="info-intro">
+        <span class="info-eyebrow">Удобно для вас</span>
+        <h3>Настройте страницу</h3>
+        <p class="info-copy">Выберите, как вам удобнее читать и смотреть материалы.</p>
+      </div>
+      <section class="info-section" aria-labelledby="reading-settings-title">
+        <h3 id="reading-settings-title">Просмотр</h3>
+        <label class="setting-row" for="setting-large-text">
+          <span><strong>Крупнее текст</strong><small>В статьях, описаниях и сторис</small></span>
+          <input id="setting-large-text" type="checkbox" role="switch"><span class="setting-switch" aria-hidden="true"></span>
+        </label>
+        <label class="setting-row" for="setting-reduce-motion">
+          <span><strong>Меньше анимации</strong><small>Экраны будут открываться без движения</small></span>
+          <input id="setting-reduce-motion" type="checkbox" role="switch"><span class="setting-switch" aria-hidden="true"></span>
+        </label>
+      </section>
+      <section class="info-section" aria-labelledby="progress-settings-title">
+        <h3 id="progress-settings-title">Занятия</h3>
+        <div class="setting-row progress-setting">
+          <span><strong>Прогресс «Первых шагов»</strong><small id="settings-progress-status">Пока нет пройденных занятий</small></span>
+        </div>
+        <button class="reset-progress" id="reset-progress" type="button">Сбросить прогресс</button>
+      </section>
+      <p class="info-footnote">Настройки и прогресс сохраняются только в этом браузере.</p>
+      <p class="settings-feedback" id="settings-feedback" role="status" hidden></p>
+    </div>
+  </dialog>
+  <dialog class="info-screen" id="about-screen" aria-labelledby="about-title">
+    <header class="info-header">
+      <button class="icon-button info-back" type="button" aria-label="Вернуться в меню"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i></button>
+      <h2 id="about-title">О сайте</h2>
+    </header>
+    <div class="info-scroll">
+      <div class="about-hero">
+        <span>Для детей и родителей</span>
+        <h3>ДЕТСКАЯ<br>СТРАНИЦА</h3>
+        <img src="assets/optimized/planet.webp" alt="" aria-hidden="true">
+      </div>
+      <section class="info-section about-section">
+        <h3>Зачем этот сайт</h3>
+        <p class="info-copy">Здесь собраны истории, статьи и занятия, которые помогают провести время в детском отделении. Материалы можно выбирать по теме и возрасту.</p>
+      </section>
+      <section class="info-section about-section">
+        <h3>Как пользоваться</h3>
+        <ol class="about-steps info-copy">
+          <li><span>1</span>Выберите тему или возраст на главной странице.</li>
+          <li><span>2</span>Откройте материал, который заинтересовал ребёнка.</li>
+          <li><span>3</span>В сторис коснитесь правой части экрана для следующей истории, левой — для предыдущей.</li>
+        </ol>
+      </section>
+      <section class="info-section about-note">
+        <h3>Важно</h3>
+        <p class="info-copy">Сайт создан для досуга и знакомства с новыми темами. По вопросам самочувствия и лечения обращайтесь к сотрудникам отделения.</p>
+      </section>
+    </div>
+  </dialog>
+  <dialog class="info-screen" id="support-screen" aria-labelledby="support-title">
+    <header class="info-header">
+      <button class="icon-button info-back" type="button" aria-label="Вернуться в меню"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i></button>
+      <h2 id="support-title">Поддержка</h2>
+    </header>
+    <div class="info-scroll">
+      <div class="info-intro">
+        <span class="info-eyebrow">Помощь по сайту</span>
+        <h3>Как вам помочь?</h3>
+        <p class="info-copy">Ответы на вопросы о сайте и материалах.</p>
+      </div>
+      <section class="info-section" aria-labelledby="support-questions-title">
+        <h3 id="support-questions-title">Частые вопросы</h3>
+        <div class="support-questions">
+          <details><summary>Как найти материал по возрасту?</summary><p>На главной странице откройте блок «По возрастам» или выберите тему в разделе «Контент». В списке материалов можно выбрать возраст и формат.</p></details>
+          <details><summary>Почему материал не открывается?</summary><p>Проверьте подключение к интернету и обновите страницу. Если сайт открыт внутри Telegram, попробуйте открыть его в браузере телефона.</p></details>
+          <details><summary>Где сохраняются настройки и прогресс?</summary><p>Они сохраняются на вашем телефоне в том браузере, где вы открыли сайт. На другом устройстве или после очистки данных браузера их может не быть.</p></details>
+          <details><summary>Как убрать звук или анимацию?</summary><p>Видео в сторис запускаются без звука. Звук можно включить или выключить в самой сторис. Чтобы уменьшить движение и увеличить текст, откройте «Меню» → «Настройки».</p></details>
+          <details><summary>Как добавить сайт на экран телефона?</summary><p>Откройте в меню вкладку «Ярлык». Там есть шаги для iPhone и Android.</p></details>
+        </div>
+      </section>
+      <section class="info-section about-note">
+        <h3>О здоровье ребёнка</h3>
+        <p class="info-copy">Сайт помогает провести время. Если ребёнку нехорошо или есть вопросы о лечении, обратитесь к сотрудникам отделения.</p>
+      </section>
+    </div>
+  </dialog>
+  <dialog class="info-screen" id="install-screen" aria-labelledby="install-title">
+    <header class="info-header">
+      <button class="icon-button info-back" type="button" aria-label="Вернуться в меню"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i></button>
+      <h2 id="install-title">Ярлык</h2>
+    </header>
+    <div class="info-scroll">
+      <div class="install-hero">
+        <img src="assets/icon-192.png" alt="Значок «Детской страницы»">
+        <div><span class="info-eyebrow">Всегда под рукой</span><h3>Сайт как приложение</h3></div>
+      </div>
+      <p class="info-copy install-intro">Добавьте «Детскую страницу» на экран телефона. Она будет открываться отдельным окном без адресной строки браузера.</p>
+      <div id="install-already" class="install-message" hidden>Вы уже открыли сайт через ярлык на экране телефона.</div>
+      <section class="info-section" id="install-ios" aria-labelledby="install-ios-title">
+        <h3 id="install-ios-title">На iPhone</h3>
+        <ol class="about-steps info-copy">
+          <li><span>1</span>Откройте этот сайт в Safari. Если вы в Telegram, выберите в его меню «Открыть в Safari».</li>
+          <li><span>2</span>В Safari нажмите «Поделиться» и выберите «На экран Домой».</li>
+          <li><span>3</span>Включите «Открыть как веб-приложение», если этот пункт есть, и нажмите «Добавить».</li>
+        </ol>
+      </section>
+      <section class="info-section" id="install-android" aria-labelledby="install-android-title">
+        <h3 id="install-android-title">На Android</h3>
+        <p class="info-copy">Откройте сайт в Chrome. В меню ⋮ выберите «Установить приложение» или «Добавить на главный экран».</p>
+      </section>
+      <button id="install-prompt-button" class="install-action" type="button" hidden>Установить на телефон</button>
+      <button id="install-copy-button" class="install-copy" type="button">Скопировать адрес сайта</button>
+      <p class="install-feedback" id="install-feedback" role="status" aria-live="polite"></p>
+      <p class="info-footnote">Для новых материалов и некоторых страниц понадобится интернет. На некоторых телефонах прогресс и настройки из браузера не переносятся в ярлык.</p>
+    </div>
+  </dialog>
+  <dialog class="confirm-dialog" id="reset-progress-confirm" aria-labelledby="reset-progress-title">
+    <h2 id="reset-progress-title">Сбросить прогресс?</h2>
+    <p>Пройденные занятия «Первых шагов» станут непройденными только в этом браузере.</p>
+    <div class="confirm-actions">
+      <button id="cancel-reset" type="button">Отмена</button>
+      <button id="confirm-reset" type="button">Сбросить</button>
+    </div>
+  </dialog>
+<!-- shared-panels:end --></body></html>

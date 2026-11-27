@@ -142,4 +142,16 @@ await unlink(join(dist, 'handwashing.html')).catch(error => { if (error.code !==
 for (const item of published.filter(item => item.type !== 'story')) {
   await writeFile(join(dist, urlFor(item)), renderPage(item));
 }
+// Keep the catalog's menu, search, and information dialogs identical to the home page.
+const homeHtml = await readFile(join(dist, 'index.html'), 'utf8');
+const catalogFile = join(dist, 'catalog.html');
+const catalogHtml = await readFile(catalogFile, 'utf8');
+const panelsStart = homeHtml.indexOf('  <dialog class="menu-sheet"');
+const panelsEnd = homeHtml.indexOf('  <dialog class="story-screen"', panelsStart);
+const startMarker = '<!-- shared-panels:start -->';
+const endMarker = '<!-- shared-panels:end -->';
+const slotStart = catalogHtml.indexOf(startMarker);
+const slotEnd = catalogHtml.indexOf(endMarker, slotStart);
+if (panelsStart < 0 || panelsEnd < 0 || slotStart < 0 || slotEnd < 0) throw new Error('Shared panel markup not found');
+await writeFile(catalogFile, catalogHtml.slice(0, slotStart + startMarker.length) + '\n' + homeHtml.slice(panelsStart, panelsEnd) + catalogHtml.slice(slotEnd));
 console.log(`Built ${cards.length} published item(s), ${planned.length} planned item(s), ${published.filter(item => item.type === 'story').length} story/stories.`);

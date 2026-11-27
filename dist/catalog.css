@@ -1,5 +1,6 @@
 @font-face{font-family:Roboto;src:url('assets/Roboto.ttf') format('truetype');font-display:swap}
 :root{--paper:#fffdfb;--lavender:#cbcced;color:#050505;font-family:Roboto,Arial,sans-serif}
+html{background:var(--paper)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;padding-top:env(safe-area-inset-top,0px);background:var(--paper);overflow-x:clip}
 .catalog-page{width:100%;max-width:430px;min-height:100svh;margin:auto;padding-bottom:env(safe-area-inset-bottom,0px);container-type:inline-size}

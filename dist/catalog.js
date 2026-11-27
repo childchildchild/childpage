@@ -12,8 +12,8 @@ const ageLanding = {
 const hero = document.createElement('section'); hero.className = 'age-landing-hero'; hero.setAttribute('aria-labelledby','age-landing-title');
 hero.innerHTML = '<header class="age-landing-header"><a href="index.html#ages-title" aria-label="К возрастам"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i></a><h1 id="age-landing-title"></h1></header><div class="age-landing-art"><div class="age-landing-circle" aria-hidden="true"></div><div class="age-portrait-mask"><img id="age-landing-portrait" alt=""></div><span id="age-landing-label"></span></div>';
 document.querySelector('.catalog-page').prepend(hero);
-const ageToolbar = document.createElement('div'); ageToolbar.className = 'age-content-toolbar';
-ageToolbar.innerHTML = '<a href="index.html?open=menu" aria-label="Открыть меню"><i class="ph-bold ph-list" aria-hidden="true"></i></a><h2>Контент</h2><a href="index.html?open=search" aria-label="Открыть поиск"><i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i></a>';
+const ageToolbar = document.createElement('div'); ageToolbar.className = 'age-content-toolbar content-toolbar'; ageToolbar.id = 'content-toolbar';
+ageToolbar.innerHTML = '<button class="icon-button" type="button" aria-label="Открыть меню"><i class="ph-bold ph-list" aria-hidden="true"></i></button><h2>Контент</h2><button class="icon-button" type="button" aria-label="Открыть поиск"><i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i></button>';
 document.querySelector('.catalog-content').prepend(ageToolbar);
 const ageFilter = document.querySelector('#age-filter');
 const typeFilter = document.querySelector('#type-filter');
@@ -97,6 +97,7 @@ function render() {
   const landing = (category === 'all' || category === 'more') ? ageLanding[age] : null;
   if (landing) document.documentElement.dataset.agePage = landing.theme;
   else document.documentElement.removeAttribute('data-age-page');
+  document.querySelector('#search-back').setAttribute('aria-label', landing ? 'Вернуться к материалам по возрасту' : 'Вернуться к материалам');
   if (landing) {
     hero.querySelector('h1').textContent = landing.title;
     hero.querySelector('#age-landing-portrait').src = `assets/optimized/${landing.portrait}`;
@@ -113,11 +114,6 @@ function render() {
     else url.searchParams.set(key, value);
   }
   history.replaceState(null, '', url);
-  if (landing) {
-    const backToAge = encodeURIComponent(`catalog.html${url.search}`);
-    ageToolbar.querySelector('[aria-label="Открыть меню"]').href = `index.html?open=menu&return=${backToAge}`;
-    ageToolbar.querySelector('[aria-label="Открыть поиск"]').href = `index.html?open=search&return=${backToAge}`;
-  }
   const available = (window.siteContent || []).filter(item => item.status === 'published' && (category === 'all' || category === 'more' || item.category === category));
   const items = available.filter(item => (age === 'all' || !item.ages?.length || item.ages.includes(age)) && (type === 'all' || item.type === type)).sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
   for (const item of items) {

@@ -6,6 +6,7 @@ let catalogReturnUrl = null;
 let toolbarFrame = 0;
 
 const updateFloatingToolbar = () => {
+  if (!toolbar || !backToTop || !sourceToolbar) return;
   const revealProgress = prefersLessMotion()
     ? (window.scrollY > 8 ? 1 : 0)
     : Math.min(1, Math.max(0, window.scrollY - 8) / 56);
@@ -27,7 +28,7 @@ window.addEventListener('resize', updateFloatingToolbar);
 window.addEventListener('pageshow', updateFloatingToolbar);
 updateFloatingToolbar();
 document.documentElement.classList.add('scroll-reveal');
-backToTop.addEventListener('click', () => {
+backToTop?.addEventListener('click', () => {
   window.scrollTo({ top: 0, behavior: prefersLessMotion() ? 'instant' : 'smooth' });
 });
 
@@ -309,6 +310,7 @@ document.querySelectorAll('[data-menu-target]').forEach(button => {
       return;
     }
     const target = document.querySelector(button.dataset.menuTarget);
+    if (!target) { window.location.href = 'index.html#latest-title'; return; }
     closeMenu(() => {
       window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - 110, behavior: 'instant' });
       updateFloatingToolbar();
