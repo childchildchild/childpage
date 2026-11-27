@@ -1268,7 +1268,8 @@
         "животные",
         "сон",
         "мир",
-        "кошки"
+        "кошки",
+        "жираф"
       ],
       "image": "assets/uploads/1795793533868-py35tb6c.webp",
       "imageAlt": "Тигрёнок",
@@ -1278,7 +1279,7 @@
       "gameUrl": "",
       "linkedId": "",
       "publishedAt": "2026-11-27T15:28:39.201Z",
-      "updatedAt": "2026-11-27T17:47:31.551Z",
+      "updatedAt": "2026-11-27T17:51:08.976Z",
       "bodyBlocks": [
         {
           "type": "paragraph",
