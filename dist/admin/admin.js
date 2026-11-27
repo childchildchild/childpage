@@ -2,6 +2,7 @@ import { initUI, syncSelects, ask } from './ui.js';
 import { initPhotoCarousel } from '../article-carousel.js?v=20261127-2';
 import { cropImage } from './crop.js';
 import { normalizeTags } from '../content-tags.js?v=20261127-1';
+import { createTagInput } from './tag-input.js?v=20261127-1';
 
 const apiUrl = '/api/admin';
 const $ = selector => document.querySelector(selector);
@@ -9,6 +10,7 @@ const labels = { article: 'Статья', story: 'Сторис', video: 'Вид�
 const states = { published: 'Опубликовано', draft: 'Черновик', planned: 'Заготовка', trashed: 'В корзине' };
 const contentForm = $('#content-form');
 const articleEditor = $('#article-editor');
+const tagsControl = createTagInput($('#tags-field'));
 const trashLifetime = 7 * 24 * 60 * 60 * 1000;
 const richColors = new Set(['#222334', '#d73c3c', '#e77b1e', '#c69a00', '#25834a', '#2962c8', '#7a4da3']);
 let content = { version: 1, items: [] };
@@ -100,10 +102,10 @@ async function showList(force = false, keepNotice = false) {
 }
 function clearFormError() {
   $('#editor-validation').hidden = true;
-  contentForm.querySelectorAll('[aria-invalid="true"]').forEach(control => { control.removeAttribute('aria-invalid'); control.removeAttribute('aria-describedby'); });
+  contentForm.querySelectorAll('[aria-invalid="true"]').forEach(control => { control.removeAttribute('aria-invalid'); if (control.id === 'tags-entry') control.setAttribute('aria-describedby', 'tags-help tags-error'); else control.removeAttribute('aria-describedby'); });
 }
 function showFormError(error) {
-  const control = error.field === 'body' ? articleEditor : contentForm.elements[error.field];
+  const control = error.field === 'body' ? articleEditor : error.field === 'tags' ? $('#tags-entry') : contentForm.elements[error.field];
   const summary = $('#editor-validation');
   summary.textContent = error.message;
   summary.hidden = false;
@@ -670,7 +672,7 @@ async function openEditor(id = '', type = 'article', force = false) {
     if (item[key] !== undefined && contentForm.elements[key]) contentForm.elements[key].value = item[key];
   }
   contentForm.elements.storyVideoUrl.value = item.type === 'story' ? item.mediaUrl || '' : '';
-  contentForm.elements.tags.value = (item.tags || []).join(', ');
+  tagsControl.load(item.tags || []);
   setRichEditor(item);
   savedEditorRange = null;
   contentForm.querySelectorAll('input[name="ages"]').forEach(input => { input.checked = item.ages?.includes(input.value) || false; });
@@ -711,7 +713,7 @@ function readForm(status) {
     description: get('description'),
     category: get('category') || old.category || 'for_all',
     ages: [...contentForm.querySelectorAll('input[name="ages"]:checked')].map(input => input.value),
-    tags: get('tags').split(/[,;\n]/).map(tag => tag.trim()).filter(Boolean),
+    tags: tagsControl.values(),
     image: get('image'), imageAlt: get('imageAlt'), label: get('label'), body: get('body'),
     bodyBlocks: contentForm.elements.type.value === 'article' ? readRichBlocks() : old.bodyBlocks,
     linkedId: get('linkedId'), mediaUrl: get('type') === 'story' ? get('storyVideoUrl') : get('mediaUrl'), gameUrl: get('gameUrl'),
@@ -745,6 +747,7 @@ function validateItem(item) {
   return null;
 }
 async function save(status) {
+  if (!tagsControl.commit()) { showFormError({field:'tags', message:tagsControl.error}); return; }
   if (!beginMutation('Сохраняю материал…')) return;
   let savedId = '';
   let validationError;
