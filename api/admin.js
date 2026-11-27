@@ -2,7 +2,6 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 import { lookup } from 'node:dns/promises';
 import { request as httpsRequest } from 'node:https';
 import { isIP } from 'node:net';
-import { normalizeTags } from '../content/tags.mjs';
 
 const repo = 'childchildchild/childpage';
 const contentPath = 'content/content.json';
@@ -149,6 +148,7 @@ export function validMaterialUrl(value, mp4 = false) {
 }
 export async function validate(input) {
   const { hasRichText, normalizeRichBlocks } = await import('../content/rich-content.mjs');
+  const { normalizeTags } = await import('../content/tags.mjs');
   if (!input || input.version !== 1 || !Array.isArray(input.items) || input.items.length > 500) throw new Error('Неверный формат материалов.');
   const seen = new Set();
   const items = input.items.map(item => {
