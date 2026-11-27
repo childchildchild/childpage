@@ -548,7 +548,7 @@
       "type": "article",
       "cardType": "article",
       "cardStatus": "interesting",
-      "status": "published",
+      "status": "trashed",
       "title": "Как покрасить огонь",
       "description": "Почему пламя бывает жёлтым, зелёным и фиолетовым",
       "category": "for_all",
@@ -569,7 +569,9 @@
       "gameUrl": "",
       "linkedId": "",
       "publishedAt": "2026-11-25T06:32:29.083Z",
-      "updatedAt": "2026-11-27T13:44:32.658Z",
+      "updatedAt": "2026-11-27T15:15:04.344Z",
+      "deletedAt": "2026-11-27T15:15:04.344Z",
+      "previousStatus": "published",
       "bodyBlocks": [
         {
           "type": "paragraph",
