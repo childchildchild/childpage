@@ -463,7 +463,7 @@
       "type": "article",
       "cardType": "article",
       "cardStatus": "",
-      "status": "published",
+      "status": "trashed",
       "title": "Почему арбуз - это ягода?",
       "description": "Почему ботаники называют арбуз особенной ягодой",
       "category": "for_all",
@@ -485,7 +485,9 @@
       "gameUrl": "",
       "linkedId": "",
       "publishedAt": "2026-11-25T06:32:26.083Z",
-      "updatedAt": "2026-11-25T06:32:23.083Z"
+      "updatedAt": "2026-11-27T15:15:13.582Z",
+      "deletedAt": "2026-11-27T15:15:13.582Z",
+      "previousStatus": "published"
     },
     {
       "id": "planned-kolobok",
