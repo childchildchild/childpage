@@ -14,3 +14,11 @@ test('returns bounded results and handles an empty set',()=>{
   assert.equal(relatedMaterials(Array.from({length:12},(_,i)=>item(String(i))),current).length,6);
   assert.deepEqual(relatedMaterials([current],current),[]);
 });
+test('uses sticker bonuses to prefer interesting, then new, among equally related materials',()=>{
+  const matches=relatedMaterials([item('plain'),item('new',{cardStatus:'new'}),item('interesting',{cardStatus:'interesting'})],current);
+  assert.deepEqual(matches.map(i=>i.id),['interesting','new','plain']);
+});
+test('sticker bonuses do not outweigh topic or admit an unsuitable age',()=>{
+  const matches=relatedMaterials([item('other-topic',{category:'medicine',cardStatus:'interesting'}),item('same-topic'),item('older',{ages:['13+'],cardStatus:'interesting'})],current);
+  assert.deepEqual(matches.map(i=>i.id),['same-topic','other-topic']);
+});
