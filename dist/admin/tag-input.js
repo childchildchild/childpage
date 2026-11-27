@@ -11,6 +11,8 @@ export function createTagInput(root) {
   const options = root.querySelector('.tag-autocomplete');
   const suggestions = root.querySelector('.tag-suggestions');
   const suggestedList = root.querySelector('.tag-suggestions-list');
+  const suggestedNote = root.querySelector('.tag-suggestions-note') || document.createElement('p');
+  if(!suggestedNote.parentElement){suggestedNote.className='tag-suggestions-note';suggestedNote.setAttribute('role','status');suggestions.append(suggestedNote);}
   let tags = [];
   let catalog = [];
   let context = {};
@@ -59,10 +61,18 @@ export function createTagInput(root) {
   }
   function updateSuggestions() {
     const proposed=suggestTags(catalog,context,tags);
+    const hasText=Boolean((context.title||'').trim()||(context.description||'').trim()||(context.text||'').trim());
+    const note=tags.length>=10?'Добавлено 10 тем. Удалите ненужную тему, чтобы выбрать другую.'
+      : proposed.length?''
+      : !catalog.length?'Сохранённых тем пока нет. Добавьте тему вручную и сохраните материал — она появится в общем списке.'
+      : !hasText?'Добавьте название или текст материала — здесь появятся подходящие темы с кнопкой «+».'
+      : suggestTags(catalog,context,[],1).length?'Все подходящие темы уже добавлены.'
+      : 'Совпадений с существующими темами пока нет. Нужную тему можно добавить вручную в поле выше.';
+    suggestions.hidden=false;suggestedNote.hidden=!note;if(suggestedNote.textContent!==note)suggestedNote.textContent=note;
     const key=JSON.stringify(proposed.map(item=>item.tag));
     if(key===suggestionsKey){suggestedList.querySelectorAll('button').forEach(button=>{button.disabled=input.disabled||tags.length>=10;});return;}
     suggestionsKey=key;
-    suggestedList.replaceChildren(); suggestions.hidden=proposed.length===0;
+    suggestedList.replaceChildren();
     for(const item of proposed) {
       const button=document.createElement('button');button.type='button';button.className='tag-suggestion';button.disabled=input.disabled||tags.length>=10;button.setAttribute('aria-label',`Добавить тему «${item.tag}»`);
       const icon=document.createElement('i');icon.className='ph-bold ph-plus';icon.setAttribute('aria-hidden','true');

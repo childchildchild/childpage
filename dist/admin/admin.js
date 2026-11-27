@@ -2,7 +2,7 @@ import { initUI, syncSelects, ask } from './ui.js';
 import { initPhotoCarousel } from '../article-carousel.js?v=20261127-2';
 import { cropImage } from './crop.js';
 import { normalizeTags } from '../content-tags.js?v=20261127-1';
-import { createTagInput } from './tag-input.js?v=20261127-2';
+import { createTagInput } from './tag-input.js?v=20261127-3';
 
 const apiUrl = '/api/admin';
 const $ = selector => document.querySelector(selector);
