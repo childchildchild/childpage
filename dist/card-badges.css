@@ -7,5 +7,5 @@
 .card-status-badge i{flex:none;font-size:17px}
 .card-status-badge>span{min-width:0;text-wrap:balance}
 .card-status-new{background:#ff752b}
-.card-status-interesting{max-width:min(calc(100% - 20px),142px);background:#ff3034}
+.card-status-interesting{max-width:min(calc(100% - 20px),142px);background:#ff3034;font-size:clamp(13px,3.6cqw,15px);white-space:nowrap}
 @media(prefers-reduced-transparency:reduce){.card-type-badge{background:#fff;-webkit-backdrop-filter:none;backdrop-filter:none}}

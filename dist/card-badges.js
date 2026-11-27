@@ -8,7 +8,7 @@
   };
   const statuses = {
     new: { label: 'Новое', icon: 'sparkle' },
-    interesting: { label: 'Супер интересно', icon: 'fire' },
+    interesting: { label: 'Интересно', icon: 'fire' },
   };
 
   function badge(doc, className, data) {
