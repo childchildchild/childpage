@@ -6,7 +6,7 @@
       "type": "article",
       "cardType": "article",
       "cardStatus": "",
-      "status": "published",
+      "status": "trashed",
       "title": "Как правильно мыть руки",
       "description": "Три простых шага, которые помогут ребёнку научиться мыть руки",
       "category": "medicine",
@@ -28,7 +28,9 @@
       "gameUrl": "",
       "linkedId": "",
       "publishedAt": "2026-11-22T04:00:00+03:00",
-      "updatedAt": "2026-11-27T15:16:03.574Z",
+      "updatedAt": "2026-11-27T15:46:48.608Z",
+      "deletedAt": "2026-11-27T15:46:48.608Z",
+      "previousStatus": "published",
       "bodyBlocks": [
         {
           "type": "paragraph",
