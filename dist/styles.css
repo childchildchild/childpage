@@ -57,6 +57,7 @@ button{font:inherit;color:inherit}
 .age-art::before{content:'';position:absolute;z-index:0;top:calc(1cqw + 8px);right:2%;width:48%;aspect-ratio:1;border-radius:50%;background:var(--age-color);opacity:.7}
 /* The supplied square PNGs share the same transparent space above each portrait. */
 .age-art img{position:absolute;z-index:1;display:block;height:120.4%;width:auto;max-width:none;bottom:0;right:-5cqw}
+.age-orange .age-art img{right:-3cqw}
 .age-blue .age-art img{right:-.5cqw}
 .age-red .age-art img{right:-5.7cqw}
 @media(max-width:370px){.age-blue .age-art img{right:-5cqw}.age-red .age-art img{right:-12cqw}.age-red .age-copy h3{font-size:16px}}
