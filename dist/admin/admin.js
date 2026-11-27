@@ -359,7 +359,7 @@ function previewDocument(stylesheet) {
   const doc = frame.contentDocument;
   const css = new URL(`../${stylesheet}`, location.href).href;
   doc.open();
-  doc.write(`<!doctype html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="${css}"><link rel="stylesheet" href="${new URL("../card-badges.css?v=20261127-2", location.href).href}"><link rel="stylesheet" href="${new URL("../assets/phosphor/bold/style.css", location.href).href}"></head><body></body></html>`);
+  doc.write(`<!doctype html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="${css}"><link rel="stylesheet" href="${new URL("../card-badges.css?v=20261127-3", location.href).href}"><link rel="stylesheet" href="${new URL("../assets/phosphor/bold/style.css", location.href).href}"></head><body></body></html>`);
   doc.close();
   return doc;
 }
