@@ -1,8 +1,12 @@
 @font-face{font-family:Roboto;src:url('assets/Roboto.ttf') format('truetype');font-display:swap}
 :root{--paper:#fffdfb;--lavender:#cbcced;color:#050505;font-family:Roboto,Arial,sans-serif}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;padding-top:env(safe-area-inset-top,0px);background:var(--paper)}
+body{margin:0;padding-top:env(safe-area-inset-top,0px);background:var(--paper);overflow-x:clip}
 .catalog-page{width:100%;max-width:430px;min-height:100svh;margin:auto;padding-bottom:env(safe-area-inset-bottom,0px);container-type:inline-size}
+html.article-entering .catalog-page{animation:catalog-slide-in 280ms cubic-bezier(.22,.61,.36,1) both}
+@keyframes catalog-slide-in{from{transform:translateX(100%)}to{transform:translateX(0)}}
+@media(prefers-reduced-motion:reduce){html.article-entering .catalog-page{animation:none}}
+html[data-reduce-motion="true"] .catalog-page{animation:none}
 .catalog-header{position:relative;display:grid;place-items:center;min-height:48px;margin:44px 18px 22px;padding:0 52px}.catalog-header h1{margin:0;font-size:32px;line-height:1.1;font-weight:700;text-align:center;overflow-wrap:anywhere}.catalog-header a{position:absolute;left:0;top:50%;transform:translateY(-50%);width:44px;height:44px;display:grid;place-items:center;color:inherit;text-decoration:none}.catalog-header svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
 .catalog-content{padding:0 18px 60px}.catalog-controls{display:flex;gap:10px;margin-bottom:26px}.catalog-controls label{flex:1;display:grid;gap:7px;font-size:13px;font-weight:700}.catalog-controls select{width:100%;min-height:43px;padding:0 12px;border:0;border-radius:12px;background:#efeff6;font:inherit;font-size:14px}
 .catalog-grid{display:grid;grid-template-columns:1fr 1fr;gap:25px 14px}.catalog-card{min-width:0}.catalog-card a{color:inherit;text-decoration:none}.catalog-image{width:100%;aspect-ratio:1.18;display:grid;place-items:center;overflow:hidden;border-radius:min(20px,4.7cqw);background:#eee;color:#888;font-size:13px;text-align:center}.catalog-image img{width:100%;height:100%;object-fit:cover}.catalog-kind{display:block;margin:9px 0 4px;color:#7369bb;font-size:12px;font-weight:700}.catalog-card h2{margin:0 0 5px;font-size:19px;line-height:1.1}.catalog-card p{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;margin:0;color:#555;font-size:14px;line-height:1.25}.catalog-empty{padding:30px 10px;color:#777;text-align:center}
