@@ -1,12 +1,35 @@
+import '../card-badges.js?v=20261127-2';
+
 const icon = name => `<i class="ph-bold ph-${name}" aria-hidden="true"></i>`;
 const selects = new Map();
 let opened;
-export function syncSelects() { for (const [select, ui] of selects) { ui.button.querySelector('span').textContent = select.selectedOptions[0]?.textContent || 'Выберите'; ui.button.disabled = select.disabled; } }
+function optionPresentation(select, option) {
+  const content=document.createElement('span');content.className='select-presentation';
+  if(!option){content.textContent='Выберите';return content;}
+  if(select.id==='rich-color'){
+    const swatch=document.createElement('span');swatch.className='select-color-swatch';swatch.style.backgroundColor=option.value;swatch.setAttribute('aria-hidden','true');content.append(swatch);
+  }
+  if(select.name==='cardType'||(select.name==='cardStatus'&&option.value)){
+    const visual=document.createElement('span');
+    window.childpageCardBadges.decorate(visual,{type:select.form?.elements.type.value||'article',category:select.form?.elements.category.value,cardType:select.name==='cardType'?option.value:undefined,cardStatus:select.name==='cardStatus'?option.value:undefined});
+    content.append(visual.querySelector(select.name==='cardType'?'.card-type-badge':'.card-status-badge'));
+    if(select.name==='cardType'&&!option.value){const note=document.createElement('small');note.textContent='Автоматически';content.append(note);}
+  }else{const label=document.createElement('span');label.className='select-option-label';label.textContent=option.textContent;content.append(label);}
+  return content;
+}
+export function syncSelects() {
+  for (const [select, ui] of selects) {
+    const option=select.selectedOptions[0];
+    const signature=JSON.stringify([option?.value,option?.textContent,select.name==='cardType'?select.form?.elements.type.value:'',select.name==='cardType'?select.form?.elements.category.value:'']);
+    if(signature!==ui.signature){ui.button.querySelector('.select-presentation').replaceWith(optionPresentation(select,option));ui.signature=signature;}
+    ui.button.disabled=select.disabled;
+  }
+}
 function closeSelect() { if (!opened) return; opened.menu.remove(); opened.button.setAttribute('aria-expanded', 'false'); opened.button.removeAttribute('aria-activedescendant'); opened = null; }
 function enhanceSelect(select, index) {
   const button = document.createElement('button');
   button.type = 'button'; button.className = 'select-trigger'; button.id = `select-control-${index}`;
-  button.innerHTML = `<span></span>${icon('caret-down')}`;
+  button.append(optionPresentation(select,select.selectedOptions[0]));button.insertAdjacentHTML('beforeend',icon('caret-down'));
   button.setAttribute('role', 'combobox'); button.setAttribute('aria-haspopup', 'listbox'); button.setAttribute('aria-expanded', 'false');
   button.setAttribute('aria-label', select.getAttribute('aria-label') || select.closest('label')?.childNodes[0]?.textContent.trim() || 'Выберите значение');
   select.hidden = true; select.after(button);
@@ -20,7 +43,7 @@ function enhanceSelect(select, index) {
     const options = [...select.options];
     const setActive = value => { active = value; [...menu.children].forEach((row, i) => row.classList.toggle('highlighted', i === active)); button.setAttribute('aria-activedescendant', `${menu.id}-${active}`); menu.children[active]?.scrollIntoView({block:'nearest'}); };
     const choose = i => { if (options[i].disabled) return; select.value = options[i].value; select.dispatchEvent(new Event('input', {bubbles:true})); select.dispatchEvent(new Event('change', {bubbles:true})); closeSelect(); syncSelects(); button.focus(); };
-    options.forEach((option, i) => { const row = document.createElement('div'); row.id = `${menu.id}-${i}`; row.className = 'select-option'; row.setAttribute('role', 'option'); row.setAttribute('aria-selected', String(option.selected)); row.setAttribute('aria-disabled', String(option.disabled)); const text = document.createElement('span'); text.textContent = option.textContent; row.append(text); if (option.selected) row.insertAdjacentHTML('beforeend', icon('check')); row.addEventListener('mousedown', e => e.preventDefault()); row.addEventListener('click', () => choose(i)); menu.append(row); });
+    options.forEach((option, i) => { const row = document.createElement('div'); row.id = `${menu.id}-${i}`; row.className = 'select-option'; row.setAttribute('role', 'option'); row.setAttribute('aria-label',option.textContent); row.setAttribute('aria-selected', String(option.selected)); row.setAttribute('aria-disabled', String(option.disabled)); row.append(optionPresentation(select,option)); if (option.selected) row.insertAdjacentHTML('beforeend', icon('check')); row.addEventListener('mousedown', e => e.preventDefault()); row.addEventListener('click', () => choose(i)); menu.append(row); });
     (select.closest('dialog') || document.body).append(menu);
     const rect = button.getBoundingClientRect(); const height = Math.min(280, menu.scrollHeight); const below = innerHeight - rect.bottom - 12;
     menu.style.width = `${Math.min(Math.max(rect.width, 190), innerWidth - 24)}px`; menu.style.left = `${Math.max(12, Math.min(rect.left, innerWidth - parseFloat(menu.style.width) - 12))}px`;

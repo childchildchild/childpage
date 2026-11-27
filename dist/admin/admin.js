@@ -1,4 +1,4 @@
-import { initUI, syncSelects, ask } from './ui.js';
+import { initUI, syncSelects, ask } from './ui.js?v=20261127-2';
 import { initPhotoCarousel } from '../article-carousel.js?v=20261127-2';
 import { cropImage } from './crop.js';
 import { normalizeTags } from '../content-tags.js?v=20261127-1';
