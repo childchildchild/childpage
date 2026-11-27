@@ -14,6 +14,26 @@
   <script src="preferences.js?v=20261122-1"></script>
   <script src="article-navigation.js?v=20261127-1"></script>
   <style>html,body{background:#cbcced linear-gradient(to bottom,#cbcced 0,#cbcced 45svh,#fffdfb 75svh,#fffdfb 100%)}</style>
+  <style>
+    .site-loader{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;background:#cbcced;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .24s ease,visibility .24s}
+    .is-loading .site-loader{opacity:1;visibility:visible;pointer-events:auto}
+    .site-loader-ring{display:block;width:36px;height:36px;border:3px solid #315dca45;border-top-color:#315dca;border-radius:50%;animation:loader-turn .8s linear infinite}
+    @keyframes loader-turn{to{transform:rotate(360deg)}}
+    @media(prefers-reduced-motion:reduce){.site-loader,.site-loader-ring{animation:none;transition:none}}
+  </style>
+  <script>
+    document.documentElement.classList.add('is-loading');
+    (()=>{
+      const finish=()=>document.documentElement.classList.remove('is-loading');
+      const limit=setTimeout(finish,3500);
+      addEventListener('pageshow',event=>{if(event.persisted){clearTimeout(limit);finish();}});
+      addEventListener('DOMContentLoaded',()=>{
+        const images=[...document.querySelectorAll('.first-screen img')].map(img=>img.complete?Promise.resolve():img.decode().catch(()=>{}));
+        Promise.race([Promise.allSettled([...images,document.fonts.ready]),new Promise(resolve=>setTimeout(resolve,2200))])
+          .then(()=>requestAnimationFrame(()=>requestAnimationFrame(()=>{clearTimeout(limit);finish();})));
+      },{once:true});
+    })();
+  </script>
   <title>Детская страница</title>
   <link rel="stylesheet" href="styles.css?v=20261127-25">
   <link rel="stylesheet" href="stories.css?v=20261127-2">
@@ -31,6 +51,7 @@
   <script src="menu-pages.js?v=20261125-2" defer></script>
 </head>
 <body>
+  <div class="site-loader" role="status" aria-label="Загрузка страницы"><span class="site-loader-ring" aria-hidden="true"></span></div>
   <main class="page">
     <div class="first-screen">
     <section class="hero" aria-labelledby="page-title">
