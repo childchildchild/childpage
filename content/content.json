@@ -405,7 +405,7 @@
       "type": "article",
       "cardType": "article",
       "cardStatus": "",
-      "status": "published",
+      "status": "trashed",
       "title": "Мир глазами животных",
       "description": "Почему кошка видит в сумерках, а пчела замечает узоры на цветах",
       "category": "for_all",
@@ -427,7 +427,9 @@
       "gameUrl": "",
       "linkedId": "",
       "publishedAt": "2026-11-25T06:32:24.083Z",
-      "updatedAt": "2026-11-25T06:32:23.083Z"
+      "updatedAt": "2026-11-27T15:15:21.821Z",
+      "deletedAt": "2026-11-27T15:15:21.821Z",
+      "previousStatus": "published"
     },
     {
       "id": "planned-geolocation",
