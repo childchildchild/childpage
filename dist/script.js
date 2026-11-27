@@ -1,4 +1,5 @@
 const toolbar = document.querySelector('#floating-toolbar');
+const backToTop = document.querySelector('#back-to-top');
 const prefersLessMotion = () => window.childpagePreferences?.prefersReducedMotion() || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const sourceToolbar = document.querySelector('#content-toolbar');
 let toolbarFrame = 0;
@@ -12,6 +13,9 @@ const updateFloatingToolbar = () => {
   toolbar.classList.toggle('visible', shouldShow);
   toolbar.setAttribute('aria-hidden', String(!shouldShow));
   toolbar.inert = !shouldShow;
+  backToTop.classList.toggle('visible', shouldShow);
+  backToTop.setAttribute('aria-hidden', String(!shouldShow));
+  backToTop.inert = !shouldShow;
 };
 
 window.addEventListener('scroll', () => {
@@ -22,6 +26,9 @@ window.addEventListener('resize', updateFloatingToolbar);
 window.addEventListener('pageshow', updateFloatingToolbar);
 updateFloatingToolbar();
 document.documentElement.classList.add('scroll-reveal');
+backToTop.addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: prefersLessMotion() ? 'instant' : 'smooth' });
+});
 
 const searchScreen = document.querySelector('#search-screen');
 const searchInput = document.querySelector('#search-input');
