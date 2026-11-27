@@ -52,6 +52,9 @@ export function ask({title, message, action = 'Продолжить', danger = f
   return new Promise(resolve => dialog.addEventListener('close', () => resolve(dialog.returnValue === 'accept' ? (input ? field.querySelector('input').value : true) : (input ? null : false)), {once:true}));
 }
 export function initUI(updatePreview) {
+  document.querySelector('#action-dialog input').addEventListener('keydown', event => {
+    if (event.key === 'Enter') { event.preventDefault(); event.currentTarget.form.requestSubmit(event.currentTarget.form.querySelector('[value="accept"]')); }
+  });
   document.querySelectorAll('select').forEach(enhanceSelect); syncSelects();
   document.querySelectorAll('dialog').forEach(dialog => new MutationObserver(() => { closeSelect(); syncSelects(); }).observe(dialog, {attributes:true,attributeFilter:['open']}));
   document.addEventListener('mousedown', e => { if (opened && !opened.menu.contains(e.target) && !opened.button.contains(e.target)) closeSelect(); });
