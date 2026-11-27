@@ -130,9 +130,9 @@
       "cardType": "",
       "cardStatus": "",
       "status": "published",
-      "title": "Сказка на ночь",
-      "description": "Выберите короткую сказку и попробуйте читать её по ролям. Какой герой понравится тебе больше всего?",
-      "category": "tales",
+      "title": "Сколько песка на земле?",
+      "description": "На пляжах по всей планете огромное количество песка. Задумывался ли ты, как его посчитать?",
+      "category": "for_all",
       "ages": [
         "0-3",
         "4-12"
@@ -142,15 +142,15 @@
         "чтение",
         "перед сном"
       ],
-      "image": "assets/story_tale.png",
+      "image": "assets/uploads/1795797733020-6ldq73q4.webp",
       "imageAlt": "",
-      "label": "Вместе почитаем",
+      "label": "Интересно",
       "body": "",
-      "mediaUrl": "",
+      "mediaUrl": "assets/uploads/1795797667113-olc43np5.mp4",
       "gameUrl": "",
-      "linkedId": "planned-dinosaurs",
+      "linkedId": "item-1c6a9427-9f87-4342-97c0-a80572cde6f1",
       "publishedAt": "2026-11-22T04:02:00+03:00",
-      "updatedAt": "2026-11-22T02:18:18.495Z"
+      "updatedAt": "2026-11-27T16:42:21.049Z"
     },
     {
       "id": "story-stars",
