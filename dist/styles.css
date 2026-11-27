@@ -52,10 +52,10 @@ button{font:inherit;color:inherit}
 .section>h2{margin:0 0 30px;text-align:center;font-size:42px;line-height:1;font-weight:700}
 .ages{padding-top:20px}
 .ages>h2{font-size:7.4cqw;margin-bottom:24px}
-.age-card{width:100%;aspect-ratio:2/1;min-height:180px;position:relative;margin-bottom:4cqw;overflow:visible;border-radius:6.5cqw;background:#f4f4f4}
-.age-orange{--age-color:#ff752b;--age-shape:url('assets/optimized/ellipse_under_1.webp')}.age-blue{--age-color:#2f68f3;--age-shape:url('assets/optimized/ellipse_under_2.webp')}.age-red{--age-color:#ff3034;--age-shape:url('assets/optimized/ellipse_under_3.webp')}
+.age-card{width:100%;aspect-ratio:2/1;min-height:180px;position:relative;margin-bottom:4cqw;overflow:visible;border-radius:6.5cqw;background:var(--age-card-background);color:#fff}
+.age-orange{--age-color:#ff752b;--age-card-background:#5b382d;--age-shape:url('assets/optimized/ellipse_under_1.webp')}.age-blue{--age-color:#2f68f3;--age-card-background:#202d49;--age-shape:url('assets/optimized/ellipse_under_2.webp')}.age-red{--age-color:#ff3034;--age-card-background:#4b2022;--age-shape:url('assets/optimized/ellipse_under_3.webp')}
 .age-art{position:absolute;z-index:1;inset:-1cqw 0 0;overflow:hidden;border-radius:0 0 6.5cqw 6.5cqw;pointer-events:none}
-.age-art::before{content:'';position:absolute;z-index:0;top:calc(1cqw + 9.5px);right:calc(2% + 1.5px);width:calc(48% - 3px);aspect-ratio:1;background:var(--age-color);-webkit-mask:var(--age-shape) center/contain no-repeat;mask:var(--age-shape) center/contain no-repeat;opacity:.8}
+.age-art::before{content:'';position:absolute;z-index:0;top:calc(1cqw + 9.5px);right:calc(2% + 1.5px);width:calc(48% - 3px);aspect-ratio:1;background:var(--age-color);-webkit-mask:var(--age-shape) center/contain no-repeat;mask:var(--age-shape) center/contain no-repeat}
 /* The supplied square PNGs share the same transparent space above each portrait. */
 .age-art img{position:absolute;z-index:1;display:block;height:120.4%;width:auto;max-width:none;bottom:0;right:-5cqw}
 .age-orange .age-art img{right:-3cqw}
@@ -66,9 +66,9 @@ button{font:inherit;color:inherit}
 .age-label{display:inline-block;padding:1.3cqw 2.3cqw 1.1cqw;border-radius:4cqw 3px 4cqw 3px;background:var(--age-color);color:white;font:400 4.9cqw/1 Arco,sans-serif;transform:rotate(-2.5deg)}
 .age-text{align-self:center}
 .age-copy h3{margin:0 0 1.9cqw;font-size:clamp(18px,4.65cqw,20px);line-height:1.15}
-.age-copy p{max-width:44cqw;margin:0;font-size:clamp(14px,3.6cqw,16px);line-height:1.3;color:#292929}
+.age-copy p{max-width:44cqw;margin:0;font-size:clamp(14px,3.6cqw,16px);line-height:1.3;color:inherit}
 .age-copy button,.age-copy .age-link{width:32.3cqw;min-width:108px;height:44px;border:0;border-radius:24px;background:white;font-size:clamp(16px,4.2cqw,18px);font-weight:700;cursor:pointer}
-.age-copy .age-link{display:grid;place-items:center;color:inherit;text-decoration:none}
+.age-copy .age-link{display:grid;place-items:center;color:#171717;text-decoration:none}
 .latest{padding-bottom:max(92px,calc(env(safe-area-inset-bottom,0px) + 84px))}
 .latest-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px 14px}
 .latest-card{min-width:0}
