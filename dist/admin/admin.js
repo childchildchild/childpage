@@ -1,3 +1,4 @@
+import { initUI, syncSelects, ask } from './ui.js';
 import { cropImage } from './crop.js';
 
 const apiUrl = '/api/admin';
@@ -41,9 +42,9 @@ function updateSaveState() {
   if (state.textContent !== message) state.textContent = message;
   state.classList.toggle('has-changes', editorHasChanges());
 }
-function allowNavigation() {
+async function allowNavigation() {
   if (mutationBusy) { notice('Дождитесь завершения операции.'); return false; }
-  return !editorHasChanges() || confirm('Есть несохранённые изменения. Выйти без сохранения?');
+  return !editorHasChanges() || await ask({title:'Выйти без сохранения?', message:'В материале есть изменения. Сохраните их перед выходом или продолжите без сохранения.', action:'Выйти без сохранения', danger:true});
 }
 function invalidateEditorMedia() {
   clearTimeout(previewTimer);
@@ -82,8 +83,8 @@ function endMutation() {
   $('#crop-cover').disabled = !contentForm.elements.image.value.trim();
   updateSaveState();
 }
-function showList(force = false, keepNotice = false) {
-  if (!force && !allowNavigation()) return;
+async function showList(force = false, keepNotice = false) {
+  if (!force && !(await allowNavigation())) return;
   if (!keepNotice) { clearTimeout(noticeTimer); $('#notice').classList.remove('show', 'error'); }
   const focusId = currentId;
   invalidateEditorMedia();
@@ -447,7 +448,7 @@ function renderList() {
     const meta = document.createElement('small');
     meta.textContent = labels[item.type] + (item.publishedAt && item.status === 'published' ? ` · ${new Date(item.publishedAt).toLocaleDateString('ru-RU')}` : '');
     main.append(title, meta);
-    const arrow = document.createElement('span'); arrow.className = 'item-arrow'; arrow.textContent = '›';
+    const arrow = document.createElement('span'); arrow.className = 'item-arrow'; arrow.textContent = 'Редактировать';
     row.append(thumb, main, statusBadge(item.status), arrow);
     list.append(row);
   }
@@ -641,7 +642,7 @@ function updatePreview() {
   const item = readForm('draft');
   if (pendingCoverUrl) item.image = pendingCoverUrl;
   $('#crop-cover').disabled = mutationBusy || !item.image;
-  $('.editor-grid').classList.toggle('preview-expanded', previewMode === 'page');
+  syncSelects();
   for (const button of document.querySelectorAll('[data-preview-view]')) button.classList.toggle('active', button.dataset.previewView === previewMode);
   const frame = $('#site-preview');
   const oldScroll = frame.contentDocument?.body?.dataset.previewMode === previewMode ? frame.contentWindow.scrollY : 0;
@@ -659,8 +660,8 @@ function updatePreview() {
   if (path) { const img = document.createElement('img'); img.src = path; img.alt = ''; img.addEventListener('error', () => { if (img.isConnected) imagePreview.textContent = 'Фото не загрузилось. Проверьте ссылку.'; }, { once: true }); imagePreview.append(img); }
   else imagePreview.textContent = 'Нет изображения';
 }
-function openEditor(id = '', type = 'article', force = false) {
-  if (!force && !allowNavigation()) return;
+async function openEditor(id = '', type = 'article', force = false) {
+  if (!force && !(await allowNavigation())) return;
   if (!force) { clearTimeout(noticeTimer); $('#notice').classList.remove('show', 'error'); }
   if (!editorOpen()) listScrollY = window.scrollY;
   invalidateEditorMedia();
@@ -782,7 +783,7 @@ async function persistContent(updated) {
 async function removeItem() {
   if (mutationBusy) return;
   const item = content.items.find(record => record.id === currentId);
-  if (!item || item.status === 'trashed' || !confirm(`Переместить «${item.title || 'Без названия'}» в корзину? Его можно будет восстановить в течение 7 дней.`)) return;
+  if (!item || item.status === 'trashed' || !(await ask({title:'Переместить в корзину?', message:`«${item.title || 'Без названия'}» можно будет восстановить в течение 7 дней.`, action:'В корзину', danger:true}))) return;
   const trashedItem = { ...item, status: 'trashed', previousStatus: item.status, deletedAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
   const updated = { version: 1, items: content.items.map(record => record.id === item.id ? trashedItem : record) };
   if (!beginMutation('Перемещаю в корзину…')) return;
@@ -809,7 +810,7 @@ async function restoreItem(id) {
 async function deletePermanently(id) {
   if (mutationBusy) return;
   const item = content.items.find(record => record.id === id && record.status === 'trashed');
-  if (!item || !confirm(`Удалить «${item.title || 'Без названия'}» навсегда? Восстановить его будет нельзя.`)) return;
+  if (!item || !(await ask({title:'Удалить навсегда?', message:`«${item.title || 'Без названия'}» нельзя будет восстановить.`, action:'Удалить навсегда', danger:true}))) return;
   const updated = { version: 1, items: content.items.filter(record => record.id !== id) };
   if (!beginMutation('Удаляю материал…')) return;
   try { await persistContent(updated); notice('Материал удалён навсегда.'); }
@@ -1034,13 +1035,13 @@ $('#login-form').addEventListener('submit', async event => {
   finally { button.disabled = false; }
 });
 $('#logout').addEventListener('click', async () => {
-  if (!allowNavigation() || !beginMutation('Выхожу из панели…')) return;
+  if (!(await allowNavigation()) || !beginMutation('Выхожу из панели…')) return;
   try { await request('logout', {}); typeFilter = 'all'; listScrollY = 0; showList(true); currentId = ''; setView(false); }
   catch (error) { notice(error.message, true); }
   finally { endMutation(); }
 });
-document.querySelectorAll('.side-nav button').forEach(button => button.addEventListener('click', () => {
-  if (!allowNavigation()) return;
+document.querySelectorAll('.side-nav button').forEach(button => button.addEventListener('click', async () => {
+  if (!(await allowNavigation())) return;
   typeFilter = button.dataset.filter;
   listScrollY = 0;
   showList(true);
@@ -1089,11 +1090,11 @@ document.querySelectorAll('.upload-label').forEach(label => {
 window.addEventListener('beforeunload', event => {
   if (editorHasChanges() || mutationBusy) { event.preventDefault(); event.returnValue = ''; }
 });
-document.addEventListener('click', event => {
+document.addEventListener('click', async event => {
   const link = event.target.closest('a[href]');
   if (!link || event.defaultPrevented || event.ctrlKey || event.metaKey || event.shiftKey || event.button !== 0 || link.target === '_blank' || link.getAttribute('href').startsWith('#')) return;
-  if (!allowNavigation()) event.preventDefault();
-  else savedEditorSnapshot = '';
+  event.preventDefault();
+  if (await allowNavigation()) { savedEditorSnapshot = ''; location.assign(link.href); }
 });
 $('#image-preview').addEventListener('dragover', event => {
   event.preventDefault();
@@ -1137,12 +1138,14 @@ $('#rich-color').addEventListener('change', event => {
   updatePreview();
 });
 $('#rich-insert-link').addEventListener('mousedown', event => event.preventDefault());
-$('#rich-insert-link').addEventListener('click', () => {
+$('#rich-insert-link').addEventListener('click', async () => {
   restoreEditorSelection();
   if (!window.getSelection()?.toString()) { notice('Сначала выделите текст для ссылки.', true); return; }
-  const value = prompt('Введите HTTPS-ссылку');
+  rememberEditorSelection();
+  const value = await ask({title:'Добавить ссылку', message:'Ссылка откроется при нажатии на выделенный текст.', action:'Добавить ссылку', input:true});
   if (value === null) return;
   try {
+    restoreEditorSelection();
     document.execCommand('createLink', false, httpsUrl(value));
     rememberEditorSelection();
     updatePreview();
@@ -1173,3 +1176,5 @@ try {
   setView(false);
   if (error.status !== 401) notice(error.message, true);
 }
+
+initUI(updatePreview);
