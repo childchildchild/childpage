@@ -24,8 +24,11 @@
       "linkedId": "",
       "publishedAt": "2026-11-22T04:00:00+03:00",
       "updatedAt": "2026-11-22T04:00:00+03:00",
-      "cardType": "article",
-      "cardStatus": ""
+      "tags": [
+        "здоровье",
+        "гигиена",
+        "мытье рук"
+      ]
     },
     {
       "id": "story-hands",
@@ -292,8 +295,12 @@
           ]
         }
       ],
-      "cardType": "article",
-      "cardStatus": ""
+      "tags": [
+        "животные",
+        "кошки",
+        "питомцы",
+        "генетика"
+      ]
     },
     {
       "id": "planned-stars",
@@ -317,8 +324,11 @@
       "linkedId": "",
       "publishedAt": "2026-11-25T06:32:23.083Z",
       "updatedAt": "2026-11-25T06:32:23.083Z",
-      "cardType": "article",
-      "cardStatus": ""
+      "tags": [
+        "космос",
+        "астрономия",
+        "звезды"
+      ]
     },
     {
       "id": "planned-animals",
@@ -342,8 +352,12 @@
       "linkedId": "",
       "publishedAt": "2026-11-25T06:32:24.083Z",
       "updatedAt": "2026-11-25T06:32:23.083Z",
-      "cardType": "article",
-      "cardStatus": ""
+      "tags": [
+        "животные",
+        "зрение",
+        "кошки",
+        "природа"
+      ]
     },
     {
       "id": "planned-geolocation",
@@ -367,8 +381,12 @@
       "linkedId": "",
       "publishedAt": "2026-11-25T06:32:25.083Z",
       "updatedAt": "2026-11-25T06:32:23.083Z",
-      "cardType": "article",
-      "cardStatus": ""
+      "tags": [
+        "технологии",
+        "геолокация",
+        "спутники",
+        "карты"
+      ]
     },
     {
       "id": "planned-watermelon",
@@ -392,8 +410,12 @@
       "linkedId": "",
       "publishedAt": "2026-11-25T06:32:26.083Z",
       "updatedAt": "2026-11-25T06:32:23.083Z",
-      "cardType": "article",
-      "cardStatus": ""
+      "tags": [
+        "растения",
+        "ботаника",
+        "плоды",
+        "еда"
+      ]
     },
     {
       "id": "planned-kolobok",
@@ -417,8 +439,11 @@
       "linkedId": "",
       "publishedAt": "2026-11-25T06:32:27.083Z",
       "updatedAt": "2026-11-25T06:32:23.083Z",
-      "cardType": "tale",
-      "cardStatus": ""
+      "tags": [
+        "сказки",
+        "народные сказки",
+        "колобок"
+      ]
     },
     {
       "id": "planned-anatomy",
@@ -442,8 +467,11 @@
       "linkedId": "",
       "publishedAt": "2026-11-25T06:32:28.083Z",
       "updatedAt": "2026-11-25T06:32:23.083Z",
-      "cardType": "article",
-      "cardStatus": "new"
+      "tags": [
+        "здоровье",
+        "человек",
+        "анатомия"
+      ]
     },
     {
       "id": "planned-fire",
@@ -532,8 +560,12 @@
           ]
         }
       ],
-      "cardType": "article",
-      "cardStatus": "interesting"
+      "tags": [
+        "химия",
+        "огонь",
+        "опыты",
+        "цвета"
+      ]
     },
     {
       "id": "item-a6fde8f7-009a-4522-8d5b-8bbaa0144f92",
@@ -1020,8 +1052,12 @@
           ]
         }
       ],
-      "cardType": "article",
-      "cardStatus": ""
+      "tags": [
+        "животные",
+        "собаки",
+        "питомцы",
+        "овчарки"
+      ]
     }
   ]
 }

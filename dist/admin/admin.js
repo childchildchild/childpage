@@ -2,7 +2,7 @@ import { initUI, syncSelects, ask } from './ui.js';
 import { initPhotoCarousel } from '../article-carousel.js?v=20261127-2';
 import { cropImage } from './crop.js';
 import { normalizeTags } from '../content-tags.js?v=20261127-1';
-import { createTagInput } from './tag-input.js?v=20261127-1';
+import { createTagInput } from './tag-input.js?v=20261127-2';
 
 const apiUrl = '/api/admin';
 const $ = selector => document.querySelector(selector);
@@ -638,6 +638,7 @@ function updatePreview() {
   updateStoryVideoPreview();
   const item = readForm('draft');
   if (pendingCoverUrl) item.image = pendingCoverUrl;
+  tagsControl.setContext({items:content.items,title:item.title,description:item.description,text:item.type==='article'?articleEditor.innerText:''});
   $('#crop-cover').disabled = mutationBusy || !item.image;
   syncSelects();
   for (const button of document.querySelectorAll('[data-preview-view]')) button.classList.toggle('active', button.dataset.previewView === previewMode);

@@ -9,6 +9,7 @@ const root = dirname(fileURLToPath(import.meta.url));
 const dist = join(root, 'dist');
 const source = JSON.parse(await readFile(join(root, 'content', 'content.json'), 'utf8'));
 await writeFile(join(dist, 'content-tags.js'), await readFile(join(root, 'content', 'tags.mjs'), 'utf8'));
+await writeFile(join(dist, 'tag-suggestions.js'), (await readFile(join(root, 'content', 'tag-suggestions.mjs'), 'utf8')).replace("from './tags.mjs'", "from './content-tags.js?v=20261127-1'"));
 const optimizedImages = JSON.parse(await readFile(join(root, 'content', 'optimized-images.json'), 'utf8'));
 if (source.version !== 1 || !Array.isArray(source.items)) throw new Error('Invalid content/content.json');
 
