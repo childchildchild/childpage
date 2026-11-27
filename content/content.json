@@ -492,7 +492,7 @@
       "type": "article",
       "cardType": "tale",
       "cardStatus": "",
-      "status": "published",
+      "status": "trashed",
       "title": "Сказка «Колобок»",
       "description": "Знакомая сказка о смелом путешественнике и хитрой лисе",
       "category": "tales",
@@ -513,7 +513,9 @@
       "gameUrl": "",
       "linkedId": "",
       "publishedAt": "2026-11-25T06:32:27.083Z",
-      "updatedAt": "2026-11-25T06:32:23.083Z"
+      "updatedAt": "2026-11-27T15:15:08.815Z",
+      "deletedAt": "2026-11-27T15:15:08.815Z",
+      "previousStatus": "published"
     },
     {
       "id": "planned-anatomy",
