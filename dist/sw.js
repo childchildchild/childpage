@@ -1,4 +1,4 @@
-const CACHE_NAME = 'childpage-shell-20261127-17';
+const CACHE_NAME = 'childpage-shell-20261127-18';
 const SHELL = [
   'index.html',
   'styles.css',

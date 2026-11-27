@@ -1,6 +1,6 @@
 @font-face{font-family:Arco;src:url('assets/arco.ttf') format('truetype');font-display:swap}
 @font-face{font-family:Roboto;src:url('assets/Roboto.ttf') format('truetype');font-display:swap}
-:root{--paper:#fffdfb;--red:#ff3034;--purple:#7530ff;--muted:#efefef}
+:root{--paper:#fffdfb;--red:#ff3034;--purple:#7530ff;--muted:#f4f4f4}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;min-height:100%;background:var(--paper)}
 body{font-family:Roboto,Arial,sans-serif;color:#050505;padding-top:env(safe-area-inset-top,0px)}
@@ -11,7 +11,7 @@ body{font-family:Roboto,Arial,sans-serif;color:#050505;padding-top:env(safe-area
 .header-title{position:absolute;top:70px;left:45px;right:45px;display:grid;place-items:center;height:38px;font-size:25px;line-height:1;font-weight:700}
 .activity-header h1{margin:82px 0 0;font-size:clamp(36px,11cqw,48px);line-height:1;font-weight:700;white-space:nowrap}
 .progress{--progress:0%;position:relative;width:69%;height:54px;margin:25px auto 0;text-align:center}
-.progress-track{position:relative;top:0;width:100%;height:10px;border-radius:10px;background:#eee;box-shadow:0 6px 0 #e5e4e2;overflow:hidden}
+.progress-track{position:relative;top:0;width:100%;height:10px;border-radius:10px;background:#f3f3f3;box-shadow:0 6px 0 #e5e4e2;overflow:hidden}
 .progress-fill{display:block;width:var(--progress);height:100%;border-radius:10px;background:#ffdb00}
 .progress-star{position:absolute;top:-12px;left:clamp(17px,var(--progress),calc(100% - 17px));width:34px;height:34px;transform:translateX(-50%);fill:#ffb327}
 .progress-number{position:absolute;top:21px;left:clamp(17px,var(--progress),calc(100% - 17px));width:34px;transform:translateX(-50%);color:#ffb327;font:400 24px/1 Arco,sans-serif}
@@ -45,7 +45,7 @@ body{font-family:Roboto,Arial,sans-serif;color:#050505;padding-top:env(safe-area
 .dialog-back{position:absolute;top:max(70px,env(safe-area-inset-top,0px));left:20px;width:38px;height:38px;display:grid;place-items:center;padding:0;border:0;background:none;color:inherit;cursor:pointer}
 .dialog-back svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
 .activity-dialog h2{margin:82px 0 0;font-size:clamp(36px,11cqw,48px);line-height:1}
-.activity-placeholder{display:grid;place-items:center;width:150px;height:150px;margin:75px auto 20px;border-radius:50%;background:#efefef}
+.activity-placeholder{display:grid;place-items:center;width:150px;height:150px;margin:75px auto 20px;border-radius:50%;background:#f4f4f4}
 .activity-placeholder img,.activity-placeholder svg{width:70%;height:70%;object-fit:contain}
 .activity-dialog p{margin:0;color:#595959;font-size:20px;line-height:1.2}
 .complete-button{width:min(100%,300px);min-height:60px;margin:auto auto 0;border:0;border-radius:30px;background:var(--red);color:white;font:400 26px/1 Arco,sans-serif;cursor:pointer}
