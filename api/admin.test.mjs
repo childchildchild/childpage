@@ -1,6 +1,24 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import handler, { validImageBytes, validStoryVideoBytes } from './admin.js';
+import handler, { validImageBytes, validStoryVideoBytes, validate } from './admin.js';
+
+test('keeps card badges separate from publication status when saving content', async () => {
+  const item = { id: 'badge-example', type: 'article', status: 'published', title: 'Example', description: 'Description', body: 'Article text', publishedAt: '2026-11-27T00:00:00Z', cardType: 'tale', cardStatus: 'interesting' };
+  const saved = await validate({ version: 1, items: [item] });
+  assert.equal(saved.items[0].status, 'published');
+  assert.equal(saved.items[0].type, 'article');
+  assert.equal(saved.items[0].cardType, 'tale');
+  assert.equal(saved.items[0].cardStatus, 'interesting');
+  const legacy = await validate({ version: 1, items: [{ ...item, cardType: undefined, cardStatus: undefined }] });
+  assert.equal(legacy.items[0].cardStatus, '');
+});
+
+test('rejects unknown card types and multiple status stickers', async () => {
+  const item = { id: 'badge-example', type: 'article', status: 'draft', title: 'Example', description: 'Description' };
+  for (const metadata of [{ cardType: 'unknown' }, { cardStatus: ['new', 'interesting'] }, { cardStatus: 'published' }]) {
+    await assert.rejects(validate({ version: 1, items: [{ ...item, ...metadata }] }));
+  }
+});
 
 test('accepts image signatures only for their declared formats', () => {
   const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0x00]);

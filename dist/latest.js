@@ -13,24 +13,27 @@ for (const item of visibleCards) {
 
   const container = item.url ? document.createElement('a') : document.createElement('div');
   if (item.url) container.href = item.url;
+  const visual = document.createElement('div');
+  visual.className = 'latest-visual';
   if (item.image) {
     const image = document.createElement('img');
     image.className = 'latest-image';
     image.src = item.image;
     image.alt = '';
     image.loading = 'lazy';
-    container.append(image);
+    visual.append(image);
   } else {
     const placeholder = document.createElement('div');
     placeholder.className = 'latest-image';
     placeholder.textContent = 'Ожидается изображение';
-    container.append(placeholder);
+    visual.append(placeholder);
   }
+  window.childpageCardBadges.decorate(visual, item);
   const title = document.createElement('h3');
   title.textContent = item.title;
   const description = document.createElement('p');
   description.textContent = item.description;
-  container.append(title, description);
+  container.append(visual, title, description);
   card.append(container);
   latestGrid.append(card);
 }

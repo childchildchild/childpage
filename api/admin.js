@@ -8,6 +8,8 @@ const contentPath = 'content/content.json';
 const cookieName = 'childpage_admin';
 const maxAge = 12 * 60 * 60;
 const kinds = new Set(['article', 'story', 'video', 'audio', 'game']);
+const cardTypes = new Set(['video', 'article', 'tale', 'game', 'audio']);
+const cardStatuses = new Set(['new', 'interesting']);
 const activeStatuses = new Set(['draft', 'planned', 'published']);
 const statuses = new Set([...activeStatuses, 'trashed']);
 const categories = new Set(['cartoons', 'games', 'for_all', 'tales', 'medicine', 'more']);
@@ -137,7 +139,7 @@ async function github(path, options = {}) {
 function text(value, max = 20000) {
   return typeof value === 'string' ? value.trim().slice(0, max) : '';
 }
-async function validate(input) {
+export async function validate(input) {
   const { hasRichText, normalizeRichBlocks } = await import('../content/rich-content.mjs');
   if (!input || input.version !== 1 || !Array.isArray(input.items) || input.items.length > 500) throw new Error('Неверный формат материалов.');
   const seen = new Set();
@@ -145,9 +147,13 @@ async function validate(input) {
     if (!/^[a-z0-9][a-z0-9-]{1,63}$/.test(item.id) || seen.has(item.id)) throw new Error('Повторяется или неверно указан идентификатор материала.');
     seen.add(item.id);
     if (!kinds.has(item.type) || !statuses.has(item.status)) throw new Error(`Проверьте тип и состояние: ${item.id}`);
+    if (item.cardType && !cardTypes.has(item.cardType)) throw new Error(`Выберите тип значка карточки: ${item.id}`);
+    if (item.cardStatus && !cardStatuses.has(item.cardStatus)) throw new Error(`Выберите одну наклейку карточки: ${item.id}`);
     const normalized = {
       id: item.id,
       type: item.type,
+      cardType: item.cardType || '',
+      cardStatus: item.cardStatus || '',
       status: item.status,
       title: text(item.title, 160),
       description: text(item.description, 400),

@@ -359,7 +359,7 @@ function previewDocument(stylesheet) {
   const doc = frame.contentDocument;
   const css = new URL(`../${stylesheet}`, location.href).href;
   doc.open();
-  doc.write(`<!doctype html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="${css}"></head><body></body></html>`);
+  doc.write(`<!doctype html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="stylesheet" href="${css}"><link rel="stylesheet" href="${new URL("../card-badges.css?v=20261127-1", location.href).href}"><link rel="stylesheet" href="${new URL("../assets/phosphor/bold/style.css", location.href).href}"></head><body></body></html>`);
   doc.close();
   return doc;
 }
@@ -459,9 +459,10 @@ function renderPreviewCard(doc, item) {
   if (image) { const img = doc.createElement('img'); img.src = image; img.alt = item.imageAlt || ''; visual.append(img); }
   else visual.textContent = 'Ожидается изображение';
   const kind = doc.createElement('span'); kind.className = 'catalog-kind'; kind.textContent = labels[item.type];
+  if (item.type !== 'story') window.childpageCardBadges.decorate(visual, item);
   const title = doc.createElement('h2'); title.textContent = item.title || 'Название материала';
   const description = doc.createElement('p'); description.textContent = item.description || 'Короткое описание материала';
-  link.append(visual, kind, title, description);
+  link.append(visual, ...(item.type === 'story' ? [kind] : []), title, description);
   link.addEventListener('click', event => { event.preventDefault(); previewMode = 'page'; updatePreview(); });
   card.append(link); grid.append(card); section.append(eyebrow, heading, grid); page.append(header, section); doc.body.append(page);
 }
@@ -524,7 +525,7 @@ function openEditor(id = '', type = 'article') {
   previewMode = 'card';
   const item = content.items.find(record => record.id === id) || { type, status: 'draft', ages: [] };
   contentForm.reset();
-  for (const key of ['type', 'category', 'title', 'description', 'image', 'imageAlt', 'label', 'body', 'mediaUrl', 'gameUrl', 'linkedId']) {
+  for (const key of ['type', 'category', 'title', 'description', 'image', 'imageAlt', 'label', 'cardType', 'cardStatus', 'body', 'mediaUrl', 'gameUrl', 'linkedId']) {
     if (item[key] !== undefined && contentForm.elements[key]) contentForm.elements[key].value = item[key];
   }
   contentForm.elements.storyVideoUrl.value = item.type === 'story' ? item.mediaUrl || '' : '';
@@ -557,6 +558,8 @@ function readForm(status) {
     ...old,
     id: old.id || `item-${crypto.randomUUID()}`,
     type: get('type'),
+    cardType: get('cardType'),
+    cardStatus: get('cardStatus'),
     status,
     title: get('title'),
     description: get('description'),

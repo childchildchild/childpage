@@ -13,6 +13,7 @@ html[data-reduce-motion="true"] .catalog-page{animation:none}
 .catalog-controls label,.catalog-kind{font-size:14px}
 .catalog-controls select{min-height:48px;font-size:16px;padding-right:28px}
 .catalog-card p{font-size:16px;line-height:1.35}
+.catalog-card h2{margin-top:10px}
 .catalog-status{margin:0 0 20px;color:#595959;font-size:14px;line-height:1.4}
 .catalog-status:empty{display:none}
 .catalog-header a{width:44px;height:44px}

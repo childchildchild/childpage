@@ -11,11 +11,15 @@ if (source.version !== 1 || !Array.isArray(source.items)) throw new Error('Inval
 
 const types = new Set(['article', 'story', 'video', 'audio', 'game']);
 const statuses = new Set(['draft', 'planned', 'published', 'trashed']);
+const cardTypes = new Set(['video', 'article', 'tale', 'game', 'audio']);
+const cardStatuses = new Set(['new', 'interesting']);
 const ids = new Set();
 for (const item of source.items) {
   if (!/^[a-z0-9][a-z0-9-]{1,63}$/.test(item.id) || ids.has(item.id)) throw new Error(`Invalid or duplicate id: ${item.id}`);
   ids.add(item.id);
   if (!types.has(item.type) || !statuses.has(item.status) || typeof item.title !== 'string') throw new Error(`Invalid item: ${item.id}`);
+  if (item.cardType && !cardTypes.has(item.cardType)) throw new Error(`Invalid card type: ${item.id}`);
+  if (item.cardStatus && !cardStatuses.has(item.cardStatus)) throw new Error(`Invalid card status: ${item.id}`);
   if (item.status === 'published' && !Number.isFinite(Date.parse(item.publishedAt))) throw new Error(`Published item needs a date: ${item.id}`);
   if (item.bodyBlocks !== undefined) item.bodyBlocks = normalizeRichBlocks(item.bodyBlocks);
 }
@@ -32,6 +36,8 @@ const published = source.items.filter(item => item.status === 'published');
 const publicItems = source.items.filter(item => item.status === 'published' || item.status === 'planned').map(item => ({
   id: item.id,
   type: item.type,
+  cardType: item.cardType || (item.type === 'article' && item.category === 'tales' ? 'tale' : cardTypes.has(item.type) ? item.type : 'article'),
+  cardStatus: item.cardStatus || '',
   status: item.status,
   title: item.title,
   description: item.description || '',

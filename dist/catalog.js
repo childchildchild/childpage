@@ -31,9 +31,10 @@ function render() {
     if (item.image) { const image = document.createElement('img'); image.src = item.image; image.alt = ''; image.loading = 'lazy'; visual.append(image); }
     else visual.textContent = 'Ожидается изображение';
     const kind = document.createElement('span'); kind.className = 'catalog-kind'; kind.textContent = kinds[item.type];
+    if (item.type !== 'story') window.childpageCardBadges.decorate(visual, item);
     const title = document.createElement('h2'); title.textContent = item.title;
     const description = document.createElement('p'); description.textContent = item.description;
-    link.append(visual, kind, title, description); card.append(link); grid.append(card);
+    link.append(visual, ...(item.type === 'story' ? [kind] : []), title, description); card.append(link); grid.append(card);
   }
   document.querySelector('#catalog-empty').hidden = items.length > 0;
   document.querySelector('#catalog-status').textContent = items.length ? `Найдено материалов: ${items.length}` : '';

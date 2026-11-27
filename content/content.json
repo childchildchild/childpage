@@ -21,7 +21,9 @@
       "gameUrl": "",
       "linkedId": "",
       "publishedAt": "2026-11-22T04:00:00+03:00",
-      "updatedAt": "2026-11-22T04:00:00+03:00"
+      "updatedAt": "2026-11-22T04:00:00+03:00",
+      "cardType": "article",
+      "cardStatus": ""
     },
     {
       "id": "story-hands",
@@ -264,7 +266,9 @@
             ]
           ]
         }
-      ]
+      ],
+      "cardType": "article",
+      "cardStatus": ""
     },
     {
       "id": "planned-stars",
@@ -285,7 +289,9 @@
       "gameUrl": "",
       "linkedId": "",
       "publishedAt": "2026-11-25T06:32:23.083Z",
-      "updatedAt": "2026-11-25T06:32:23.083Z"
+      "updatedAt": "2026-11-25T06:32:23.083Z",
+      "cardType": "article",
+      "cardStatus": ""
     },
     {
       "id": "planned-animals",
@@ -306,7 +312,9 @@
       "gameUrl": "",
       "linkedId": "",
       "publishedAt": "2026-11-25T06:32:24.083Z",
-      "updatedAt": "2026-11-25T06:32:23.083Z"
+      "updatedAt": "2026-11-25T06:32:23.083Z",
+      "cardType": "article",
+      "cardStatus": ""
     },
     {
       "id": "planned-geolocation",
@@ -327,7 +335,9 @@
       "gameUrl": "",
       "linkedId": "",
       "publishedAt": "2026-11-25T06:32:25.083Z",
-      "updatedAt": "2026-11-25T06:32:23.083Z"
+      "updatedAt": "2026-11-25T06:32:23.083Z",
+      "cardType": "article",
+      "cardStatus": ""
     },
     {
       "id": "planned-watermelon",
@@ -348,7 +358,9 @@
       "gameUrl": "",
       "linkedId": "",
       "publishedAt": "2026-11-25T06:32:26.083Z",
-      "updatedAt": "2026-11-25T06:32:23.083Z"
+      "updatedAt": "2026-11-25T06:32:23.083Z",
+      "cardType": "article",
+      "cardStatus": ""
     },
     {
       "id": "planned-kolobok",
@@ -369,7 +381,9 @@
       "gameUrl": "",
       "linkedId": "",
       "publishedAt": "2026-11-25T06:32:27.083Z",
-      "updatedAt": "2026-11-25T06:32:23.083Z"
+      "updatedAt": "2026-11-25T06:32:23.083Z",
+      "cardType": "tale",
+      "cardStatus": ""
     },
     {
       "id": "planned-anatomy",
@@ -390,7 +404,9 @@
       "gameUrl": "",
       "linkedId": "",
       "publishedAt": "2026-11-25T06:32:28.083Z",
-      "updatedAt": "2026-11-25T06:32:23.083Z"
+      "updatedAt": "2026-11-25T06:32:23.083Z",
+      "cardType": "article",
+      "cardStatus": "new"
     },
     {
       "id": "planned-fire",
@@ -476,7 +492,9 @@
             }
           ]
         }
-      ]
+      ],
+      "cardType": "article",
+      "cardStatus": "interesting"
     },
     {
       "id": "item-a6fde8f7-009a-4522-8d5b-8bbaa0144f92",
@@ -960,7 +978,9 @@
             ]
           ]
         }
-      ]
+      ],
+      "cardType": "article",
+      "cardStatus": ""
     }
   ]
 }
