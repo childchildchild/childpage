@@ -37,6 +37,8 @@ const menuSearchSlot = document.querySelector('#menu-search');
 const searchSlot = document.querySelector('#search-slot');
 const searchResults = document.querySelector('#search-results');
 const searchEmpty = document.querySelector('#search-empty');
+const searchHistoryPanel = document.querySelector('#search-history');
+const searchHistoryList = document.querySelector('#search-history-list');
 let searchTrigger;
 let searchFromMenu = false;
 let searchAnimations = [];
@@ -64,12 +66,59 @@ function animateMenuToSearch(source) {
       { transform: 'translateY(0)' },
     ], motion),
     searchEmpty.animate([{ opacity: 0 }, { opacity: 1 }], contentMotion),
+    searchHistoryPanel.animate([{ opacity: 0 }, { opacity: 1 }], contentMotion),
     searchResults.animate([{ opacity: 0 }, { opacity: 1 }], contentMotion),
   ];
   return searchAnimations[0];
 }
 
 const normalizeSearch = value => value.toLocaleLowerCase('ru').replaceAll('ё', 'е').trim();
+const searchHistoryKey = 'childpage-search-history-v1';
+const searchHistoryLimit = 10;
+const cleanSearchQuery = value => value.trim().replace(/\s+/g, ' ');
+function loadSearchHistory() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(searchHistoryKey) || '[]');
+    if (!Array.isArray(stored)) return [];
+    const seen = new Set();
+    return stored.filter(value => typeof value === 'string' && value.length <= 160).map(cleanSearchQuery).filter(value => {
+      const key = normalizeSearch(value);
+      if (!key || seen.has(key)) return false;
+      seen.add(key); return true;
+    }).slice(0, searchHistoryLimit);
+  } catch { return []; }
+}
+let searchHistory = loadSearchHistory();
+function persistSearchHistory() {
+  try {
+    if (searchHistory.length) localStorage.setItem(searchHistoryKey, JSON.stringify(searchHistory));
+    else localStorage.removeItem(searchHistoryKey);
+  } catch { /* Search and history still work in memory when storage is unavailable. */ }
+}
+function rememberSearch() {
+  const query = cleanSearchQuery(searchInput.value);
+  if (!query || query.length > 160) return;
+  searchHistory = [query, ...searchHistory.filter(value => normalizeSearch(value) !== normalizeSearch(query))].slice(0, searchHistoryLimit);
+  persistSearchHistory();
+}
+function renderSearchHistory() {
+  searchHistoryList.replaceChildren();
+  for (const query of searchHistory) {
+    const row = document.createElement('li');
+    const repeat = document.createElement('button'); repeat.type = 'button'; repeat.className = 'search-history-query';
+    const clock = document.createElement('i'); clock.className = 'ph-bold ph-clock-counter-clockwise'; clock.setAttribute('aria-hidden', 'true');
+    const text = document.createElement('span'); text.textContent = query; repeat.append(clock, text);
+    repeat.addEventListener('click', () => { searchInput.value = query; rememberSearch(); renderSearch(); searchInput.blur(); });
+    const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'search-history-remove'; remove.setAttribute('aria-label', `Удалить запрос «${query}» из истории`);
+    const cross = document.createElement('i'); cross.className = 'ph-bold ph-x'; cross.setAttribute('aria-hidden', 'true'); remove.append(cross);
+    remove.addEventListener('click', () => {
+      const index = searchHistory.indexOf(query);
+      searchHistory = searchHistory.filter(value => value !== query); persistSearchHistory(); renderSearch();
+      (searchHistoryList.children[Math.min(index, searchHistory.length - 1)]?.querySelector('.search-history-remove') || searchInput).focus({preventScroll:true});
+    });
+    row.append(repeat, remove); searchHistoryList.append(row);
+  }
+}
 const sectionCategories = ['cartoons', 'games', 'for_all', 'tales', 'medicine', 'all'];
 const searchableItems = [...document.querySelectorAll('.content-tile')].map((element, index) => ({
   title: element.querySelector('span:last-child').textContent,
@@ -117,6 +166,7 @@ function openSearch(trigger, fromMenu = false) {
   searchTrigger = trigger;
   searchFromMenu = fromMenu;
   searchSlot.append(sharedSearchForm);
+  searchInput.value = '';
   searchInput.readOnly = false;
   searchScreen.classList.toggle('from-menu', fromMenu);
   document.body.classList.add('search-open');
@@ -153,7 +203,9 @@ function backFromSearch() {
 function renderSearch() {
   const words = normalizeSearch(searchInput.value).split(/\s+/).filter(Boolean);
   searchResults.replaceChildren();
-  searchEmpty.hidden = words.length > 0;
+  searchEmpty.hidden = words.length > 0 || searchHistory.length > 0;
+  searchHistoryPanel.hidden = words.length > 0 || searchHistory.length === 0;
+  if (!words.length) renderSearchHistory();
   if (!words.length) return;
 
   const matches = searchableItems.filter(item => words.every(word => item.text.includes(word)));
@@ -175,6 +227,7 @@ function renderSearch() {
     description.textContent = item.description;
     button.append(title, description);
     button.addEventListener('click', () => {
+      rememberSearch();
       closeSearch();
       window.childpageArticleNavigation.go(item.url);
     });
@@ -191,6 +244,7 @@ searchScreen.addEventListener('cancel', event => {
   backFromSearch();
 });
 searchScreen.addEventListener('close', () => {
+  rememberSearch();
   restoreSharedSearch();
   searchClosing = false;
   searchScreen.classList.remove('from-menu', 'returning-to-menu');
@@ -199,6 +253,9 @@ searchScreen.addEventListener('close', () => {
   searchTrigger?.focus({ preventScroll: true });
 });
 searchInput.addEventListener('input', renderSearch);
+document.querySelector('#search-history-clear').addEventListener('click', () => {
+  searchHistory = []; persistSearchHistory(); renderSearch(); searchInput.focus({preventScroll:true});
+});
 sharedSearchForm.addEventListener('submit', event => {
   event.preventDefault();
   if (!searchScreen.open) {
@@ -206,6 +263,7 @@ sharedSearchForm.addEventListener('submit', event => {
     return;
   }
   renderSearch();
+  rememberSearch();
   searchInput.blur();
 });
 
