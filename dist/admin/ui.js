@@ -87,12 +87,12 @@ export function initUI(updatePreview) {
   document.querySelectorAll('.side-nav button').forEach(b => b.insertAdjacentHTML('afterbegin', icon(icons[b.dataset.filter])));
   const commands = {bold:'text-b',italic:'text-italic',underline:'text-underline',strikeThrough:'text-strikethrough',formatBlock:'text-h-two',insertUnorderedList:'list-bullets',insertOrderedList:'list-numbers'};
   document.querySelectorAll('[data-rich-command]').forEach(b => { b.innerHTML = icon(commands[b.dataset.richCommand]); b.title = b.getAttribute('aria-label'); });
-  const buttonIcons = {'new-item':'plus','logout':'sign-out','back-list':'arrow-left','delete-item':'trash','crop-cover':'crop','save-draft':'floppy-disk','publish':'upload-simple','rich-insert-link':'link','rich-insert-image':'image','rich-insert-carousel':'images','expand-preview':'arrows-out','close-preview':'x'};
+  const buttonIcons = {'new-item':'plus','logout':'sign-out','back-list':'arrow-left','delete-item':'trash','crop-cover':'crop','save-draft':'floppy-disk','publish':'upload-simple','rich-insert-link':'link','rich-insert-image':'image','rich-insert-carousel':'images','expand-preview':'arrows-out','expand-preview-mobile':'arrows-out','close-preview':'x'};
   const decorate = () => { for (const [id, name] of Object.entries(buttonIcons)) { const b = document.getElementById(id); if (b && !b.querySelector('i')) b.insertAdjacentHTML('afterbegin', icon(name)); } };
   decorate(); new MutationObserver(decorate).observe(document.querySelector('#app-view'), {childList:true,subtree:true});
   document.querySelectorAll('#type-dialog .type-options button').forEach(b => { b.insertAdjacentHTML('afterbegin', icon(icons[b.value])); const small = document.createElement('small'); small.textContent = {article:'Текст, фото и карусели',story:'Короткое фото или видео',video:'Видеоматериал',audio:'Аудиозапись',game:'Ссылка на игру'}[b.value]; b.append(small); });
   const preview = document.querySelector('.preview-card'), home = preview.parentElement, modal = document.querySelector('#preview-dialog');
-  document.querySelector('#expand-preview').addEventListener('click', () => { modal.append(preview); modal.showModal(); updatePreview(); });
+  for (const trigger of document.querySelectorAll('#expand-preview, #expand-preview-mobile')) trigger.addEventListener('click', () => { modal.append(preview); modal.showModal(); updatePreview(); });
   document.querySelector('#close-preview').addEventListener('click', () => modal.close());
   modal.addEventListener('close', () => { home.prepend(preview); updatePreview(); });
   document.querySelectorAll('.media-dialog-form input[type=file]').forEach(input => {

@@ -1,3 +1,10 @@
-.admin-card-preview .catalog-content{padding:24px 16px}
-.admin-card-grid{grid-template-columns:minmax(0,1fr);width:min(100%,190px);margin-inline:auto}
-.admin-card-preview .catalog-card h2{overflow-wrap:anywhere}
+.admin-card-preview .catalog-content{padding:0}
+.admin-card-grid{grid-template-columns:minmax(0,1fr);width:100%;margin-inline:auto}
+.admin-card-preview .catalog-card h2{font-size:25px;line-height:1.12;overflow-wrap:anywhere}
+.admin-card-preview .catalog-card p{font-size:21px;line-height:1.4}
+.admin-card-preview .catalog-image{border-radius:14px}
+.admin-card-preview .card-type-badge{left:12px;bottom:12px;gap:6px;padding:6px 10px;font-size:18px}
+.admin-card-preview .card-type-badge i{font-size:22px}
+.admin-card-preview .card-status-badge{top:18px;left:14px;gap:6px;padding:9px 11px 7px;font-size:22px}
+.admin-card-preview .card-status-badge i{font-size:23px}
+.admin-card-preview .card-status-interesting{max-width:min(calc(100% - 30px),210px);font-size:20px}

@@ -10,8 +10,9 @@
   <link rel="stylesheet" href="crop.css?v=20261127-1">
   <link rel="stylesheet" href="../assets/phosphor/bold/style.css">
   <link rel="stylesheet" href="../card-badges.css?v=20261127-3">
-  <link rel="stylesheet" href="admin-ui.css?v=20261127-5">
-  <script src="admin.js?v=20261127-11" type="module"></script>
+  <link rel="stylesheet" href="admin-ui.css?v=20261127-6">
+  <link rel="stylesheet" href="editor-preview-layout.css?v=20261127-2">
+  <script src="admin.js?v=20261127-13" type="module"></script>
 </head>
 <body>
   <div id="admin-loading" class="admin-loading" role="status">Загружаю панель…</div>
@@ -62,7 +63,7 @@
       </section>
 
       <section id="editor-view" class="editor-view" hidden aria-label="Редактор материала">
-        <div class="editor-head"><button id="back-list" class="text-button" type="button">К списку</button><div><span id="editor-status" class="status"></span><a id="public-link" href="#" target="_blank" rel="noopener" hidden>Открыть на сайте</a></div><button id="expand-preview" class="secondary preview-open" type="button">Предпросмотр</button></div>
+        <div class="editor-head"><button id="back-list" class="text-button" type="button">К списку</button><div class="editor-head-actions"><a id="public-link" href="#" target="_blank" rel="noopener" hidden><i class="ph-bold ph-arrow-square-out" aria-hidden="true"></i>Открыть</a><span id="editor-status" class="status"></span></div><button id="expand-preview-mobile" class="secondary preview-open-mobile" type="button">Предпросмотр</button></div>
         <div class="editor-grid">
           <form id="content-form" class="form-card" novalidate>
             <p id="editor-save-state" class="editor-save-state" role="status" aria-live="polite"></p>
@@ -108,7 +109,7 @@
             </section><div class="editor-actions"><button id="save-draft" type="button" class="secondary">Сохранить черновик</button><button id="publish" type="button" class="primary">Опубликовать</button></div>
             <button id="unpublish" type="button" class="danger-text" hidden>Снять с публикации</button>
           </form>
-          <aside class="preview-column"><div class="preview-card"><p class="eyebrow">Так увидит посетитель</p><div class="preview-switch" role="group" aria-label="Вид предпросмотра"><button type="button" data-preview-view="card" class="active">Карточка</button><button type="button" data-preview-view="page">Страница</button></div><iframe id="site-preview" title="Интерактивный предпросмотр карточки и страницы" sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe><p class="preview-hint">Нажмите на карточку, чтобы открыть страницу материала. Предпросмотр обновляется вместе с полями.</p></div><div class="help-card"><h3>Как это работает</h3><p>Черновик виден только в панели — его можно сохранить незаполненным. «Опубликовать» отправляет готовый материал на сайт. Заготовка — карточка, которую предстоит наполнить.</p></div></aside>
+          <aside class="preview-column"><div class="preview-card"><div class="preview-switch" role="group" aria-label="Вид предпросмотра"><button type="button" data-preview-view="card" class="active">Карточка</button><button type="button" data-preview-view="page">Страница</button></div><iframe id="site-preview" title="Интерактивный предпросмотр карточки и страницы" sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe></div><button id="expand-preview" class="secondary preview-open" type="button">Предпросмотр</button></aside>
         </div>
       </section>
     </div>
