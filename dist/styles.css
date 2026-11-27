@@ -48,11 +48,12 @@ button{font:inherit;color:inherit}
 .ages{padding-top:20px}
 .ages>h2{font-size:7.4cqw;margin-bottom:24px}
 .age-card{width:100%;aspect-ratio:2/1;min-height:180px;position:relative;margin-bottom:4cqw;overflow:visible;border-radius:6.5cqw;background:#efefef}
-.age-art{position:absolute;z-index:1;inset:-4cqw 0 0;overflow:hidden;border-radius:0 0 6.5cqw 6.5cqw;pointer-events:none}
-.age-art img{position:absolute;display:block;height:auto;max-width:none}
-.age-orange .age-art img{height:calc(100% - 2cqw);width:auto;right:3%;top:2cqw}
-.age-blue .age-art img{width:46.2%;right:0;top:3.4cqw}
-.age-red .age-art img{width:66.5%;right:-7.2%;top:.6cqw}
+.age-art{position:absolute;z-index:1;inset:-1cqw 0 0;overflow:hidden;border-radius:0 0 6.5cqw 6.5cqw;pointer-events:none}
+/* The supplied square PNGs share the same transparent space above each portrait. */
+.age-art img{position:absolute;display:block;height:120.4%;width:auto;max-width:none;bottom:0;right:-5cqw}
+.age-blue .age-art img{right:-3.5cqw}
+.age-red .age-art img{right:-7.2cqw}
+@media(max-width:370px){.age-blue .age-art img{right:-8cqw}.age-red .age-art img{right:-13.5cqw}.age-red .age-copy h3{font-size:16px}}
 .age-copy{position:absolute;z-index:2;inset:0;display:grid;grid-template-rows:auto minmax(0,1fr) 44px;justify-items:start;padding:4.8cqw 0 4.2cqw 5.8cqw}
 .age-label{display:inline-block;padding:1.3cqw 2.3cqw 1.1cqw;border-radius:4cqw .3cqw 4cqw .3cqw;color:white;font:400 4.9cqw/1 Arco,sans-serif;transform:rotate(-2.5deg)}
 .age-orange .age-label{background:#ff752b}.age-blue .age-label{background:#2f68f3}.age-red .age-label{background:#ff3034}
