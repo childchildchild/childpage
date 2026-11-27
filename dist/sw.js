@@ -1,4 +1,4 @@
-const CACHE_NAME = 'childpage-shell-20261127-20';
+const CACHE_NAME = 'childpage-shell-20261127-21';
 const SHELL = [
   'index.html',
   'styles.css',
@@ -15,6 +15,9 @@ const SHELL = [
   'preferences.css',
   'preferences.js',
   'article-navigation.js',
+  'article-carousel.js',
+  'related-content.js',
+  'carousel-drag.js',
   'manifest.webmanifest',
   'assets/icon-192.png',
   'assets/icon-512.png',

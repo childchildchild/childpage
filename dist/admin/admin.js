@@ -1,4 +1,5 @@
 import { initUI, syncSelects, ask } from './ui.js';
+import { initPhotoCarousel } from '../article-carousel.js?v=20261127-2';
 import { cropImage } from './crop.js';
 
 const apiUrl = '/api/admin';
@@ -553,27 +554,19 @@ function renderPreviewRichBody(doc, container, blocks) {
       const figure = doc.createElement('figure'); figure.className = 'article-media';
       const img = doc.createElement('img'); img.src = imageSource(block.src); img.alt = block.alt; figure.append(img); container.append(figure);
     } else {
-      const carousel = doc.createElement('section'); carousel.className = 'article-carousel';
-      const previous = doc.createElement('button'); previous.type = 'button'; previous.className = 'article-carousel-arrow previous'; previous.textContent = '‹'; previous.setAttribute('aria-label', 'Предыдущее фото');
+      const carousel = doc.createElement('section'); carousel.className = 'article-carousel'; carousel.dataset.carousel = ''; carousel.setAttribute('aria-label', 'Фотографии');
+      const previous = doc.createElement('button'); previous.type = 'button'; previous.className = 'article-carousel-arrow previous'; previous.dataset.carouselPrevious = ''; previous.innerHTML = '<i class="ph-bold ph-caret-left" aria-hidden="true"></i>'; previous.setAttribute('aria-label', 'Предыдущее фото');
       const track = doc.createElement('div'); track.className = 'article-carousel-track'; track.tabIndex = 0;
-      for (const [index, image] of block.images.entries()) {
+      for (const image of block.images) {
         const slide = doc.createElement('figure'); slide.className = 'article-carousel-slide';
         const frame = doc.createElement('div'); frame.className = 'article-carousel-frame';
         const img = doc.createElement('img'); img.src = imageSource(image.src); img.alt = image.alt; frame.append(img); slide.append(frame);
-        const caption = doc.createElement('figcaption'); caption.textContent = `${index + 1} / ${block.images.length}`; slide.append(caption); track.append(slide);
+        track.append(slide);
       }
-      const firstImage = track.querySelector('img');
-      const fitSlides = () => {
-        if (firstImage?.naturalWidth && firstImage.naturalHeight) {
-          carousel.style.setProperty('--carousel-aspect-ratio', `${firstImage.naturalWidth} / ${firstImage.naturalHeight}`);
-        }
-      };
-      if (firstImage?.complete) fitSlides();
-      else firstImage?.addEventListener('load', fitSlides, { once: true });
-      const next = doc.createElement('button'); next.type = 'button'; next.className = 'article-carousel-arrow next'; next.textContent = '›'; next.setAttribute('aria-label', 'Следующее фото');
-      previous.addEventListener('click', () => track.scrollBy({ left: -track.clientWidth, behavior: 'smooth' }));
-      next.addEventListener('click', () => track.scrollBy({ left: track.clientWidth, behavior: 'smooth' }));
-      carousel.append(previous, track, next); container.append(carousel);
+      const next = doc.createElement('button'); next.type = 'button'; next.className = 'article-carousel-arrow next'; next.dataset.carouselNext = ''; next.innerHTML = '<i class="ph-bold ph-caret-right" aria-hidden="true"></i>'; next.setAttribute('aria-label', 'Следующее фото');
+      const controls = doc.createElement('div'); controls.className = 'article-carousel-controls';
+      const counter = doc.createElement('p'); counter.className = 'article-carousel-count'; counter.setAttribute('role', 'status'); counter.setAttribute('aria-live', 'polite');
+      controls.append(previous, counter, next); carousel.append(track, controls); container.append(carousel);
     }
   }
 }
@@ -628,6 +621,7 @@ function renderPreviewPage(doc, item) {
   const home = doc.createElement('a'); home.className = 'article-home'; home.href = '#preview-card'; home.textContent = 'Вернуться к карточке';
   home.addEventListener('click', event => { event.preventDefault(); previewMode = 'card'; updatePreview(); });
   body.append(home); article.append(body); page.append(header, article); doc.body.append(page);
+  page.querySelectorAll('[data-carousel]').forEach(initPhotoCarousel);
 }
 function schedulePreview() {
   updateSaveState();

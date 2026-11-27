@@ -2,6 +2,7 @@ import { readFile, writeFile, mkdir, readdir, unlink } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { normalizeRichBlocks, renderRichBody } from './content/rich-content.mjs';
+import { materialType, relatedMaterials } from './content/related-content.mjs';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const dist = join(root, 'dist');
@@ -87,6 +88,19 @@ function renderBody(markdown) {
   return html;
 }
 
+function renderRelated(item, prefix) {
+  const matches = relatedMaterials(source.items, item);
+  if (!matches.length) return '';
+  const types = {article:['Статья','article'],tale:['Сказка','book-open'],video:['Видео','play-circle'],audio:['Слушать','headphones'],game:['Игра','puzzle-piece']};
+  const cards = matches.map(candidate => {
+    const image = safePath(candidate.image);
+    const [label, icon] = types[materialType(candidate)] || types.article;
+    const status = candidate.cardStatus === 'new' ? ['Новое','sparkle'] : candidate.cardStatus === 'interesting' ? ['Интересно','fire'] : null;
+    return `<li class="related-card"><a href="${prefix}${escape(urlFor(candidate))}"><div class="related-image card-visual">${image ? `<img src="${escape(image.startsWith('assets/') ? prefix + image : image)}" alt="" loading="lazy" decoding="async">` : ''}<span class="card-type-badge"><i class="ph-bold ph-${icon}" aria-hidden="true"></i><span>${label}</span></span>${status ? `<span class="card-status-badge card-status-${candidate.cardStatus}"><i class="ph-bold ph-${status[1]}" aria-hidden="true"></i><span>${status[0]}</span></span>` : ''}</div><h3>${escape(candidate.title)}</h3><p>${escape(candidate.description || '')}</p></a></li>`;
+  }).join('');
+  return `<section class="related-section" aria-labelledby="related-title"><header class="related-heading"><h2 id="related-title">Похожее</h2><div class="related-controls" hidden><button type="button" class="carousel-button" data-related-previous aria-label="Предыдущие материалы" aria-controls="related-track"><i class="ph-bold ph-caret-left" aria-hidden="true"></i></button><button type="button" class="carousel-button" data-related-next aria-label="Следующие материалы" aria-controls="related-track"><i class="ph-bold ph-caret-right" aria-hidden="true"></i></button></div></header><ul class="related-track" id="related-track" tabindex="0" aria-label="Похожие материалы">${cards}</ul></section>`;
+}
+
 function renderPage(item) {
   const kind = { article: 'Статья', video: 'Видео', audio: 'Аудио', game: 'Игра' }[item.type];
   const title = escape(item.title);
@@ -108,11 +122,11 @@ function renderPage(item) {
   if (item.type === 'audio' && media) player = `<audio class="content-audio" controls preload="metadata" src="${escape(media.startsWith('assets/') ? prefix + media : media)}"></audio>`;
   if (item.type === 'game' && link) player = `<a class="article-home" href="${escape(link.startsWith('assets/') ? prefix + link : link)}" ${link.startsWith('https://') ? 'target="_blank" rel="noopener noreferrer"' : ''}>Открыть игру</a>`;
   return `<!doctype html>
-<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="color-scheme" content="light"><meta name="theme-color" content="#cbcced"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Детская"><link rel="manifest" href="${prefix}manifest.webmanifest"><link rel="apple-touch-icon" href="${prefix}assets/apple-touch-icon.png"><script src="${prefix}preferences.js?v=20261122-1"></script>${item.type === 'article' ? `<script src="${prefix}article-navigation.js?v=20261127-1"></script>` : ''}
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="color-scheme" content="light"><meta name="theme-color" content="#cbcced"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Детская"><link rel="manifest" href="${prefix}manifest.webmanifest"><link rel="apple-touch-icon" href="${prefix}assets/apple-touch-icon.png"><script src="${prefix}preferences.js?v=20261122-1"></script><script src="${prefix}article-navigation.js?v=20261127-1"></script>
 <meta name="article:published" content="${escape(item.publishedAt)}"><meta name="article:title" content="${title}"><meta name="article:description" content="${escape(item.description || '')}"><meta name="article:image" content="${escape(image)}">
-<title>${title} — Детская страница</title><link rel="stylesheet" href="${prefix}content-page.css?v=20261127-1"><link rel="stylesheet" href="${prefix}preferences.css?v=20261127-1"></head>
+<title>${title} — Детская страница</title><link rel="stylesheet" href="${prefix}content-page.css?v=20261127-2"><link rel="stylesheet" href="${prefix}preferences.css?v=20261127-1"><link rel="stylesheet" href="${prefix}assets/phosphor/bold/style.css"><link rel="stylesheet" href="${prefix}card-badges.css?v=20261127-3"></head>
 <body><main class="article-page"><header class="article-header"><a class="article-back" href="${prefix}index.html" aria-label="На главную"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 5 5 20l15 15M6 20h30"/></svg></a><span>${escape(item.label || kind)}</span></header>
-<article>${photo}${photoCredit}<div class="article-body"><h1>${title}</h1><p class="article-intro">${escape(item.description || '')}</p>${player}<div class="article-text">${body}</div><a class="article-home" href="${prefix}index.html">На главную</a></div></article></main><script src="${prefix}article-carousel.js" defer></script></body></html>`;
+<article>${photo}${photoCredit}<div class="article-body"><h1>${title}</h1><p class="article-intro">${escape(item.description || '')}</p>${player}<div class="article-text">${body}</div><a class="article-home" href="${prefix}index.html">На главную</a>${renderRelated(item, prefix)}</div></article></main><script src="${prefix}article-carousel.js?v=20261127-2" type="module"></script><script src="${prefix}related-content.js?v=20261127-1" type="module"></script></body></html>`;
 }
 
 await mkdir(join(dist, 'read'), { recursive: true });

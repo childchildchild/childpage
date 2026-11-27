@@ -113,10 +113,10 @@ export function renderRichBody(blocks, prefix = '') {
       const src = block.src.startsWith('assets/') ? `${prefix}${block.src}` : block.src;
       return `<figure class="article-media"><img src="${escapeHtml(src)}" alt="${escapeHtml(block.alt)}"></figure>`;
     }
-    const images = block.images.map((image, index) => {
+    const images = block.images.map(image => {
       const src = image.src.startsWith('assets/') ? `${prefix}${image.src}` : image.src;
-      return `<figure class="article-carousel-slide"><div class="article-carousel-frame"><img src="${escapeHtml(src)}" alt="${escapeHtml(image.alt)}"></div><figcaption>${index + 1} / ${block.images.length}</figcaption></figure>`;
+      return `<figure class="article-carousel-slide"><div class="article-carousel-frame"><img src="${escapeHtml(src)}" alt="${escapeHtml(image.alt)}" loading="lazy" decoding="async"></div></figure>`;
     }).join('');
-    return `<section class="article-carousel" data-carousel><button type="button" class="article-carousel-arrow previous" data-carousel-previous aria-label="Предыдущее фото">‹</button><div class="article-carousel-track" tabindex="0">${images}</div><button type="button" class="article-carousel-arrow next" data-carousel-next aria-label="Следующее фото">›</button></section>`;
+    return `<section class="article-carousel" data-carousel aria-label="Фотографии"><div class="article-carousel-track" tabindex="0" aria-label="Листать фотографии">${images}</div><div class="article-carousel-controls"><button type="button" class="article-carousel-arrow previous" data-carousel-previous aria-label="Предыдущее фото"><i class="ph-bold ph-caret-left" aria-hidden="true"></i></button><p class="article-carousel-count" role="status" aria-live="polite" aria-atomic="true">1 из ${block.images.length}</p><button type="button" class="article-carousel-arrow next" data-carousel-next aria-label="Следующее фото"><i class="ph-bold ph-caret-right" aria-hidden="true"></i></button></div></section>`;
   }).join('');
 }
