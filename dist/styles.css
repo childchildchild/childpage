@@ -54,7 +54,7 @@ button{font:inherit;color:inherit}
 .age-card{width:100%;aspect-ratio:2/1;min-height:180px;position:relative;margin-bottom:4cqw;overflow:visible;border-radius:6.5cqw;background:#efefef}
 .age-orange{--age-color:#ff752b}.age-blue{--age-color:#2f68f3}.age-red{--age-color:#ff3034}
 .age-art{position:absolute;z-index:1;inset:-1cqw 0 0;overflow:hidden;border-radius:0 0 6.5cqw 6.5cqw;pointer-events:none}
-.age-art::before{content:'';position:absolute;z-index:0;top:calc(1cqw + 8px);right:2%;width:48%;aspect-ratio:1;border-radius:50%;background:var(--age-color);opacity:.7}
+.age-art::before{content:'';position:absolute;z-index:0;top:calc(1cqw + 9.5px);right:calc(2% + 1.5px);width:calc(48% - 3px);aspect-ratio:1;border-radius:50%;background:var(--age-color);opacity:.7}
 /* The supplied square PNGs share the same transparent space above each portrait. */
 .age-art img{position:absolute;z-index:1;display:block;height:120.4%;width:auto;max-width:none;bottom:0;right:-5cqw}
 .age-orange .age-art img{right:-3cqw}
