@@ -15,6 +15,7 @@
         "4-12",
         "13+"
       ],
+      "tags": [],
       "image": "assets/story_hands.png",
       "imageAlt": "Ребёнок моет руки с мылом под краном, взрослый помогает",
       "label": "Полезный совет",
@@ -23,9 +24,7 @@
       "gameUrl": "",
       "linkedId": "",
       "publishedAt": "2026-11-22T04:00:00+03:00",
-      "updatedAt": "2026-11-22T04:00:00+03:00",
-      "cardType": "article",
-      "cardStatus": ""
+      "updatedAt": "2026-11-22T04:00:00+03:00"
     },
     {
       "id": "story-hands",
@@ -40,6 +39,11 @@
         "0-3",
         "4-12"
       ],
+      "tags": [
+        "здоровье",
+        "гигиена",
+        "мытье рук"
+      ],
       "image": "assets/story_hands.png",
       "imageAlt": "",
       "label": "Полезный совет",
@@ -48,12 +52,7 @@
       "gameUrl": "",
       "linkedId": "handwashing",
       "publishedAt": "2026-11-22T04:03:00+03:00",
-      "updatedAt": "2026-11-22T19:38:07.133Z",
-      "tags": [
-        "здоровье",
-        "гигиена",
-        "мытье рук"
-      ]
+      "updatedAt": "2026-11-22T19:38:07.133Z"
     },
     {
       "id": "story-tale",
@@ -68,6 +67,11 @@
         "0-3",
         "4-12"
       ],
+      "tags": [
+        "сказки",
+        "чтение",
+        "перед сном"
+      ],
       "image": "assets/story_tale.png",
       "imageAlt": "",
       "label": "Вместе почитаем",
@@ -76,12 +80,7 @@
       "gameUrl": "",
       "linkedId": "planned-dinosaurs",
       "publishedAt": "2026-11-22T04:02:00+03:00",
-      "updatedAt": "2026-11-22T02:18:18.495Z",
-      "tags": [
-        "сказки",
-        "чтение",
-        "перед сном"
-      ]
+      "updatedAt": "2026-11-22T02:18:18.495Z"
     },
     {
       "id": "story-stars",
@@ -96,6 +95,11 @@
         "4-12",
         "13+"
       ],
+      "tags": [
+        "космос",
+        "астрономия",
+        "звезды"
+      ],
       "image": "assets/story_stars.png",
       "imageAlt": "",
       "label": "Интересный вопрос",
@@ -104,12 +108,7 @@
       "gameUrl": "",
       "linkedId": "planned-stars",
       "publishedAt": "2026-11-22T04:01:00+03:00",
-      "updatedAt": "2026-11-22T04:01:00+03:00",
-      "tags": [
-        "космос",
-        "астрономия",
-        "звезды"
-      ]
+      "updatedAt": "2026-11-22T04:01:00+03:00"
     },
     {
       "id": "planned-dinosaurs",
@@ -125,6 +124,7 @@
         "4-12",
         "13+"
       ],
+      "tags": [],
       "image": "assets/uploads/1795351133170-exkx5bf5.jpg",
       "imageAlt": "Трёхцветная кошка с белыми, рыжими и чёрными пятнами сидит и смотрит в камеру",
       "label": "Интересные факты",
@@ -291,9 +291,7 @@
             ]
           ]
         }
-      ],
-      "cardType": "article",
-      "cardStatus": ""
+      ]
     },
     {
       "id": "planned-stars",
@@ -308,6 +306,7 @@
         "4-12",
         "13+"
       ],
+      "tags": [],
       "image": "assets/articles/stars.jpg",
       "imageAlt": "Млечный Путь над ночным пейзажем",
       "label": "Космос",
@@ -316,9 +315,7 @@
       "gameUrl": "",
       "linkedId": "",
       "publishedAt": "2026-11-25T06:32:23.083Z",
-      "updatedAt": "2026-11-25T06:32:23.083Z",
-      "cardType": "article",
-      "cardStatus": ""
+      "updatedAt": "2026-11-25T06:32:23.083Z"
     },
     {
       "id": "planned-animals",
@@ -333,6 +330,7 @@
         "4-12",
         "13+"
       ],
+      "tags": [],
       "image": "assets/articles/animals.jpg",
       "imageAlt": "Кошка с зелёными глазами смотрит прямо в камеру",
       "label": "Интересные факты",
@@ -341,9 +339,7 @@
       "gameUrl": "",
       "linkedId": "",
       "publishedAt": "2026-11-25T06:32:24.083Z",
-      "updatedAt": "2026-11-25T06:32:23.083Z",
-      "cardType": "article",
-      "cardStatus": ""
+      "updatedAt": "2026-11-25T06:32:23.083Z"
     },
     {
       "id": "planned-geolocation",
@@ -358,6 +354,7 @@
         "4-12",
         "13+"
       ],
+      "tags": [],
       "image": "assets/articles/geolocation.jpg",
       "imageAlt": "Человек держит телефон с картой на фоне горного пейзажа",
       "label": "Как это работает",
@@ -366,9 +363,7 @@
       "gameUrl": "",
       "linkedId": "",
       "publishedAt": "2026-11-25T06:32:25.083Z",
-      "updatedAt": "2026-11-25T06:32:23.083Z",
-      "cardType": "article",
-      "cardStatus": ""
+      "updatedAt": "2026-11-25T06:32:23.083Z"
     },
     {
       "id": "planned-watermelon",
@@ -383,6 +378,7 @@
         "4-12",
         "13+"
       ],
+      "tags": [],
       "image": "assets/articles/watermelon.jpg",
       "imageAlt": "Крупный ломтик спелого арбуза на светлом фоне",
       "label": "Интересные факты",
@@ -391,9 +387,7 @@
       "gameUrl": "",
       "linkedId": "",
       "publishedAt": "2026-11-25T06:32:26.083Z",
-      "updatedAt": "2026-11-25T06:32:23.083Z",
-      "cardType": "article",
-      "cardStatus": ""
+      "updatedAt": "2026-11-25T06:32:23.083Z"
     },
     {
       "id": "planned-kolobok",
@@ -408,6 +402,7 @@
         "0-3",
         "4-12"
       ],
+      "tags": [],
       "image": "assets/articles/kolobok.jpg",
       "imageAlt": "Деревянные фигурки Колобка и лисы в снегу",
       "label": "Сказка на ночь",
@@ -416,9 +411,7 @@
       "gameUrl": "",
       "linkedId": "",
       "publishedAt": "2026-11-25T06:32:27.083Z",
-      "updatedAt": "2026-11-25T06:32:23.083Z",
-      "cardType": "tale",
-      "cardStatus": ""
+      "updatedAt": "2026-11-25T06:32:23.083Z"
     },
     {
       "id": "planned-anatomy",
@@ -433,6 +426,7 @@
         "4-12",
         "13+"
       ],
+      "tags": [],
       "image": "assets/articles/anatomy.jpg",
       "imageAlt": "Учебная модель тела человека показывает расположение внутренних органов",
       "label": "Медицина",
@@ -441,9 +435,7 @@
       "gameUrl": "",
       "linkedId": "",
       "publishedAt": "2026-11-25T06:32:28.083Z",
-      "updatedAt": "2026-11-25T06:32:23.083Z",
-      "cardType": "article",
-      "cardStatus": "new"
+      "updatedAt": "2026-11-25T06:32:23.083Z"
     },
     {
       "id": "planned-fire",
@@ -458,6 +450,11 @@
         "4-12",
         "13+"
       ],
+      "tags": [
+        "гигиена",
+        "руки",
+        "медицина"
+      ],
       "image": "https://img.magnific.com/free-photo/horse-snowy-pasture_23-2150690921.jpg?semt=ais_incoming&w=740&q=80",
       "imageAlt": "Яркие разноцветные языки пламени в научной демонстрации",
       "label": "Наука",
@@ -466,7 +463,7 @@
       "gameUrl": "",
       "linkedId": "",
       "publishedAt": "2026-11-25T06:32:29.083Z",
-      "updatedAt": "2026-11-27T13:30:45.791Z",
+      "updatedAt": "2026-11-27T13:44:32.658Z",
       "bodyBlocks": [
         {
           "type": "paragraph",
@@ -531,9 +528,7 @@
             }
           ]
         }
-      ],
-      "cardType": "article",
-      "cardStatus": "interesting"
+      ]
     },
     {
       "id": "item-a6fde8f7-009a-4522-8d5b-8bbaa0144f92",
@@ -549,6 +544,7 @@
         "4-12",
         "13+"
       ],
+      "tags": [],
       "image": "assets/uploads/1795320393117-ixezp84u.jpg",
       "imageAlt": "Взрослая немецкая овчарка с чёрно-рыжим окрасом сидит на траве и смотрит вперёд",
       "label": "Мир животных",
@@ -1019,9 +1015,7 @@
             ]
           ]
         }
-      ],
-      "cardType": "article",
-      "cardStatus": ""
+      ]
     }
   ]
 }
