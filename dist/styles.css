@@ -55,7 +55,7 @@ button{font:inherit;color:inherit}
 .age-red .age-art img{right:-5.7cqw}
 @media(max-width:370px){.age-blue .age-art img{right:-5cqw}.age-red .age-art img{right:-12cqw}.age-red .age-copy h3{font-size:16px}}
 .age-copy{position:absolute;z-index:2;inset:0;display:grid;grid-template-rows:auto minmax(0,1fr) 44px;justify-items:start;padding:4.8cqw 0 4.2cqw 5.8cqw}
-.age-label{display:inline-block;padding:1.3cqw 2.3cqw 1.1cqw;border-radius:4cqw .3cqw 4cqw .3cqw;color:white;font:400 4.9cqw/1 Arco,sans-serif;transform:rotate(-2.5deg)}
+.age-label{display:inline-block;padding:1.3cqw 2.3cqw 1.1cqw;border-radius:4cqw 3px 4cqw 3px;color:white;font:400 4.9cqw/1 Arco,sans-serif;transform:rotate(-2.5deg)}
 .age-orange .age-label{background:#ff752b}.age-blue .age-label{background:#2f68f3}.age-red .age-label{background:#ff3034}
 .age-text{align-self:center}
 .age-copy h3{margin:0 0 1.9cqw;font-size:clamp(18px,4.65cqw,20px);line-height:1.15}
