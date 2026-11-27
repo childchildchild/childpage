@@ -12,7 +12,8 @@
   <link rel="stylesheet" href="../card-badges.css?v=20261127-3">
   <link rel="stylesheet" href="admin-ui.css?v=20261127-6">
   <link rel="stylesheet" href="editor-preview-layout.css?v=20261127-2">
-  <script src="admin.js?v=20261127-13" type="module"></script>
+  <link rel="stylesheet" href="emoji-picker.css?v=20261127-1">
+  <script src="admin.js?v=20261127-15" type="module"></script>
 </head>
 <body>
   <div id="admin-loading" class="admin-loading" role="status">Загружаю панель…</div>
@@ -95,9 +96,11 @@
                   </select>
                 </label>
                 <button type="button" id="rich-insert-link">Ссылка</button>
+                <button type="button" id="rich-insert-emoji" aria-expanded="false" aria-controls="emoji-picker">Эмодзи</button>
                 <button type="button" id="rich-insert-image">Фото / GIF</button>
                 <button type="button" id="rich-insert-carousel">Карусель</button>
               </div>
+              <div id="emoji-picker" class="emoji-picker" aria-label="Выбрать эмодзи" hidden></div>
               <div id="article-editor" class="article-editor" contenteditable="true" role="textbox" aria-label="Текст статьи" aria-multiline="true" data-placeholder="Введите текст статьи..."></div>
               <textarea name="body" hidden></textarea>
               <small>Выделите фрагмент и выберите формат. Фото, GIF и карусель можно вставить из файла или по HTTPS-ссылке.</small>

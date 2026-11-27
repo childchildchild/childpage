@@ -1,4 +1,5 @@
-import { initUI, syncSelects, ask } from './ui.js?v=20261127-3';
+import { initUI, syncSelects, ask } from './ui.js?v=20261127-4';
+import { initEmojiPicker } from './emoji-picker.js?v=20261127-2';
 import { initPhotoCarousel } from '../article-carousel.js?v=20261127-2';
 import { cropImage } from './crop.js';
 import { normalizeTags } from '../content-tags.js?v=20261127-1';
@@ -371,6 +372,27 @@ function restoreEditorSelection() {
   selection.removeAllRanges();
   selection.addRange(savedEditorRange);
 }
+function insertEmoji(emoji) {
+  if (mutationBusy) return;
+  const hasSavedRange = savedEditorRange && articleEditor.contains(savedEditorRange.commonAncestorContainer);
+  restoreEditorSelection();
+  const selection = window.getSelection();
+  if (!hasSavedRange) {
+    let target = articleEditor.lastElementChild;
+    if (!target || !/^(P|H[1-6]|LI)$/.test(target.tagName)) {
+      target = document.createElement('p'); articleEditor.append(target);
+    }
+    const range = document.createRange(); range.selectNodeContents(target); range.collapse(false);
+    selection.removeAllRanges(); selection.addRange(range);
+  }
+  if (!document.execCommand('insertText', false, emoji)) {
+    const range = selection.getRangeAt(0); range.deleteContents();
+    const node = document.createTextNode(emoji); range.insertNode(node);
+    range.setStartAfter(node); range.collapse(true); selection.removeAllRanges(); selection.addRange(range);
+  }
+  rememberEditorSelection();
+  updatePreview();
+}
 function insertRichBlock(block) {
   const figure = createRichMediaBlock(block);
   restoreEditorSelection();
@@ -393,7 +415,9 @@ function renderList() {
   const query = $('#filter-text').value.toLocaleLowerCase('ru').trim();
   const status = $('#filter-status').value;
   const inTrash = typeFilter === 'trash';
-  $('#filter-status').hidden = inTrash;
+  const statusFilter = $('#filter-status');
+  statusFilter.hidden = true;
+  if (statusFilter.nextElementSibling?.classList.contains('select-trigger')) statusFilter.nextElementSibling.hidden = inTrash;
   const items = content.items.filter(item =>
     (inTrash ? item.status === 'trashed' : item.status !== 'trashed' && (typeFilter === 'all' || item.type === typeFilter)) &&
     (inTrash || status === 'all' || item.status === status) &&
@@ -1118,6 +1142,7 @@ document.querySelectorAll('[data-preview-view]').forEach(button => button.addEve
 articleEditor.addEventListener('mouseup', rememberEditorSelection);
 articleEditor.addEventListener('keyup', rememberEditorSelection);
 articleEditor.addEventListener('input', rememberEditorSelection);
+document.addEventListener('selectionchange', rememberEditorSelection);
 articleEditor.addEventListener('click', event => {
   if (mutationBusy) return;
   const crop = event.target.closest('[data-crop-rich-image]');
@@ -1141,6 +1166,7 @@ $('#rich-color').addEventListener('change', event => {
   updatePreview();
 });
 $('#rich-insert-link').addEventListener('mousedown', event => event.preventDefault());
+initEmojiPicker($('#rich-insert-emoji'), $('#emoji-picker'), insertEmoji);
 $('#rich-insert-link').addEventListener('click', async () => {
   restoreEditorSelection();
   if (!window.getSelection()?.toString()) { notice('Сначала выделите текст для ссылки.', true); return; }
