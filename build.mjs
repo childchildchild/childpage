@@ -3,10 +3,12 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { normalizeRichBlocks, renderRichBody } from './content/rich-content.mjs';
 import { materialType, relatedMaterials } from './content/related-content.mjs';
+import { normalizeTags } from './content/tags.mjs';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const dist = join(root, 'dist');
 const source = JSON.parse(await readFile(join(root, 'content', 'content.json'), 'utf8'));
+await writeFile(join(dist, 'content-tags.js'), await readFile(join(root, 'content', 'tags.mjs'), 'utf8'));
 const optimizedImages = JSON.parse(await readFile(join(root, 'content', 'optimized-images.json'), 'utf8'));
 if (source.version !== 1 || !Array.isArray(source.items)) throw new Error('Invalid content/content.json');
 
@@ -21,6 +23,7 @@ for (const item of source.items) {
   if (!types.has(item.type) || !statuses.has(item.status) || typeof item.title !== 'string') throw new Error(`Invalid item: ${item.id}`);
   if (item.cardType && !cardTypes.has(item.cardType)) throw new Error(`Invalid card type: ${item.id}`);
   if (item.cardStatus && !cardStatuses.has(item.cardStatus)) throw new Error(`Invalid card status: ${item.id}`);
+  item.tags = normalizeTags(item.tags);
   if (item.status === 'published' && !Number.isFinite(Date.parse(item.publishedAt))) throw new Error(`Published item needs a date: ${item.id}`);
   if (item.bodyBlocks !== undefined) item.bodyBlocks = normalizeRichBlocks(item.bodyBlocks);
 }
@@ -44,6 +47,7 @@ const publicItems = source.items.filter(item => item.status === 'published' || i
   description: item.description || '',
   category: item.category || 'more',
   ages: item.ages || [],
+  tags: item.tags,
   image: safePath(item.image),
   mediaUrl: item.type === 'story' ? safePath(item.mediaUrl) : '',
   label: item.label || '',

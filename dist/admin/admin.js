@@ -1,6 +1,7 @@
 import { initUI, syncSelects, ask } from './ui.js';
 import { initPhotoCarousel } from '../article-carousel.js?v=20261127-2';
 import { cropImage } from './crop.js';
+import { normalizeTags } from '../content-tags.js?v=20261127-1';
 
 const apiUrl = '/api/admin';
 const $ = selector => document.querySelector(selector);
@@ -669,6 +670,7 @@ async function openEditor(id = '', type = 'article', force = false) {
     if (item[key] !== undefined && contentForm.elements[key]) contentForm.elements[key].value = item[key];
   }
   contentForm.elements.storyVideoUrl.value = item.type === 'story' ? item.mediaUrl || '' : '';
+  contentForm.elements.tags.value = (item.tags || []).join(', ');
   setRichEditor(item);
   savedEditorRange = null;
   contentForm.querySelectorAll('input[name="ages"]').forEach(input => { input.checked = item.ages?.includes(input.value) || false; });
@@ -709,6 +711,7 @@ function readForm(status) {
     description: get('description'),
     category: get('category') || old.category || 'for_all',
     ages: [...contentForm.querySelectorAll('input[name="ages"]:checked')].map(input => input.value),
+    tags: get('tags').split(/[,;\n]/).map(tag => tag.trim()).filter(Boolean),
     image: get('image'), imageAlt: get('imageAlt'), label: get('label'), body: get('body'),
     bodyBlocks: contentForm.elements.type.value === 'article' ? readRichBlocks() : old.bodyBlocks,
     linkedId: get('linkedId'), mediaUrl: get('type') === 'story' ? get('storyVideoUrl') : get('mediaUrl'), gameUrl: get('gameUrl'),
@@ -724,6 +727,8 @@ function validMaterialUrl(value, mp4 = false) {
   try { return new URL(value).protocol === 'https:'; } catch { return false; }
 }
 function validateItem(item) {
+  try { item.tags = normalizeTags(item.tags); }
+  catch (error) { return { message: error.message, field: 'tags' }; }
   if (!['published', 'planned'].includes(item.status)) return null;
   if (!item.title) return { message: 'Добавьте название материала.', field: 'title' };
   if (!item.description) return { message: 'Добавьте короткое описание для карточки.', field: 'description' };

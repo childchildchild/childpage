@@ -2,6 +2,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 import { lookup } from 'node:dns/promises';
 import { request as httpsRequest } from 'node:https';
 import { isIP } from 'node:net';
+import { normalizeTags } from '../content/tags.mjs';
 
 const repo = 'childchildchild/childpage';
 const contentPath = 'content/content.json';
@@ -166,6 +167,7 @@ export async function validate(input) {
       description: text(item.description, 400),
       category: categories.has(item.category) ? item.category : 'more',
       ages: Array.isArray(item.ages) ? item.ages.filter(age => ages.has(age)) : [],
+      tags: normalizeTags(item.tags),
       image: text(item.image, 500),
       imageAlt: text(item.imageAlt, 200),
       label: text(item.label, 80),

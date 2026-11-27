@@ -23,7 +23,12 @@
       "publishedAt": "2026-11-22T04:00:00+03:00",
       "updatedAt": "2026-11-22T04:00:00+03:00",
       "cardType": "article",
-      "cardStatus": ""
+      "cardStatus": "",
+      "tags": [
+        "здоровье",
+        "гигиена",
+        "мытье рук"
+      ]
     },
     {
       "id": "story-hands",
@@ -44,7 +49,12 @@
       "gameUrl": "",
       "linkedId": "handwashing",
       "publishedAt": "2026-11-22T04:03:00+03:00",
-      "updatedAt": "2026-11-22T19:38:07.133Z"
+      "updatedAt": "2026-11-22T19:38:07.133Z",
+      "tags": [
+        "здоровье",
+        "гигиена",
+        "мытье рук"
+      ]
     },
     {
       "id": "story-tale",
@@ -65,7 +75,12 @@
       "gameUrl": "",
       "linkedId": "planned-dinosaurs",
       "publishedAt": "2026-11-22T04:02:00+03:00",
-      "updatedAt": "2026-11-22T02:18:18.495Z"
+      "updatedAt": "2026-11-22T02:18:18.495Z",
+      "tags": [
+        "сказки",
+        "чтение",
+        "перед сном"
+      ]
     },
     {
       "id": "story-stars",
@@ -86,7 +101,12 @@
       "gameUrl": "",
       "linkedId": "planned-stars",
       "publishedAt": "2026-11-22T04:01:00+03:00",
-      "updatedAt": "2026-11-22T04:01:00+03:00"
+      "updatedAt": "2026-11-22T04:01:00+03:00",
+      "tags": [
+        "космос",
+        "астрономия",
+        "звезды"
+      ]
     },
     {
       "id": "planned-dinosaurs",
@@ -268,7 +288,13 @@
         }
       ],
       "cardType": "article",
-      "cardStatus": ""
+      "cardStatus": "",
+      "tags": [
+        "животные",
+        "кошки",
+        "питомцы",
+        "генетика"
+      ]
     },
     {
       "id": "planned-stars",
@@ -291,7 +317,12 @@
       "publishedAt": "2026-11-25T06:32:23.083Z",
       "updatedAt": "2026-11-25T06:32:23.083Z",
       "cardType": "article",
-      "cardStatus": ""
+      "cardStatus": "",
+      "tags": [
+        "космос",
+        "астрономия",
+        "звезды"
+      ]
     },
     {
       "id": "planned-animals",
@@ -314,7 +345,13 @@
       "publishedAt": "2026-11-25T06:32:24.083Z",
       "updatedAt": "2026-11-25T06:32:23.083Z",
       "cardType": "article",
-      "cardStatus": ""
+      "cardStatus": "",
+      "tags": [
+        "животные",
+        "зрение",
+        "кошки",
+        "природа"
+      ]
     },
     {
       "id": "planned-geolocation",
@@ -337,7 +374,13 @@
       "publishedAt": "2026-11-25T06:32:25.083Z",
       "updatedAt": "2026-11-25T06:32:23.083Z",
       "cardType": "article",
-      "cardStatus": ""
+      "cardStatus": "",
+      "tags": [
+        "технологии",
+        "геолокация",
+        "спутники",
+        "карты"
+      ]
     },
     {
       "id": "planned-watermelon",
@@ -360,7 +403,13 @@
       "publishedAt": "2026-11-25T06:32:26.083Z",
       "updatedAt": "2026-11-25T06:32:23.083Z",
       "cardType": "article",
-      "cardStatus": ""
+      "cardStatus": "",
+      "tags": [
+        "растения",
+        "ботаника",
+        "плоды",
+        "еда"
+      ]
     },
     {
       "id": "planned-kolobok",
@@ -383,7 +432,12 @@
       "publishedAt": "2026-11-25T06:32:27.083Z",
       "updatedAt": "2026-11-25T06:32:23.083Z",
       "cardType": "tale",
-      "cardStatus": ""
+      "cardStatus": "",
+      "tags": [
+        "сказки",
+        "народные сказки",
+        "колобок"
+      ]
     },
     {
       "id": "planned-anatomy",
@@ -406,7 +460,12 @@
       "publishedAt": "2026-11-25T06:32:28.083Z",
       "updatedAt": "2026-11-25T06:32:23.083Z",
       "cardType": "article",
-      "cardStatus": "new"
+      "cardStatus": "new",
+      "tags": [
+        "здоровье",
+        "человек",
+        "анатомия"
+      ]
     },
     {
       "id": "planned-fire",
@@ -494,7 +553,13 @@
         }
       ],
       "cardType": "article",
-      "cardStatus": "interesting"
+      "cardStatus": "interesting",
+      "tags": [
+        "химия",
+        "огонь",
+        "опыты",
+        "цвета"
+      ]
     },
     {
       "id": "item-a6fde8f7-009a-4522-8d5b-8bbaa0144f92",
@@ -980,7 +1045,13 @@
         }
       ],
       "cardType": "article",
-      "cardStatus": ""
+      "cardStatus": "",
+      "tags": [
+        "животные",
+        "собаки",
+        "питомцы",
+        "овчарки"
+      ]
     }
   ]
 }

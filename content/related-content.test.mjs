@@ -22,3 +22,13 @@ test('sticker bonuses do not outweigh topic or admit an unsuitable age',()=>{
   const matches=relatedMaterials([item('other-topic',{category:'medicine',cardStatus:'interesting'}),item('same-topic'),item('older',{ages:['13+'],cardStatus:'interesting'})],current);
   assert.deepEqual(matches.map(i=>i.id),['same-topic','other-topic']);
 });
+test('a shared theme outweighs category, format, age points and stickers',()=>{
+  const tagged={...current,tags:['животные','собаки']};
+  const matches=relatedMaterials([item('section-only',{cardStatus:'interesting'}),item('theme',{category:'medicine',type:'video',cardType:'video',tags:['Животные']}),item('older-theme',{ages:['13+'],tags:['животные','собаки']})],tagged);
+  assert.deepEqual(matches.map(i=>i.id),['theme','section-only']);
+});
+test('repeated and differently written tags do not multiply the bonus',()=>{
+  const tagged={...current,tags:['звёзды']};
+  const matches=relatedMaterials([item('duplicates',{tags:['Звёзды','звезды','ЗВЕЗДЫ'],cardStatus:''}),item('single',{tags:['звезды'],cardStatus:'new'})],tagged);
+  assert.deepEqual(matches.map(i=>i.id),['single','duplicates']);
+});

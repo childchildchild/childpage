@@ -33,6 +33,13 @@ test('rejects unknown card types and multiple status stickers', async () => {
     await assert.rejects(validate({ version: 1, items: [{ ...item, ...metadata }] }));
   }
 });
+test('preserves and normalizes topics when saving, including drafts',async()=>{
+  const item={id:'tagged-draft',type:'article',status:'draft',tags:['Животные',' собаки ','животные']};
+  const saved=await validate({version:1,items:[item]});
+  assert.deepEqual(saved.items[0].tags,['животные','собаки']);
+  assert.deepEqual((await validate({version:1,items:[{...item,tags:undefined}]})).items[0].tags,[]);
+  for(const tags of ['animals',[false],['<script>'],Array.from({length:11},(_,i)=>`тема ${i}`)]) await assert.rejects(validate({version:1,items:[{...item,tags}]}));
+});
 
 test('accepts image signatures only for their declared formats', () => {
   const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0x00]);

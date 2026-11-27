@@ -1,10 +1,14 @@
+import { normalizeTags } from './tags.mjs';
+
 export function materialType(item) {
   return item.cardType || (item.type === 'article' && item.category === 'tales' ? 'tale' : item.type);
 }
 
 export function relatedMaterials(items, current, limit = 6) {
   const ages = current.ages || [];
-  const score = item => (item.category === current.category ? 16 : 0)
+  const tags = new Set(normalizeTags(current.tags));
+  const score = item => 30 * Math.min(3, normalizeTags(item.tags).filter(tag => tags.has(tag)).length)
+    + (item.category === current.category ? 16 : 0)
     + (materialType(item) === materialType(current) ? 6 : 0)
     + (item.type === current.type ? 2 : 0)
     + (item.cardStatus === 'interesting' ? 2 : item.cardStatus === 'new' ? 1 : 0)
