@@ -73,19 +73,43 @@ function animateMenuToSearch(source) {
 }
 
 const normalizeSearch = value => value.toLocaleLowerCase('ru').replaceAll('ё', 'е').trim();
-const searchHistoryKey = 'childpage-search-history-v1';
+const sectionCategories = ['cartoons', 'games', 'for_all', 'tales', 'medicine', 'all'];
+const searchableItems = [...document.querySelectorAll('.content-tile')].map((element, index) => ({
+  id: `section:${sectionCategories[index]}`,
+  image: element.querySelector('img')?.getAttribute('src') || '',
+  kind: 'Раздел',
+  title: element.querySelector('span:last-child').textContent,
+  description: 'Раздел контента',
+  text: normalizeSearch(element.textContent),
+  url: `catalog.html?category=${sectionCategories[index]}`,
+})).concat([...document.querySelectorAll('.age-card')].map(element => ({
+  id: `age:${element.querySelector('.age-link').getAttribute('href')}`,
+  image: element.querySelector('img')?.getAttribute('src') || '',
+  kind: 'Подборка по возрасту',
+  title: `${element.querySelector('h3').textContent} · ${element.querySelector('.age-label').textContent}`,
+  description: element.querySelector('p').innerText,
+  text: normalizeSearch(element.textContent),
+  url: element.querySelector('.age-link').getAttribute('href'),
+})), (window.siteContent || []).filter(item => item.status === 'published').map(item => ({
+  id: `content:${item.id}`,
+  image: item.image || '',
+  kind: item.cardType === 'tale' ? 'Сказка' : ({article:'Статья', story:'Сторис', video:'Видео', audio:'Аудио', game:'Игра'}[item.type] || 'Материал'),
+  title: item.title,
+  description: item.description,
+  text: normalizeSearch(`${item.title} ${item.description}`),
+  url: item.type === 'story' ? `index.html?story=${encodeURIComponent(item.id)}` : item.url,
+})));
+
+// Store only IDs of opened results; resolve current names, images and links from site data.
+const searchItemsById = new Map(searchableItems.map(item => [item.id, item]));
+const searchHistoryKey = 'childpage-search-history-v2';
 const searchHistoryLimit = 10;
-const cleanSearchQuery = value => value.trim().replace(/\s+/g, ' ');
 function loadSearchHistory() {
   try {
+    localStorage.removeItem('childpage-search-history-v1');
     const stored = JSON.parse(localStorage.getItem(searchHistoryKey) || '[]');
     if (!Array.isArray(stored)) return [];
-    const seen = new Set();
-    return stored.filter(value => typeof value === 'string' && value.length <= 160).map(cleanSearchQuery).filter(value => {
-      const key = normalizeSearch(value);
-      if (!key || seen.has(key)) return false;
-      seen.add(key); return true;
-    }).slice(0, searchHistoryLimit);
+    return [...new Set(stored.filter(id => typeof id === 'string' && searchItemsById.has(id)))].slice(0, searchHistoryLimit);
   } catch { return []; }
 }
 let searchHistory = loadSearchHistory();
@@ -93,49 +117,40 @@ function persistSearchHistory() {
   try {
     if (searchHistory.length) localStorage.setItem(searchHistoryKey, JSON.stringify(searchHistory));
     else localStorage.removeItem(searchHistoryKey);
-  } catch { /* Search and history still work in memory when storage is unavailable. */ }
+  } catch { /* Keep in-memory history available when storage is blocked. */ }
 }
-function rememberSearch() {
-  const query = cleanSearchQuery(searchInput.value);
-  if (!query || query.length > 160) return;
-  searchHistory = [query, ...searchHistory.filter(value => normalizeSearch(value) !== normalizeSearch(query))].slice(0, searchHistoryLimit);
+function openSearchResult(item) {
+  searchHistory = [item.id, ...searchHistory.filter(id => id !== item.id)].slice(0, searchHistoryLimit);
   persistSearchHistory();
+  closeSearch();
+  window.childpageArticleNavigation.go(item.url);
 }
 function renderSearchHistory() {
   searchHistoryList.replaceChildren();
-  for (const query of searchHistory) {
+  for (const id of searchHistory) {
+    const item = searchItemsById.get(id);
     const row = document.createElement('li');
-    const repeat = document.createElement('button'); repeat.type = 'button'; repeat.className = 'search-history-query';
-    const clock = document.createElement('i'); clock.className = 'ph-bold ph-clock-counter-clockwise'; clock.setAttribute('aria-hidden', 'true');
-    const text = document.createElement('span'); text.textContent = query; repeat.append(clock, text);
-    repeat.addEventListener('click', () => { searchInput.value = query; rememberSearch(); renderSearch(); searchInput.blur(); });
-    const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'search-history-remove'; remove.setAttribute('aria-label', `Удалить запрос «${query}» из истории`);
+    const open = document.createElement('button'); open.type = 'button'; open.className = 'search-history-open';
+    const visual = document.createElement('span'); visual.className = 'search-history-thumb';
+    const fallback = document.createElement('i'); fallback.className = 'ph-bold ph-article'; fallback.setAttribute('aria-hidden', 'true'); visual.append(fallback);
+    if (item.image) {
+      const image = document.createElement('img'); image.src = item.image; image.alt = ''; image.loading = 'lazy'; image.decoding = 'async';
+      image.addEventListener('error', () => image.remove(), {once:true}); visual.append(image);
+    }
+    const text = document.createElement('span'); text.className = 'search-history-info';
+    const title = document.createElement('strong'); title.textContent = item.title;
+    const kind = document.createElement('small'); kind.textContent = item.kind; text.append(title, kind); open.append(visual, text);
+    open.addEventListener('click', () => openSearchResult(item));
+    const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'search-history-remove'; remove.setAttribute('aria-label', `Удалить «${item.title}» из истории`);
     const cross = document.createElement('i'); cross.className = 'ph-bold ph-x'; cross.setAttribute('aria-hidden', 'true'); remove.append(cross);
     remove.addEventListener('click', () => {
-      const index = searchHistory.indexOf(query);
-      searchHistory = searchHistory.filter(value => value !== query); persistSearchHistory(); renderSearch();
+      const index = searchHistory.indexOf(id);
+      searchHistory = searchHistory.filter(value => value !== id); persistSearchHistory(); renderSearch();
       (searchHistoryList.children[Math.min(index, searchHistory.length - 1)]?.querySelector('.search-history-remove') || searchInput).focus({preventScroll:true});
     });
-    row.append(repeat, remove); searchHistoryList.append(row);
+    row.append(open, remove); searchHistoryList.append(row);
   }
 }
-const sectionCategories = ['cartoons', 'games', 'for_all', 'tales', 'medicine', 'all'];
-const searchableItems = [...document.querySelectorAll('.content-tile')].map((element, index) => ({
-  title: element.querySelector('span:last-child').textContent,
-  description: 'Раздел контента',
-  text: normalizeSearch(element.textContent),
-  url: `catalog.html?category=${sectionCategories[index]}`,
-})).concat([...document.querySelectorAll('.age-card')].map(element => ({
-  title: `${element.querySelector('h3').textContent} · ${element.querySelector('.age-label').textContent}`,
-  description: element.querySelector('p').innerText,
-  text: normalizeSearch(element.textContent),
-  url: element.querySelector('.age-link').getAttribute('href'),
-})), (window.siteContent || []).filter(item => item.status === 'published').map(item => ({
-  title: item.title,
-  description: item.description,
-  text: normalizeSearch(`${item.title} ${item.description}`),
-  url: item.type === 'story' ? `index.html?story=${encodeURIComponent(item.id)}` : item.url,
-})));
 
 function restoreSharedSearch() {
   searchAnimations.forEach(animation => animation.cancel());
@@ -226,11 +241,7 @@ function renderSearch() {
     const description = document.createElement('span');
     description.textContent = item.description;
     button.append(title, description);
-    button.addEventListener('click', () => {
-      rememberSearch();
-      closeSearch();
-      window.childpageArticleNavigation.go(item.url);
-    });
+    button.addEventListener('click', () => openSearchResult(item));
     searchResults.append(button);
   }
 }
@@ -244,7 +255,6 @@ searchScreen.addEventListener('cancel', event => {
   backFromSearch();
 });
 searchScreen.addEventListener('close', () => {
-  rememberSearch();
   restoreSharedSearch();
   searchClosing = false;
   searchScreen.classList.remove('from-menu', 'returning-to-menu');
@@ -263,7 +273,6 @@ sharedSearchForm.addEventListener('submit', event => {
     return;
   }
   renderSearch();
-  rememberSearch();
   searchInput.blur();
 });
 
