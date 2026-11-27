@@ -10,7 +10,7 @@ const ageLanding = {
   '13+': {title:'Время решений',label:'13+ ЛЕТ',theme:'red',portrait:'age-teens.webp'},
 };
 const hero = document.createElement('section'); hero.className = 'age-landing-hero'; hero.setAttribute('aria-labelledby','age-landing-title');
-hero.innerHTML = '<header class="age-landing-header"><a href="index.html#ages-title" aria-label="К возрастам"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i></a><h1 id="age-landing-title"></h1></header><div class="age-landing-art"><div class="age-landing-circle" aria-hidden="true"></div><img id="age-landing-portrait" alt=""><span id="age-landing-label"></span></div>';
+hero.innerHTML = '<header class="age-landing-header"><a href="index.html#ages-title" aria-label="К возрастам"><i class="ph-bold ph-arrow-left" aria-hidden="true"></i></a><h1 id="age-landing-title"></h1></header><div class="age-landing-art"><div class="age-landing-circle" aria-hidden="true"></div><div class="age-portrait-mask"><img id="age-landing-portrait" alt=""></div><span id="age-landing-label"></span></div>';
 document.querySelector('.catalog-page').prepend(hero);
 const ageToolbar = document.createElement('div'); ageToolbar.className = 'age-content-toolbar';
 ageToolbar.innerHTML = '<a href="index.html?open=menu" aria-label="Открыть меню"><i class="ph-bold ph-list" aria-hidden="true"></i></a><h2>Контент</h2><a href="index.html?open=search" aria-label="Открыть поиск"><i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i></a>';
@@ -99,8 +99,8 @@ function render() {
   else document.documentElement.removeAttribute('data-age-page');
   if (landing) {
     hero.querySelector('h1').textContent = landing.title;
-    hero.querySelector('img').src = `assets/optimized/${landing.portrait}`;
-    hero.querySelector('img').alt = age === '0-3' ? 'Малыш' : age === '4-12' ? 'Ребёнок школьного возраста' : 'Подростки';
+    hero.querySelector('#age-landing-portrait').src = `assets/optimized/${landing.portrait}`;
+    hero.querySelector('#age-landing-portrait').alt = age === '0-3' ? 'Малыш' : age === '4-12' ? 'Ребёнок школьного возраста' : 'Подростки';
     hero.querySelector('#age-landing-label').textContent = landing.label;
     document.querySelector('.catalog-content').setAttribute('aria-labelledby','age-landing-title');
   } else document.querySelector('.catalog-content').setAttribute('aria-labelledby','catalog-title');
